@@ -1,1 +1,7 @@
 a.out
+lex.yy.c
+lex.yy.o
+salida1.txt
+salida2.txt
+salida3.txt
+Intro_Flex_Bison.pdf
