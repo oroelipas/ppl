@@ -1,6 +1,12 @@
 %{
 #include <ctype.h>
+#include <stdio.h>
+#include <string.h>
+#include "bison.tab.h"
 %}
+
+%option yylineno
+  //esto es para permitir dar la linea del error
 
 dr_letra [A-Za-z]
 dr_cifra [0-9]
@@ -96,19 +102,24 @@ dr_entrada_a_omitir [\n\t ]
 
 
 {dr_op_rel_mayor_que} {
-    printf("op_relacional: >\n");
+    yylval.str = strdup(yytext);
+    return OP_RELACIONAL;   
 }
 {dr_op_rel_menor_que} {
-    printf("op_relacional: <\n");
+    yylval.str = strdup(yytext);
+    return OP_RELACIONAL; 
 }
 {dr_op_rel_mayor_igual_que} {
-    printf("op_relacional: >=\n");
+    yylval.str = strdup(yytext);
+    return OP_RELACIONAL; 
 }
 {dr_op_rel_menor_igual_que} {
-    printf("op_relacional: <=\n");
+    yylval.str = strdup(yytext);
+    return OP_RELACIONAL; 
 }
 {dr_op_rel_desigual} {
-    printf("op_relacional: <>\n");
+    yylval.str = strdup(yytext);
+    return OP_RELACIONAL; 
 }
 
 {dr_simbolo_igual} {
@@ -117,16 +128,20 @@ dr_entrada_a_omitir [\n\t ]
 
 
 {dr_op_arit_suma} {
-    printf("op_aritmetico: +\n");
+    yylval.str = strdup(yytext);
+    return OP_ARITMETICO;
 }
 {dr_op_arit_resta} {
-    printf("op_aritmetico: -\n");
+    yylval.str = strdup(yytext);
+    return OP_ARITMETICO;
 }
 {dr_op_arit_mult} {
-    printf("op_aritmetico: *\n");
+    yylval.str = strdup(yytext);
+    return OP_ARITMETICO;
 }
 {dr_op_arit_div} {
-    printf("op_aritmetico: /\n");
+    yylval.str = strdup(yytext);
+    return OP_ARITMETICO;
 }
 
 
@@ -309,10 +324,12 @@ dr_entrada_a_omitir [\n\t ]
         }
     }
     lowerId[yyleng] = '\0';
-    printf("identificador: %s\n", lowerId);
+    yylval.str = lowerId;
+    return IDENTIFICADOR;
 }
 {dr_entero} {
-	printf("entero: %g\n", atof( yytext ));
+    yylval.val = atof( yytext );//atoi o atof???
+    return ENTERO;
 }
 {dr_real} {
 	printf("real: %g\n",atof( yytext ));
@@ -350,12 +367,6 @@ Ahora pueden existir numeros como 3e-4 PERO NO 3e+4
 - Introducing Flex and Bison:
 https://www.oreilly.com/library/view/flex-bison/9780596805418/ch01.html
 
-
--LA DEFINICION DE UNION yylvalSERA ALGO ASI:
-    %union value {
-    double val;
-    symrec *tptr;
-    }
 
 para ejecutarlo:
 ./a.out < programa.txt > salida.txt
