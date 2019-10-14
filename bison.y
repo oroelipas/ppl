@@ -12,6 +12,7 @@ void yyerror(const char *s);
   double val;            
 }
 
+%start bien
 %token <val> ENTERO
 %token <val> FLOAT
 %token <str> IDENTIFICADOR
@@ -49,6 +50,7 @@ void yyerror(const char *s) {
 
 /*
 
+//IGUAL HAY QUE TENER CUIDADO TAMBIEN CON LOS NOMBRES DE LOS TOKENS Y LA POLITICA DE NOMBRADO
 
 // DOCUMENTACION EN: http://dinosaur.compilertools.net/bison/
 
@@ -68,4 +70,7 @@ Reglas gramaticales
 AQUI USAR SIEMPRE LA RECURSIVIDAD POR LA IZQUIERDA PARA NO GASTAR MEMORIA DE PILA:
 
 
+Para hacer debugging:
+https://starbeamrainbowlabs.com/blog/article.php?article=posts/267-Compilers-101.html : 
+gcc -Wall -Wextra -g parser.tab.c main.c -lfl -ly -DYYDEBUG -D_XOPEN_SOURCE=700
  */
