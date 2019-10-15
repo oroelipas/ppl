@@ -372,6 +372,7 @@ dr_entrada_a_omitir [\n\t ]
 
 {dr_comentario} {
     printf("comentario: %s\n", yytext);
+    return TK_COMENTARIO;
 }
 {dr_cadena} {
     printf("Una cadena: %s\n", yytext);
@@ -411,6 +412,7 @@ dr_entrada_a_omitir [\n\t ]
 %%
 
 /*
+
 
 -He modificado la exp regular de los enteros y decimales para que admitan un signo menos desdes de la 'e'.
 Ahora pueden existir numeros como 3e-4 PERO NO 3e+4
