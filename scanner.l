@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
-#include "bison.tab.h"
+#include "y.tab.h"
 %}
 
 %option yylineno
@@ -94,213 +94,278 @@ dr_entrada_a_omitir [\n\t ]
 %%
 {dr_parentesis_inicial} {
     printf("parentesis_inicial: (\n");
+    return TK_PARENTESIS_INICIAL;
 }
 {dr_parentesis_final} {
     printf("parentesis_final: )\n");
+    return TK_PARENTESIS_FINAL;
 }
 
 
 
 {dr_op_rel_mayor_que} {
+    printf("op_relacional (>)\n");
     yylval.str = strdup(yytext);
-    return OP_RELACIONAL;   
+    return TK_OP_RELACIONAL;
 }
 {dr_op_rel_menor_que} {
+    printf("op_relacional (<)\n");
     yylval.str = strdup(yytext);
-    return OP_RELACIONAL; 
+    return TK_OP_RELACIONAL;
 }
 {dr_op_rel_mayor_igual_que} {
+    printf("op_relacional (>=)\n");
     yylval.str = strdup(yytext);
-    return OP_RELACIONAL; 
+    return TK_OP_RELACIONAL;
 }
 {dr_op_rel_menor_igual_que} {
+    printf("op_relacional (<=)\n");
     yylval.str = strdup(yytext);
-    return OP_RELACIONAL; 
+    return TK_OP_RELACIONAL;
 }
 {dr_op_rel_desigual} {
+    printf("op_relacional (<>)\n");
     yylval.str = strdup(yytext);
-    return OP_RELACIONAL; 
+    return TK_OP_RELACIONAL;
 }
 
 {dr_simbolo_igual} {
     printf("simbolo_igual: =\n");
+    return TK_IGUAL;
 }
 
 
 {dr_op_arit_suma} {
-    yylval.str = strdup(yytext);
-    return OP_ARITMETICO;
+    printf("op_aritmetico (+)\n");
+    yylval.caracter = yytext[0];
+    return TK_OP_ARITMETICO;
 }
 {dr_op_arit_resta} {
-    yylval.str = strdup(yytext);
-    return OP_ARITMETICO;
+    printf("op_aritmetico (-)\n");
+    yylval.caracter = yytext[0];
+    return TK_OP_ARITMETICO;
 }
 {dr_op_arit_mult} {
-    yylval.str = strdup(yytext);
-    return OP_ARITMETICO;
+    printf("op_aritmetico (*)\n");
+    yylval.caracter = yytext[0];
+    return TK_OP_ARITMETICO;
 }
 {dr_op_arit_div} {
-    yylval.str = strdup(yytext);
-    return OP_ARITMETICO;
+    printf("op_aritmetico (/)\n");
+    yylval.caracter = yytext[0];
+    return TK_OP_ARITMETICO;
 }
 
 
 
 {dr_asignacion} {
     printf("asignacion (:=)\n");
+    return TK_ASIGNACION;
 }
 {dr_comp_secuencial} {
     printf("comp_secuencial (;)\n");
+    return TK_PUNTOYCOMA;
 }
 {dr_separador} {
     printf("separador (,)\n");
+    return TK_SEPARADOR;
 }
 {dr_subrango} {
     printf("subrango (..)\n");
+    return TK_SUBRANGO;
 }
 {dr_tipo_var} {
     printf("tipo_var (:)\n");
+    return TK_TIPO_VAR;
 }
 {dr_entonces} {
     printf("entonces (->)\n");
+    return TK_ENTONCES;
 }
 {dr_si_no_si} {
     printf("si_no_si: []\n");
+    return TK_SINOSI;
 }
 {dr_inicio_array} {
     printf("inicio_array ([)\n");
+    return TK_INICIO_ARRAY;
 }
 {dr_fin_array} {
     printf("fin_array (])\n");
+    return TK_FIN_ARRAY;
 }
 
 
 
 {dr_pr_accion} {
     printf("palabra reservada: accion\n");
+	return TK_PR_ACCION;
 }
 {dr_pr_algoritmo} {
     printf("palabra reservada: algoritmo\n");
+	return TK_PR_ALGORITMO;
 }
 {dr_pr_booleano} {
     printf("palabra reservada: booleano\n");
+	return TK_PR_BOOLEANO;
 }
 {dr_pr_cadena} {
     printf("palabra reservada: cadena\n");
+	return TK_PR_CADENA;
 }
 {dr_pr_caracter} {
     printf("palabra reservada: caracter\n");
+	return TK_PR_CARACTER;
 }
 {dr_pr_const} {
     printf("palabra reservada: const\n");
+	return TK_PR_CONST;
 }
 {dr_pr_continuar} {
     printf("palabra reservada: continuar\n");
+	return TK_PR_CONTINUAR;
 }
 {dr_pr_de} {
     printf("palabra reservada: de\n");
+	return TK_PR_DE;
 }
 {dr_pr_dev} {
     printf("palabra reservada: dev\n");
+	return TK_PR_DEV;
 }
 {dr_pr_div} {
     printf("palabra reservada: div\n");
+	return TK_PR_DIV;
 }
 {dr_pr_ent} {
     printf("palabra reservada: ent\n");
+	return TK_PR_ENT;
 }
 {dr_pr_entero} {
     printf("palabra reservada: entero\n");
+	return TK_PR_ENTERO;
 }
 {dr_pr_es} {
     printf("palabra reservada: es\n");
+	return TK_PR_ES;
 }
 {dr_pr_faccion} {
     printf("palabra reservada: faccion\n");
+	return TK_PR_FACCOIN;
 }
 {dr_pr_falgoritmo} {
     printf("palabra reservada: falgoritmo\n");
+	return TK_PR_FALGORITMO;
 }
 {dr_pr_falso} {
     printf("booleano: 0\n");
+    yylval.entero = 0;
+	return TK_BOOLEANO;
 }
 {dr_pr_fconst} {
     printf("palabra reservada: fconst\n");
+	return TK_PR_FCONST;
 }
 {dr_pr_ffuncion} {
     printf("palabra reservada: ffuncion\n");
+	return TK_PR_FFUNCION;
 }
 {dr_pr_fmientras} {
     printf("palabra reservada: fmientras\n");
+	return TK_PR_FMIENTRAS;
 }
 {dr_pr_fpara} {
     printf("palabra reservada: fpara\n");
+	return TK_PR_FPARA;
 }
 {dr_pr_fsi} {
     printf("palabra reservada: fsi\n");
+	return TK_PR_FSI;
 }
 {dr_pr_ftipo} {
     printf("palabra reservada: ftipo\n");
+	return TK_PR_FTIPO;
 }
 {dr_pr_ftupla} {
     printf("palabra reservada: ftupla\n");
+	return TK_PR_FTUPLA;
 }
 {dr_pr_funcion} {
     printf("palabra reservada: funcion\n");
+	return TK_PR_FUNCION;
 }
 {dr_pr_fvar} {
     printf("palabra reservada: fvar\n");
+	return TK_PR_FVAR;
 }
 {dr_pr_hacer} {
     printf("palabra reservada: hacer\n");
+	return TK_PR_HACER;
 }
 {dr_pr_hasta} {
     printf("palabra reservada: hasta\n");
+	return TK_PR_HASTA;
 }
 {dr_pr_mientras} {
     printf("palabra reservada: mientras\n");
+	return TK_PR_MIENTRAS;
 }
 {dr_pr_mod} {
     printf("palabra reservada: mod\n");
+	return TK_PR_MOD;
 }
 {dr_pr_no} {
     printf("palabra reservada: no\n");
+	return TK_PR_NO;
 }
 {dr_pr_o} {
     printf("palabra reservada: o\n");
+	return TK_PR_O;
 }
 {dr_pr_para} {
     printf("palabra reservada: para\n");
+	return TK_PR_PARA;
 }
 {dr_pr_real} {
     printf("palabra reservada: real\n");
+	return TK_PR_REAL;
 }
 {dr_pr_ref} {
     printf("palabra reservada: ref\n");
+	return TK_PR_REF;
 }
 {dr_pr_sal} {
     printf("palabra reservada: sal\n");
+	return TK_PR_SAL;
 }
 {dr_pr_si} {
     printf("palabra reservada: si\n");
+	return TK_PR_SI;
 }
 {dr_pr_tabla} {
     printf("palabra reservada: tabla\n");
+	return TK_PR_TABLA;
 }
 {dr_pr_tipo} {
     printf("palabra reservada: tipo\n");
+	return TK_PR_TIPO;
 }
 {dr_pr_tupla} {
     printf("palabra reservada: tupla\n");
+	return TK_PR_TUPLA;
 }
 {dr_pr_var} {
     printf("palabra reservada: var\n");
+	return TK_PR_VAR;
 }
 {dr_pr_verdadero} {
     printf("booleano: 1\n");
+    yylval.entero = 1;
+	return TK_BOOLEANO;
 }
 {dr_pr_y} {
     printf("palabra reservada: y\n");
+	return TK_PR_Y;
 }
 
 
@@ -310,9 +375,13 @@ dr_entrada_a_omitir [\n\t ]
 }
 {dr_cadena} {
     printf("Una cadena: %s\n", yytext);
+    yylval.str = strdup(yytext);
+    return TK_CADENA;
 }
 {dr_caracter} {
-    printf("caracter: %s\n ", yytext);
+    printf("caracter: %c\n ", yytext[0]);
+    yylval.caracter = yytext[0];//mirar si esto esta mal y en realidad es una cadena de un elemento
+    return TK_CARACTER;
 }
 {dr_id} {
     char lowerId[yyleng+1];
@@ -324,15 +393,18 @@ dr_entrada_a_omitir [\n\t ]
         }
     }
     lowerId[yyleng] = '\0';
-    yylval.str = lowerId;
-    return IDENTIFICADOR;
+    yylval.str = strdup(lowerId);
+    return TK_IDENTIFICADOR;
 }
 {dr_entero} {
-    yylval.val = atof( yytext );//atoi o atof???
-    return ENTERO;
+    printf("entero: %f\n", atof(yytext));
+    yylval.doble = atof( yytext );//atoi o atof???
+    return TK_ENTERO;
 }
 {dr_real} {
 	printf("real: %g\n",atof( yytext ));
+	yylval.doble = atof(yytext);
+	return TK_REAL;
 }
 
 {dr_entrada_a_omitir} {}

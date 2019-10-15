@@ -1,8 +1,8 @@
 a.out
 lex.yy.c
 lex.yy.o
-bison.tab.c
-bison.tab.h
+y.tab.c
+y.tab.h
 salida1.txt
 salida2.txt
 salida3.txt
