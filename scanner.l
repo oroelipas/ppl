@@ -28,7 +28,6 @@ dr_pr_const const
 dr_pr_continuar continuar
 dr_pr_de de
 dr_pr_dev dev
-dr_pr_div div
 dr_pr_ent ent
 dr_pr_entero entero
 dr_pr_es e\/s
@@ -47,7 +46,6 @@ dr_pr_fvar fvar
 dr_pr_hacer hacer
 dr_pr_hasta hasta
 dr_pr_mientras mientras
-dr_pr_mod mod
 dr_pr_no no
 dr_pr_o o
 dr_pr_para para
@@ -67,6 +65,7 @@ dr_comp_secuencial ;
 dr_separador ,
 dr_subrango \.\.
 dr_tipo_var :
+dr_punto \.
 dr_entonces ->
 dr_si_no_si \[\]
 dr_inicio_array \[
@@ -84,6 +83,8 @@ dr_op_arit_suma \+
 dr_op_arit_resta -
 dr_op_arit_mult \*
 dr_op_arit_div \/
+dr_op_arit_mod mod
+dr_op_arit_div_ent div
 
 dr_parentesis_inicial \(
 dr_parentesis_final \)
@@ -155,6 +156,16 @@ dr_entrada_a_omitir [\n\t ]
     yylval.caracter = yytext[0];
     return TK_OP_ARITMETICO;
 }
+{dr_op_arit_mod} {
+    printf("op_aritmetico (mod)\n");
+    yylval.caracter = yytext[0];//ESTO VA A DEVOLVER UNA 'M'
+    return TK_OP_ARITMETICO;
+}
+{dr_op_arit_div_ent} {
+    printf("op_aritmetico (div)\n");
+    yylval.caracter = yytext[0];//ESTO VA A DEVOLVER UNA 'D'
+    return TK_OP_ARITMETICO;
+}
 
 
 
@@ -171,19 +182,24 @@ dr_entrada_a_omitir [\n\t ]
     return TK_SEPARADOR;
 }
 {dr_subrango} {
-    printf("subrango (..)\n");
+    printf("subrango (..)\n");//CHECKEAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     return TK_SUBRANGO;
 }
 {dr_tipo_var} {
     printf("tipo_var (:)\n");
     return TK_TIPO_VAR;
 }
+{dr_punto} {
+    printf("punto (.)\n");
+    return TK_PUNTO;
+}
+
 {dr_entonces} {
     printf("entonces (->)\n");
     return TK_ENTONCES;
 }
 {dr_si_no_si} {
-    printf("si_no_si: []\n");
+    printf("si_no_si: []\n");//CHECKEAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     return TK_SINOSI;
 }
 {dr_inicio_array} {
@@ -232,10 +248,6 @@ dr_entrada_a_omitir [\n\t ]
 {dr_pr_dev} {
     printf("palabra reservada: dev\n");
 	return TK_PR_DEV;
-}
-{dr_pr_div} {
-    printf("palabra reservada: div\n");
-	return TK_PR_DIV;
 }
 {dr_pr_ent} {
     printf("palabra reservada: ent\n");
@@ -309,10 +321,6 @@ dr_entrada_a_omitir [\n\t ]
 {dr_pr_mientras} {
     printf("palabra reservada: mientras\n");
 	return TK_PR_MIENTRAS;
-}
-{dr_pr_mod} {
-    printf("palabra reservada: mod\n");
-	return TK_PR_MOD;
 }
 {dr_pr_no} {
     printf("palabra reservada: no\n");
