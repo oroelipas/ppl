@@ -263,7 +263,7 @@ dr_entrada_a_omitir [\n\t ]
 }
 {dr_pr_faccion} {
     printf("palabra reservada: faccion\n");
-	return TK_PR_FACCOIN;
+	return TK_PR_FACCION;
 }
 {dr_pr_falgoritmo} {
     printf("palabra reservada: falgoritmo\n");
@@ -403,6 +403,7 @@ dr_entrada_a_omitir [\n\t ]
     }
     lowerId[yyleng] = '\0';
     yylval.str = strdup(lowerId);
+    printf("identificador: %s\n", yytext);
     return TK_IDENTIFICADOR;
 }
 {dr_entero} {

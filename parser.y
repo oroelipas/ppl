@@ -18,7 +18,7 @@ void yyerror(const char *s);
 
 %token TK_PARENTESIS_INICIAL
 %token TK_PARENTESIS_FINAL
-%token <str> TK_OP_RELACIONAL
+%nonassoc <str> TK_OP_RELACIONAL
 %token TK_IGUAL
 %token <caracter> TK_OP_ARITMETICO
 %token TK_ASIGNACION
@@ -41,11 +41,10 @@ void yyerror(const char *s);
 %token TK_PR_CONTINUAR
 %token TK_PR_DE
 %token TK_PR_DEV
-%token TK_PR_DIV
 %token TK_PR_ENT
 %token TK_PR_ENTERO
 %token TK_PR_ES
-%token TK_PR_FACCOIN
+%token TK_PR_FACCION
 %token TK_PR_FALGORITMO
 %token TK_PR_FCONST
 %token TK_PR_FFUNCION
@@ -59,7 +58,6 @@ void yyerror(const char *s);
 %token TK_PR_HACER
 %token TK_PR_HASTA
 %token TK_PR_MIENTRAS
-%token TK_PR_MOD
 %token TK_PR_NO
 %token TK_PR_O
 %token TK_PR_PARA
@@ -73,7 +71,8 @@ void yyerror(const char *s);
 %token TK_PR_VAR
 %token TK_PR_Y
 %token TK_COMENTARIO
-%token <str> TK_CADENA
+/* TK_CADENA DE MOMENTO EN LA GRAMATICA NO SE USA*/
+%token <str> TK_CADENA 
 %token <caracter> TK_CARACTER
 %token <str> TK_IDENTIFICADOR
 %token <doble> TK_ENTERO
@@ -81,265 +80,300 @@ void yyerror(const char *s);
 %token <entero> TK_BOOLEANO
 
 
+%type <str> ty_desc_algoritmo
 %type <str> ty_cabecera_alg
 %type <str> ty_bloque_alg
 %type <str> ty_decl_globales
 %type <str> ty_decl_a_f
 %type <str> ty_bloque
 %type <str> ty_declaraciones
-%type <str> ty_decl_ent_sal
 %type <str> ty_decl_tipo
-%type <str> ty_decl_const
-%type <str> ty_accion_d
-%type <str> ty_funcion_d
+%type <str> ty_decl_cte
+%type <str> ty_decl_var
 %type <str> ty_lista_d_tipo
+%type <str> ty_d_tipo
+%type <str> ty_expresion_t
+%type <str> ty_lista_campos
+%type <str> ty_tipo_base
 %type <str> ty_lista_d_cte
 %type <str> ty_lista_d_var
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-%type <str>
-
-
+%type <str> ty_lista_id
+%type <str> ty_decl_ent_sal
+%type <str> ty_decl_ent
+%type <str> ty_decl_sal
+%type <str> ty_expresion
+%type <str> ty_exp_a
+%type <str> ty_exp_b
+%type <str> ty_operando
+%type <str> ty_instrucciones
+%type <str> ty_instruccion
+%type <str> ty_asignacion
+%type <str> ty_alternativa
+%type <str> ty_lista_opciones
+%type <str> ty_iteracion
+%type <str> ty_it_cota_exp
+%type <str> ty_it_cota_fija
+%type <str> ty_accion_d
+%type <str> ty_funcion_d
+%type <str> ty_a_cabecera
+%type <str> ty_f_cabecera
+%type <str> ty_d_par_form
+%type <str> ty_d_p_form
+%type <str> ty_accion_ll
+%type <str> ty_funcion_ll
+%type <str> ty_l_ll
 
 
 %%
 
 ty_desc_algoritmo:
-    TK_PR_ALGORITMO TK_IDENTIFICADOR TK_PUNTOYCOMA ty_cabecera_alg ty_bloque_alg TK_PR_FALGORITMO {printf("");}
+/* aqui en la gramatica de fitxi hay un punto despues de falgoritmo que hemos quitado porque en los ejemplos no esta*/
+    TK_PR_ALGORITMO TK_IDENTIFICADOR TK_PUNTOYCOMA ty_cabecera_alg ty_bloque_alg TK_PR_FALGORITMO {printf("\n");}
     ;
 
 ty_cabecera_alg:
-    ty_decl_globales ty_decl_a_f ty_decl_ent_sal TK_COMENTARIO {printf("");}
+    ty_decl_globales ty_decl_a_f ty_decl_ent_sal TK_COMENTARIO {printf("\n");}
     ;
 
 ty_bloque_alg:
-    ty_bloque TK_COMENTARIO {printf("");}
+    ty_bloque TK_COMENTARIO {printf("\n");}
     ;
 
 ty_decl_globales:
-    ty_decl_tipo  ty_decl_globales {printf("");}
-    | ty_decl_const ty_decl_globales {printf("");}
-    | /*vacio*/{printf("");}
+      ty_decl_tipo  ty_decl_globales {printf("\n");}
+    | ty_decl_cte ty_decl_globales {printf("\n");}
+    | /*vacio*/{printf("\n");}
     ;
 
 
 ty_decl_a_f:
-    ty_accion_d  ty_decl_a_f {printf("");}
-    |ty_funcion_d ty_decl_a_f {printf("");}
-    |/*vacio*/ {printf("");}
+      ty_accion_d  ty_decl_a_f {printf("\n");}
+    | ty_funcion_d ty_decl_a_f {printf("\n");}
+    | /*vacio*/ {printf("\n");}
     ;
 
 ty_bloque:
-    ty_declaraciones ty_instrucciones {printf("");}
+    ty_declaraciones ty_instrucciones {printf("\n");}
     ;
 
 ty_declaraciones:
-    ty_decl_tipo  ty_declaraciones {printf("");}
-    |ty_decl_const ty_declaraciones {printf("");}
-    |ty_decl_var   ty_declaraciones {printf("");}
-    |/*vacio*/{printf("");}
+      ty_decl_tipo  ty_declaraciones {printf("\n");}
+    | ty_decl_cte ty_declaraciones {printf("\n");}
+    | ty_decl_var   ty_declaraciones {printf("\n");}
+    | /*vacio*/{printf("\n");}
     ;
 
 ty_decl_tipo:
-    TK_PR_TIPO ty_lista_d_tipo TK_PR_FTIPO TK_PUNTOYCOMA {printf("");}
+    TK_PR_TIPO ty_lista_d_tipo TK_PR_FTIPO TK_PUNTOYCOMA {printf("\n");}
     ;
 ty_decl_cte:
-    TK_PR_CONST ty_lista_d_cte TK_PR_FCONST TK_PUNTOYCOMA{printf("");}
+    TK_PR_CONST ty_lista_d_cte TK_PR_FCONST TK_PUNTOYCOMA{printf("\n");}
     ;
 ty_decl_var:
-    TK_PR_VAR ty_lista_d_var TK_PR_FVAR TK_PUNTOYCOMA{printf("");}
+    TK_PR_VAR ty_lista_d_var TK_PR_FVAR TK_PUNTOYCOMA{printf("\n");}//los programas de fitxi no tienen ;
     ;
 ty_lista_d_tipo:
-    TK_IDENTIFICADOR TK_IGUAL ty_d_tipo TK_PUNTOYCOMA{printf("");}
-    |/*vacio*/{printf("");}
+      TK_IDENTIFICADOR TK_IGUAL ty_d_tipo TK_PUNTOYCOMA ty_lista_d_tipo {printf("\n");}
+    | /*vacio*/{printf("\n");}
     ;
 ty_d_tipo:
-    TK_PR_TUPLA ty_lista_campos TK_PR_FTUPLA {printf("");}
-    |TK_PR_TABLA TK_INICIO_ARRAY ty_expresion_t TK_SUBRANGO ty_expresion_t TK_FIN_ARRAY TK_PR_DE ty_d_tipo {printf("");}
-    |TK_IDENTIFICADOR {printf("");}
-    |ty_expresion_t TK_SUBRANGO ty_expresion_t {printf("");}
-    |TK_PR_REF ty_d_tipo {printf("");}
-    |{printf("");}
+      TK_PR_TUPLA ty_lista_campos TK_PR_FTUPLA {printf("\n");}
+    | TK_PR_TABLA TK_INICIO_ARRAY ty_expresion_t TK_SUBRANGO ty_expresion_t TK_FIN_ARRAY TK_PR_DE ty_d_tipo {printf("\n");}
+    | TK_IDENTIFICADOR {printf("\n");}
+    | ty_expresion_t TK_SUBRANGO ty_expresion_t {printf("\n");}
+    | TK_PR_REF ty_d_tipo {printf("\n");}
+    | ty_tipo_base {printf("\n");}
     ;
 
 ty_expresion_t:
-    ty_expresion{printf("");}
-    |TK_CARACTER{printf("");}
+      ty_expresion{printf("\n");}
+    | TK_CARACTER{printf("\n");}/*AQUI NO HAY CADENAS?????? ENTONCES NO SE PUEDE HACER a:= "hola"   */
     ;
 
 ty_lista_campos:
-    TK_IDENTIFICADOR TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_campos{printf("");}
-    |/*vacio*/{printf("");}
-    ;
-    
-ty_tipo_base:
-    TK_BOOLEANO {/*ESTO NOS LO HEMOS INVENTADO NOSOTROS*/}
-    |TK_ENTERO {}
-    |TK_CARACTER {}
-    |TK_REAL {}
-    |TK_CADENA {}
-    ;
-    
-    
-ty_lista_d_cte:/*esto de ty_tipo_base lo hemos cambiado por "literal"*/
-    TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte{}
-    |/*vacio*/{}
-    ;
-ty_lista_d_var:
-    ty_lista_id TK_TIPO_VAR TK_IDENTIFICADOR TK_PUNTOYCOMA ty_lista_d_var {}
-    |ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var {}
-    | /*vacio*/{}
-    ;
-ty_lista_id:
-    TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id {} 
-    | TK_IDENTIFICADOR {}
+    TK_IDENTIFICADOR TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_campos{printf("\n");}
+    |/*vacio*/{{printf("\n");}}
     ;
 
+ty_tipo_base:
+    TK_PR_BOOLEANO {/*ESTO NOS LO HEMOS INVENTADO NOSOTROS*/}
+    |TK_PR_ENTERO {printf("\n");}
+    |TK_PR_CARACTER {printf("\n");}
+    |TK_PR_REAL {printf("\n");}
+    |TK_PR_CADENA {printf("\n");}
+    ;
+
+
+ty_lista_d_cte:/*esto de ty_tipo_base lo hemos cambiado por "literal"*/
+    TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte{printf("\n");}
+    |/*vacio*/{printf("\n");}
+    ;
+ty_lista_d_var:
+      /*PROBABLEMENTE HAYA QUE QUITAR LA PRIMERA REGLA PORQUE UN ty_d_tipo YA PUEDE SER UN IDENTIFICADOR Y POR ESO ESTA
+      EL CONFLICTO SHIFT/REDUCE. MEJOR IDENTIFICARLO SIEMRE COMO QUE ES UN ty_d_tipo Y NO HACER UNA REGLA ESPECIAL PARA EL IDENTIFICADOR*/
+      ty_lista_id TK_TIPO_VAR TK_IDENTIFICADOR TK_PUNTOYCOMA ty_lista_d_var {printf("\n");}
+    | ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var {printf("\n");}
+    | /*vacio*/{printf("\n");}
+    ;
+ty_lista_id:
+      TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id {printf("\n");}
+    | TK_IDENTIFICADOR {printf("\n");}
+    ;
+    
 ty_decl_ent_sal:
-    ty_decl_ent {}
-    |ty_decl_ent ty_decl_sal {}
-    |ty_decl_sal {}
+      ty_decl_ent {printf("\n");}
+    | ty_decl_ent ty_decl_sal {printf("\n");}
+    | ty_decl_sal {printf("\n");}
     ;
 ty_decl_ent:
-    TK_PR_ENT ty_lista_d_var {}
+    TK_PR_ENT ty_lista_d_var {printf("\n");}
     ;
 ty_decl_sal:
-    TK_PR_SAL ty_lista_d_var {}
+    TK_PR_SAL ty_lista_d_var {printf("\n");}
     ;
 ty_expresion:
-    ty_exp_a {}
-    |ty_exp_b {}
-    |ty_funcion_ll {}
+    /*porque hay expresiones de cadena ni de caracter???
+    no se puede hacer a:= "hola"   ???????????????????*/
+      ty_exp_a {printf("\n");}
+    | ty_exp_b {printf("\n");}
+    | ty_funcion_ll {printf("\n");}
     ;
 ty_exp_a:
-    ty_exp_a TK_OP_ARITMETICO ty_exp_a {}
-    | TK_PARENTESIS_INICIAL ty_exp_a TK_PARENTESIS_FINAL {}
-    | ty_operando {}
-    | TK_ENTERO {}
-    | TK_REAL {}
+    /*AQUI ESTA EL TIIIIPICO CONFLICTO S/R. DEPENDE DE LA PREFERENCIA DE OPERADORES HABRA QUE HACER SHIT O REDUCE.
+    HAY QUE DEFINIR QUE * Y / SON MAS PRIORITARIOS QUE + Y -. PERO DE MOMENTO TODOS SON EL MISMO TOKEN Y NO SE SI ESO ES LO MEJOR.
+    IGUAL SERIA BUENA IDEA QUE AL MENOS HUBIESE UN TOKEN PARA NIVEL DE PREFERENCIA: UNO PARA * Y / , Y OTRO PARA + Y -*/
+      ty_exp_a TK_OP_ARITMETICO ty_exp_a {printf("\n");}
+    | TK_PARENTESIS_INICIAL ty_exp_a TK_PARENTESIS_FINAL {printf("\n");}
+    | ty_operando {printf("\n");}
+    | TK_ENTERO {printf("\n");}
+    | TK_REAL {printf("\n");}
     | TK_OP_ARITMETICO ty_exp_a {/*SOLO TIENE QUE ENTRAR AQUI SI EL OP_ARIT ES UN MENOS*/}
     ;
     /*
     opcion: definir aparte el token menos en flex y hacer que bison tenga producciones para saber lo que es un op_arit
     y que el tk_menos deje de ser un operador aritmetico
 ty_op_arit:
-    TK_OP_ARITMETICO {}
-    | TK_MENOS {}
+    TK_OP_ARITMETICO {printf("\n");}
+    | TK_MENOS {printf("\n");}
     ;
     */
-    
+
 ty_exp_b:
-      ty_exp_b TK_PR_Y ty_exp_b {}/*AQUI IGUAL SE PUEDEN DEFINIR OP_LOGICO: CUYOS VALORES SEAN Y,O*/
-    | ty_exp_b TK_PR_O ty_exp_b {}
-    | TK_PR_NO ty_exp_b {}
-    | ty_operando {}
-    | TK_BOOLEANO {}
-    | ty_expresion TK_OP_RELACIONAL ty_expresion {}
-    | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL {}
+    /*
+    
+    AQUI TENEMOS UN CONFLICTO SHIFT/REDUCE:
+    EN CASO DE HACER REDUCE EN CUANTO LEYESEMOS UN BOOLEANO SE CONVERTIRA A EXPRESION 
+    PERO NO QUEREMOS ESTO HASTA QUE NO HAYAMOS LEIDO TODA LA LISTA DE OP_RELACIONALES DE BOOLEANOS
+    
+    QUEREMOS QUE 'y' Y 'o' SEAN ASOCIATIVOS ENTRE SI MISMOS PERO NO ENTRE EL OTRO:
+    QUE SE PUEDA ESCRIBIR: var1 Y var2 Y var3....
+                           var1 O var2 O var3....
+                  PERO NO: var1 Y var2 O var3
+        
+    IGUAL HAY QUE HACER DOS NO-TERMINALES MAS?? QUE SEAN ty_lista_de_Y Y ty_lista_de_O?????????????
+    
+    */
+      ty_exp_b TK_PR_Y ty_exp_b {printf("\n");}/*AQUI IGUAL SE PUEDEN DEFINIR OP_LOGICO: CUYOS VALORES SEAN Y,O*/
+    | ty_exp_b TK_PR_O ty_exp_b {printf("\n");}
+    | TK_PR_NO ty_exp_b {printf("\n");}
+    /*| ty_operando {printf("\n");} /* ESTO ESTA COMENTADO PORQUE SINO DA ERROR EL BISON PERO NO SE PORQUE!!!!!!!!!*/
+    | TK_BOOLEANO {printf("\n");}
+    /*ESTADO 165: AQUI TENEMOS OTRO CONFLICTO S/R: SI TENEMOS x < y < z ESTO TIENE QUE DAR ERROR. TENEMOS QUE HACER TK_OP_RELACIONAL %nonassoc PORQUE SIEMPRE TIENE QUE HABER PARENTESIS */
+    | ty_expresion TK_OP_RELACIONAL ty_expresion {printf("\n");}
+    | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL {printf("\n");}
     ;
 
 ty_operando:
-      TK_IDENTIFICADOR {}
-    | ty_operando TK_PUNTO ty_operando {}
-    | ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY {}
-    | ty_operando TK_PR_REF {}
+    /*AQUI EN EL CONFLICTO SUPONGO QUE HABRA QUE HACER UN SHIFT POR PURA ASOCIATIVIDAD, PARA REDUCIR LA PILA.
+    ADEMAS ES EL MODO DE ACCEDER A LAS VARIABLES: SI TIENES variable1.variable2[variable3] PRIMERO HABRA QUE IR DE FUERA HACIA ADENTRO Y REDUCIR variable1.variable2 A UNA SOLA VARIABLE (variable12) PARA LUEGO ACCEDER A ESA VARIABLE variable12[variable3]*/
+      TK_IDENTIFICADOR {printf("\n");}
+    | ty_operando TK_PUNTO ty_operando {printf("\n");}
+    | ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY {printf("\n");}
+    | ty_operando TK_PR_REF {printf("\n");}
     ;
-    
+
 ty_instrucciones:
-      ty_instruccion TK_PUNTOYCOMA ty_instrucciones {}
-    | ty_instruccion {}
+      ty_instruccion TK_PUNTOYCOMA ty_instrucciones {printf("\n");}
+    | ty_instruccion {printf("\n");}
     ;
-    
+
 ty_instruccion:
-      TK_PR_CONTINUAR {}
-    | ty_asignacion {}
-    | ty_alternativa {}
-    | ty_iteracion {}
-    | ty_accion_ll {}
+      TK_PR_CONTINUAR {printf("\n");}
+    | ty_asignacion {printf("\n");}
+    | ty_alternativa {printf("\n");}
+    | ty_iteracion {printf("\n");}
+    | ty_accion_ll {printf("\n");}
     ;
-    
+
 ty_asignacion:
-    ty_operando TK_PUNTOYCOMA ty_expresion {}
+    /*esto no deberia ser ty_expresion_t para poder hacer a:= 'a' */
+    /*Y ADEMAS CADENA NO ESTA EN EXPRESION_T ASI QUE NUNCA SE PODRA HACER a:="hola"  !!!!!!!*/
+    ty_operando TK_ASIGNACION ty_expresion {printf("\n");}
     ;
-    
+
 ty_alternativa:
-    TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI {}
+    TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI {printf("\n");}
     ;
-    
+
 ty_lista_opciones:
-     TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones {}
-    | /*vacio*/
+     TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones {printf("\n");}
+    | /*vacio*/{printf("\n");}
     ;
 
 ty_iteracion:
-      ty_it_cota_fija {}
-    | ty_it_cota_exp {}
+      ty_it_cota_fija {printf("\n");}
+    | ty_it_cota_exp {printf("\n");}
     ;
-    
+
 ty_it_cota_exp:
-    TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS {}
+    TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS {printf("\n");}
     ;
 
 ty_it_cota_fija:
-    TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA {}
+    TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA {printf("\n");}
     ;
-    
+
 ty_accion_d:
-    TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_ACCION {}
+    TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION {printf("\n");}
     ;
 
 ty_funcion_d:
-    TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION {}
+    TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION {printf("\n");}
     ;
 
 ty_a_cabecera:
-    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA {}
+    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA {printf("\n");}
     ;
- 
+
  ty_f_cabecera:
-    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA {}
+    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA {printf("\n");}
     ;
-    
+
 ty_d_par_form:
-    ty_d_p_form TK_PUNTOYCOMA ty_d_par_form {}
-    | /*vacio*/
+    ty_d_p_form TK_PUNTOYCOMA ty_d_par_form {printf("\n");}
+    | /*vacio*/{printf("\n");}
     ;
 
 ty_d_p_form:
-      TK_PR_ENT ty_lista_id TK_TIPO_VAR ty_d_tipo {}
-    | TK_PR_SAL ty_lista_id TK_TIPO_VAR ty_d_tipo {}
-    | TK_PR_ES  ty_lista_id TK_TIPO_VAR ty_d_tipo {}
+      TK_PR_ENT ty_lista_id TK_TIPO_VAR ty_d_tipo {printf("\n");}
+    | TK_PR_SAL ty_lista_id TK_TIPO_VAR ty_d_tipo {printf("\n");}
+    | TK_PR_ES  ty_lista_id TK_TIPO_VAR ty_d_tipo {printf("\n");}
     ;
 
 ty_accion_ll:
-    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL {}
+    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL {printf("\n");}
     ;
-    
+
 ty_funcion_ll:
-    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL {}
+    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL {printf("\n");}
     ;
 
 ty_l_ll:
-      ty_expresion TK_SEPARADOR ty_l_ll {}
-    | ty_expresion {}
+      ty_expresion TK_SEPARADOR ty_l_ll {printf("\n");}
+    | ty_expresion {printf("\n");}
     ;
 
-    
+
 %%
 
 
@@ -363,6 +397,8 @@ void yyerror(const char *s) {
 
 /*
 
+https://stackoverflow.com/questions/17590190/shift-reduce-conflicts-in-bison
+
 PORQUE LA PRODUCCION DE UN ALGORITMO TIENE UN PUNTO AL FINAL????????????????????????
 
 
@@ -374,17 +410,6 @@ PONER SIEMPRE UNA RUTINA SEMANTICA PORQUE POR DEFECTO SE EJECUTA {$$=$1} Y ESO D
 //IGUAL HAY QUE TENER CUIDADO TAMBIEN CON LOS NOMBRES DE LOS TOKENS Y LA POLITICA DE NOMBRADO
 
 // DOCUMENTACION EN: http://dinosaur.compilertools.net/bison/
-
-
-Declaraciones de Bison:
-    Los simbolos terminales van en mayuscula y se llaman tokens
-
-Todos los nombres de tokens (pero no los tokens de carácter literal simple tal como ‘+’ y ‘*’) se deben declarar
-
-
-%token TK_<val> NUM         /* define token (terminal) NUM and its type
-//De forma alternativa, puede utilizar %left, %right, o %nonassoc en lugar de %token, si desea especificar la precedencia.
-%type <str> nonterminal   /*define NON terminal symbol, porque usamos %type
 
 
 Reglas gramaticales
