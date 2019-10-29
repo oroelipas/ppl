@@ -16,21 +16,20 @@ void yyerror(const char *s);
 
 %start ty_desc_algoritmo
 
+
+
 %token TK_PARENTESIS_INICIAL
 %token TK_PARENTESIS_FINAL
-%nonassoc <str> TK_OP_RELACIONAL
 %token TK_IGUAL
-%token <caracter> TK_OP_ARITMETICO
 %token TK_ASIGNACION
 %token TK_PUNTOYCOMA
 %token TK_SEPARADOR
 %token TK_SUBRANGO
 %token TK_TIPO_VAR
-%token TK_PUNTO
 %token TK_ENTONCES
 %token TK_SINOSI
-%token TK_INICIO_ARRAY
 %token TK_FIN_ARRAY
+
 
 %token TK_PR_ACCION
 %token TK_PR_ALGORITMO
@@ -58,18 +57,14 @@ void yyerror(const char *s);
 %token TK_PR_HACER
 %token TK_PR_HASTA
 %token TK_PR_MIENTRAS
-%token TK_PR_NO
-%token TK_PR_O
 %token TK_PR_PARA
 %token TK_PR_REAL
-%token TK_PR_REF
 %token TK_PR_SAL
 %token TK_PR_SI
 %token TK_PR_TABLA
 %token TK_PR_TIPO
 %token TK_PR_TUPLA
 %token TK_PR_VAR
-%token TK_PR_Y
 %token TK_COMENTARIO
 /* TK_CADENA DE MOMENTO EN LA GRAMATICA NO SE USA*/
 %token <str> TK_CADENA 
@@ -78,6 +73,20 @@ void yyerror(const char *s);
 %token <doble> TK_ENTERO
 %token <doble> TK_REAL
 %token <entero> TK_BOOLEANO
+
+
+%precedence TK_NADA_PRIORITARIO
+%left TK_PR_O 
+%left TK_PR_Y
+/*no todos los TK_OP_RELACIONAL pueden usarse para boolenaos, solo = y <>.  PERO NO <,>,=>,=<*/
+%nonassoc <str> TK_OP_RELACIONAL
+%left <caracter> TK_OP_ARITMETICO
+%nonassoc TK_PR_NO
+/*TK_INICIO_ARRAY es left para cuando estamos en un estado a[b].[c] para que se reduzca a[b] y no siga leyendo [c]*/
+%left TK_INICIO_ARRAY 
+%left TK_PUNTO
+%left TK_PR_REF
+%precedence TK_MUY_PRIORITARIO
 
 
 %type <str> ty_desc_algoritmo
@@ -186,7 +195,7 @@ ty_d_tipo:
     ;
 
 ty_expresion_t:
-      ty_expresion{printf("\n");}
+      ty_expresion {printf("\n");}
     | TK_CARACTER{printf("\n");}/*AQUI NO HAY CADENAS?????? ENTONCES NO SE PUEDE HACER a:= "hola"   */
     ;
 
@@ -211,8 +220,8 @@ ty_lista_d_cte:/*esto de ty_tipo_base lo hemos cambiado por "literal"*/
 ty_lista_d_var:
       /*PROBABLEMENTE HAYA QUE QUITAR LA PRIMERA REGLA PORQUE UN ty_d_tipo YA PUEDE SER UN IDENTIFICADOR Y POR ESO ESTA
       EL CONFLICTO SHIFT/REDUCE. MEJOR IDENTIFICARLO SIEMRE COMO QUE ES UN ty_d_tipo Y NO HACER UNA REGLA ESPECIAL PARA EL IDENTIFICADOR*/
-      ty_lista_id TK_TIPO_VAR TK_IDENTIFICADOR TK_PUNTOYCOMA ty_lista_d_var {printf("\n");}
-    | ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var {printf("\n");}
+      /*ty_lista_id TK_TIPO_VAR TK_IDENTIFICADOR TK_PUNTOYCOMA ty_lista_d_var {printf("\n");}
+    |*/ ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var {printf("\n");}
     | /*vacio*/{printf("\n");}
     ;
 ty_lista_id:
@@ -235,7 +244,7 @@ ty_expresion:
     /*porque hay expresiones de cadena ni de caracter???
     no se puede hacer a:= "hola"   ???????????????????*/
       ty_exp_a {printf("\n");}
-    | ty_exp_b {printf("\n");}
+    | ty_exp_b %prec TK_NADA_PRIORITARIO{printf("\n");} /*ESTO NO TIENE QUE FUNCIONAR ASI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
     | ty_funcion_ll {printf("\n");}
     ;
 ty_exp_a:
@@ -259,20 +268,6 @@ ty_op_arit:
     */
 
 ty_exp_b:
-    /*
-    
-    AQUI TENEMOS UN CONFLICTO SHIFT/REDUCE:
-    EN CASO DE HACER REDUCE EN CUANTO LEYESEMOS UN BOOLEANO SE CONVERTIRA A EXPRESION 
-    PERO NO QUEREMOS ESTO HASTA QUE NO HAYAMOS LEIDO TODA LA LISTA DE OP_RELACIONALES DE BOOLEANOS
-    
-    QUEREMOS QUE 'y' Y 'o' SEAN ASOCIATIVOS ENTRE SI MISMOS PERO NO ENTRE EL OTRO:
-    QUE SE PUEDA ESCRIBIR: var1 Y var2 Y var3....
-                           var1 O var2 O var3....
-                  PERO NO: var1 Y var2 O var3
-        
-    IGUAL HAY QUE HACER DOS NO-TERMINALES MAS?? QUE SEAN ty_lista_de_Y Y ty_lista_de_O?????????????
-    
-    */
       ty_exp_b TK_PR_Y ty_exp_b {printf("\n");}/*AQUI IGUAL SE PUEDEN DEFINIR OP_LOGICO: CUYOS VALORES SEAN Y,O*/
     | ty_exp_b TK_PR_O ty_exp_b {printf("\n");}
     | TK_PR_NO ty_exp_b {printf("\n");}
@@ -282,7 +277,8 @@ ty_exp_b:
     | ty_expresion TK_OP_RELACIONAL ty_expresion {printf("\n");}
     | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL {printf("\n");}
     ;
-
+    
+    
 ty_operando:
     /*AQUI EN EL CONFLICTO SUPONGO QUE HABRA QUE HACER UN SHIFT POR PURA ASOCIATIVIDAD, PARA REDUCIR LA PILA.
     ADEMAS ES EL MODO DE ACCEDER A LAS VARIABLES: SI TIENES variable1.variable2[variable3] PRIMERO HABRA QUE IR DE FUERA HACIA ADENTRO Y REDUCIR variable1.variable2 A UNA SOLA VARIABLE (variable12) PARA LUEGO ACCEDER A ESA VARIABLE variable12[variable3]*/
@@ -291,6 +287,7 @@ ty_operando:
     | ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY {printf("\n");}
     | ty_operando TK_PR_REF {printf("\n");}
     ;
+    
 
 ty_instrucciones:
       ty_instruccion TK_PUNTOYCOMA ty_instrucciones {printf("\n");}
@@ -397,8 +394,10 @@ void yyerror(const char *s) {
 
 /*
 
-https://stackoverflow.com/questions/17590190/shift-reduce-conflicts-in-bison
+PARA LOS - UNITARIOS:
+https://www.gnu.org/software/bison/manual/html_node/Contextual-Precedence.html
 
+S
 PORQUE LA PRODUCCION DE UN ALGORITMO TIENE UN PUNTO AL FINAL????????????????????????
 
 
