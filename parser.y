@@ -80,8 +80,10 @@ void yyerror(const char *s);
 %left TK_PR_Y
 /*no todos los TK_OP_RELACIONAL pueden usarse para boolenaos, solo = y <>.  PERO NO <,>,=>,=<*/
 %nonassoc <str> TK_OP_RELACIONAL
-%left <caracter> TK_OP_ARITMETICO
 %nonassoc TK_PR_NO
+%left TK_MAS TK_MENOS
+%left TK_MULT TK_DIV TK_DIV_ENT TK_MOD
+%left TK_MENOS_U
 /*TK_INICIO_ARRAY es left para cuando estamos en un estado a[b].[c] para que se reduzca a[b] y no siga leyendo [c]*/
 %left TK_INICIO_ARRAY 
 %left TK_PUNTO
@@ -248,24 +250,18 @@ ty_expresion:
     | ty_funcion_ll {printf("\n");}
     ;
 ty_exp_a:
-    /*AQUI ESTA EL TIIIIPICO CONFLICTO S/R. DEPENDE DE LA PREFERENCIA DE OPERADORES HABRA QUE HACER SHIT O REDUCE.
-    HAY QUE DEFINIR QUE * Y / SON MAS PRIORITARIOS QUE + Y -. PERO DE MOMENTO TODOS SON EL MISMO TOKEN Y NO SE SI ESO ES LO MEJOR.
-    IGUAL SERIA BUENA IDEA QUE AL MENOS HUBIESE UN TOKEN PARA NIVEL DE PREFERENCIA: UNO PARA * Y / , Y OTRO PARA + Y -*/
-      ty_exp_a TK_OP_ARITMETICO ty_exp_a {printf("\n");}
+      ty_exp_a TK_MAS ty_exp_a {printf("\n");}
+    | ty_exp_a TK_MENOS ty_exp_a {printf("\n");}
+    | ty_exp_a TK_MULT ty_exp_a {printf("\n");}
+    | ty_exp_a TK_DIV ty_exp_a {printf("\n");}
+    | ty_exp_a TK_MOD ty_exp_a {printf("\n");}
+    | ty_exp_a TK_DIV_ENT ty_exp_a {printf("\n");}
     | TK_PARENTESIS_INICIAL ty_exp_a TK_PARENTESIS_FINAL {printf("\n");}
     | ty_operando {printf("\n");}
     | TK_ENTERO {printf("\n");}
     | TK_REAL {printf("\n");}
-    | TK_OP_ARITMETICO ty_exp_a {/*SOLO TIENE QUE ENTRAR AQUI SI EL OP_ARIT ES UN MENOS*/}
+    | TK_MENOS ty_exp_a %prec TK_MENOS_U {/*SOLO TIENE QUE ENTRAR AQUI SI EL OP_ARIT ES UN MENOS*/}
     ;
-    /*
-    opcion: definir aparte el token menos en flex y hacer que bison tenga producciones para saber lo que es un op_arit
-    y que el tk_menos deje de ser un operador aritmetico
-ty_op_arit:
-    TK_OP_ARITMETICO {printf("\n");}
-    | TK_MENOS {printf("\n");}
-    ;
-    */
 
 ty_exp_b:
       ty_exp_b TK_PR_Y ty_exp_b {printf("\n");}/*AQUI IGUAL SE PUEDEN DEFINIR OP_LOGICO: CUYOS VALORES SEAN Y,O*/

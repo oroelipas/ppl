@@ -139,32 +139,32 @@ dr_entrada_a_omitir [\n\t ]
 {dr_op_arit_suma} {
     printf("op_aritmetico (+)\n");
     yylval.caracter = yytext[0];
-    return TK_OP_ARITMETICO;
+    return TK_MAS;
 }
 {dr_op_arit_resta} {
     printf("op_aritmetico (-)\n");
     yylval.caracter = yytext[0];
-    return TK_OP_ARITMETICO;
+    return TK_MENOS;
 }
 {dr_op_arit_mult} {
     printf("op_aritmetico (*)\n");
     yylval.caracter = yytext[0];
-    return TK_OP_ARITMETICO;
+    return TK_MULT;
 }
 {dr_op_arit_div} {
     printf("op_aritmetico (/)\n");
     yylval.caracter = yytext[0];
-    return TK_OP_ARITMETICO;
+    return TK_DIV;
 }
 {dr_op_arit_mod} {
     printf("op_aritmetico (mod)\n");
     yylval.caracter = yytext[0];//ESTO VA A DEVOLVER UNA 'M'
-    return TK_OP_ARITMETICO;
+    return TK_MOD;
 }
 {dr_op_arit_div_ent} {
     printf("op_aritmetico (div)\n");
     yylval.caracter = yytext[0];//ESTO VA A DEVOLVER UNA 'D'
-    return TK_OP_ARITMETICO;
+    return TK_DIV_ENT;
 }
 
 
