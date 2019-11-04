@@ -4,11 +4,6 @@ Terminales no usados en la gramática
    TK_MUY_PRIORITARIO
 
 
-Estado 126 conflictos: 1 reducción/reducción
-Estado 166 conflictos: 1 reducción/reducción
-Estado 167 conflictos: 1 reducción/reducción
-
-
 Gramática
 
     0 $accept: ty_desc_algoritmo $end
@@ -81,118 +76,123 @@ Gramática
 
    46 ty_expresion: ty_exp_a
    47             | ty_exp_b
-   48             | ty_funcion_ll
+   48             | ty_expresion TK_OP_RELACIONAL ty_expresion
+   49             | ty_funcion_ll
 
-   49 ty_exp_a: ty_exp_a TK_OP_ARITMETICO ty_exp_a
-   50         | TK_PARENTESIS_INICIAL ty_exp_a TK_PARENTESIS_FINAL
-   51         | ty_operando
-   52         | TK_ENTERO
-   53         | TK_REAL
-   54         | TK_OP_ARITMETICO ty_exp_a
+   50 ty_exp_a: ty_exp_a TK_MAS ty_exp_a
+   51         | ty_exp_a TK_MENOS ty_exp_a
+   52         | ty_exp_a TK_MULT ty_exp_a
+   53         | ty_exp_a TK_DIV ty_exp_a
+   54         | ty_exp_a TK_MOD ty_exp_a
+   55         | ty_exp_a TK_DIV_ENT ty_exp_a
+   56         | TK_PARENTESIS_INICIAL ty_exp_a TK_PARENTESIS_FINAL
+   57         | ty_operando
+   58         | TK_ENTERO
+   59         | TK_REAL
+   60         | TK_MENOS ty_exp_a
 
-   55 ty_exp_b: ty_exp_b TK_PR_Y ty_exp_b
-   56         | ty_exp_b TK_PR_O ty_exp_b
-   57         | TK_PR_NO ty_exp_b
-   58         | TK_BOOLEANO
-   59         | ty_expresion TK_OP_RELACIONAL ty_expresion
-   60         | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL
+   61 ty_exp_b: ty_exp_b TK_PR_Y ty_exp_b
+   62         | ty_exp_b TK_PR_O ty_exp_b
+   63         | TK_PR_NO ty_exp_b
+   64         | TK_BOOLEANO
+   65         | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL
 
-   61 ty_operando: TK_IDENTIFICADOR
-   62            | ty_operando TK_PUNTO ty_operando
-   63            | ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY
-   64            | ty_operando TK_PR_REF
+   66 ty_operando: TK_IDENTIFICADOR
+   67            | ty_operando TK_PUNTO ty_operando
+   68            | ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY
+   69            | ty_operando TK_PR_REF
 
-   65 ty_instrucciones: ty_instruccion TK_PUNTOYCOMA ty_instrucciones
-   66                 | ty_instruccion
+   70 ty_instrucciones: ty_instruccion TK_PUNTOYCOMA ty_instrucciones
+   71                 | ty_instruccion
 
-   67 ty_instruccion: TK_PR_CONTINUAR
-   68               | ty_asignacion
-   69               | ty_alternativa
-   70               | ty_iteracion
-   71               | ty_accion_ll
+   72 ty_instruccion: TK_PR_CONTINUAR
+   73               | ty_asignacion
+   74               | ty_alternativa
+   75               | ty_iteracion
+   76               | ty_accion_ll
 
-   72 ty_asignacion: ty_operando TK_ASIGNACION ty_expresion
+   77 ty_asignacion: ty_operando TK_ASIGNACION ty_expresion
 
-   73 ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI
+   78 ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI
 
-   74 ty_lista_opciones: TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones
-   75                  | %empty
+   79 ty_lista_opciones: TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones
+   80                  | %empty
 
-   76 ty_iteracion: ty_it_cota_fija
-   77             | ty_it_cota_exp
+   81 ty_iteracion: ty_it_cota_fija
+   82             | ty_it_cota_exp
 
-   78 ty_it_cota_exp: TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS
+   83 ty_it_cota_exp: TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS
 
-   79 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
+   84 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
 
-   80 ty_accion_d: TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION
+   85 ty_accion_d: TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION
 
-   81 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION
+   86 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION
 
-   82 ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA
+   87 ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA
 
-   83 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA
+   88 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA
 
-   84 ty_d_par_form: ty_d_p_form TK_PUNTOYCOMA ty_d_par_form
-   85              | %empty
+   89 ty_d_par_form: ty_d_p_form TK_PUNTOYCOMA ty_d_par_form
+   90              | %empty
 
-   86 ty_d_p_form: TK_PR_ENT ty_lista_id TK_TIPO_VAR ty_d_tipo
-   87            | TK_PR_SAL ty_lista_id TK_TIPO_VAR ty_d_tipo
-   88            | TK_PR_ES ty_lista_id TK_TIPO_VAR ty_d_tipo
+   91 ty_d_p_form: TK_PR_ENT ty_lista_id TK_TIPO_VAR ty_d_tipo
+   92            | TK_PR_SAL ty_lista_id TK_TIPO_VAR ty_d_tipo
+   93            | TK_PR_ES ty_lista_id TK_TIPO_VAR ty_d_tipo
 
-   89 ty_accion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL
+   94 ty_accion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL
 
-   90 ty_funcion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL
+   95 ty_funcion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL
 
-   91 ty_l_ll: ty_expresion TK_SEPARADOR ty_l_ll
-   92        | ty_expresion
+   96 ty_l_ll: ty_expresion TK_SEPARADOR ty_l_ll
+   97        | ty_expresion
 
 
 Terminales con las reglas donde aparecen
 
 $end (0) 0
 error (256)
-TK_PARENTESIS_INICIAL (258) 50 60 82 83 89 90
-TK_PARENTESIS_FINAL (259) 50 60 82 83 89 90
+TK_PARENTESIS_INICIAL (258) 56 65 87 88 94 95
+TK_PARENTESIS_FINAL (259) 56 65 87 88 94 95
 TK_IGUAL (260) 18 35
-TK_ASIGNACION (261) 72 79
-TK_PUNTOYCOMA (262) 1 15 16 17 18 28 35 37 65 82 83 84
-TK_SEPARADOR (263) 39 91
+TK_ASIGNACION (261) 77 84
+TK_PUNTOYCOMA (262) 1 15 16 17 18 28 35 37 70 87 88 89
+TK_SEPARADOR (263) 39 96
 TK_SUBRANGO (264) 21 23
-TK_TIPO_VAR (265) 28 37 86 87 88
-TK_ENTONCES (266) 73 74
-TK_SINOSI (267) 74
-TK_FIN_ARRAY (268) 21 63
-TK_PR_ACCION (269) 80
+TK_TIPO_VAR (265) 28 37 91 92 93
+TK_ENTONCES (266) 78 79
+TK_SINOSI (267) 79
+TK_FIN_ARRAY (268) 21 68
+TK_PR_ACCION (269) 85
 TK_PR_ALGORITMO (270) 1
 TK_PR_BOOLEANO (271) 30
 TK_PR_CADENA (272) 34
 TK_PR_CARACTER (273) 32
 TK_PR_CONST (274) 16
-TK_PR_CONTINUAR (275) 67
+TK_PR_CONTINUAR (275) 72
 TK_PR_DE (276) 21
-TK_PR_DEV (277) 81 83
-TK_PR_ENT (278) 44 86
+TK_PR_DEV (277) 86 88
+TK_PR_ENT (278) 44 91
 TK_PR_ENTERO (279) 31
-TK_PR_ES (280) 88
-TK_PR_FACCION (281) 80
+TK_PR_ES (280) 93
+TK_PR_FACCION (281) 85
 TK_PR_FALGORITMO (282) 1
 TK_PR_FCONST (283) 16
-TK_PR_FFUNCION (284) 81
-TK_PR_FMIENTRAS (285) 78
-TK_PR_FPARA (286) 79
-TK_PR_FSI (287) 73
+TK_PR_FFUNCION (284) 86
+TK_PR_FMIENTRAS (285) 83
+TK_PR_FPARA (286) 84
+TK_PR_FSI (287) 78
 TK_PR_FTIPO (288) 15
 TK_PR_FTUPLA (289) 20
-TK_PR_FUNCION (290) 81
+TK_PR_FUNCION (290) 86
 TK_PR_FVAR (291) 17
-TK_PR_HACER (292) 78 79
-TK_PR_HASTA (293) 79
-TK_PR_MIENTRAS (294) 78
-TK_PR_PARA (295) 79
+TK_PR_HACER (292) 83 84
+TK_PR_HASTA (293) 84
+TK_PR_MIENTRAS (294) 83
+TK_PR_PARA (295) 84
 TK_PR_REAL (296) 33
-TK_PR_SAL (297) 45 87
-TK_PR_SI (298) 73
+TK_PR_SAL (297) 45 92
+TK_PR_SI (298) 78
 TK_PR_TABLA (299) 21
 TK_PR_TIPO (300) 15
 TK_PR_TUPLA (301) 20
@@ -200,113 +200,119 @@ TK_PR_VAR (302) 17
 TK_COMENTARIO (303) 2 3
 TK_CADENA (304)
 TK_CARACTER (305) 27
-TK_IDENTIFICADOR (306) 1 18 22 28 35 39 40 61 79 82 83 89 90
-TK_ENTERO (307) 52
-TK_REAL (308) 53
-TK_BOOLEANO (309) 58
+TK_IDENTIFICADOR (306) 1 18 22 28 35 39 40 66 84 87 88 94 95
+TK_ENTERO (307) 58
+TK_REAL (308) 59
+TK_BOOLEANO (309) 64
 TK_NADA_PRIORITARIO (310)
-TK_PR_O (311) 56
-TK_PR_Y (312) 55
-TK_OP_RELACIONAL (313) 59
-TK_OP_ARITMETICO (314) 49 54
-TK_PR_NO (315) 57
-TK_INICIO_ARRAY (316) 21 63
-TK_PUNTO (317) 62
-TK_PR_REF (318) 24 64
-TK_MUY_PRIORITARIO (319)
+TK_PR_O (311) 62
+TK_PR_Y (312) 61
+TK_OP_RELACIONAL (313) 48
+TK_PR_NO (314) 63
+TK_MAS (315) 50
+TK_MENOS (316) 51 60
+TK_MULT (317) 52
+TK_DIV (318) 53
+TK_DIV_ENT (319) 55
+TK_MOD (320) 54
+TK_MENOS_U (321)
+TK_INICIO_ARRAY (322) 21 68
+TK_PUNTO (323) 67
+TK_PR_REF (324) 24 69
+TK_MUY_PRIORITARIO (325)
 
 
 No terminales con las reglas donde aparecen
 
-$accept (65)
+$accept (71)
     en la izquierda: 0
-ty_desc_algoritmo (66)
+ty_desc_algoritmo (72)
     en la izquierda: 1, en la derecha: 0
-ty_cabecera_alg (67)
+ty_cabecera_alg (73)
     en la izquierda: 2, en la derecha: 1
-ty_bloque_alg (68)
+ty_bloque_alg (74)
     en la izquierda: 3, en la derecha: 1
-ty_decl_globales (69)
+ty_decl_globales (75)
     en la izquierda: 4 5 6, en la derecha: 2 4 5
-ty_decl_a_f (70)
+ty_decl_a_f (76)
     en la izquierda: 7 8 9, en la derecha: 2 7 8
-ty_bloque (71)
-    en la izquierda: 10, en la derecha: 3 80 81
-ty_declaraciones (72)
+ty_bloque (77)
+    en la izquierda: 10, en la derecha: 3 85 86
+ty_declaraciones (78)
     en la izquierda: 11 12 13 14, en la derecha: 10 11 12 13
-ty_decl_tipo (73)
+ty_decl_tipo (79)
     en la izquierda: 15, en la derecha: 4 11
-ty_decl_cte (74)
+ty_decl_cte (80)
     en la izquierda: 16, en la derecha: 5 12
-ty_decl_var (75)
+ty_decl_var (81)
     en la izquierda: 17, en la derecha: 13
-ty_lista_d_tipo (76)
+ty_lista_d_tipo (82)
     en la izquierda: 18 19, en la derecha: 15 18
-ty_d_tipo (77)
+ty_d_tipo (83)
     en la izquierda: 20 21 22 23 24 25, en la derecha: 18 21 24 28
-    37 83 86 87 88
-ty_expresion_t (78)
+    37 88 91 92 93
+ty_expresion_t (84)
     en la izquierda: 26 27, en la derecha: 21 23
-ty_lista_campos (79)
+ty_lista_campos (85)
     en la izquierda: 28 29, en la derecha: 20 28
-ty_tipo_base (80)
+ty_tipo_base (86)
     en la izquierda: 30 31 32 33 34, en la derecha: 25 35
-ty_lista_d_cte (81)
+ty_lista_d_cte (87)
     en la izquierda: 35 36, en la derecha: 16 35
-ty_lista_d_var (82)
-    en la izquierda: 37 38, en la derecha: 17 37 44 45 83
-ty_lista_id (83)
-    en la izquierda: 39 40, en la derecha: 37 39 86 87 88
-ty_decl_ent_sal (84)
+ty_lista_d_var (88)
+    en la izquierda: 37 38, en la derecha: 17 37 44 45 88
+ty_lista_id (89)
+    en la izquierda: 39 40, en la derecha: 37 39 91 92 93
+ty_decl_ent_sal (90)
     en la izquierda: 41 42 43, en la derecha: 2
-ty_decl_ent (85)
+ty_decl_ent (91)
     en la izquierda: 44, en la derecha: 41 42
-ty_decl_sal (86)
+ty_decl_sal (92)
     en la izquierda: 45, en la derecha: 42 43
-ty_expresion (87)
-    en la izquierda: 46 47 48, en la derecha: 26 59 63 72 73 74 78
-    79 81 91 92
-ty_exp_a (88)
-    en la izquierda: 49 50 51 52 53 54, en la derecha: 46 49 50 54
-ty_exp_b (89)
-    en la izquierda: 55 56 57 58 59 60, en la derecha: 47 55 56 57
-    60
-ty_operando (90)
-    en la izquierda: 61 62 63 64, en la derecha: 51 62 63 64 72
-ty_instrucciones (91)
-    en la izquierda: 65 66, en la derecha: 10 65 73 74 78 79
-ty_instruccion (92)
-    en la izquierda: 67 68 69 70 71, en la derecha: 65 66
-ty_asignacion (93)
-    en la izquierda: 72, en la derecha: 68
-ty_alternativa (94)
-    en la izquierda: 73, en la derecha: 69
-ty_lista_opciones (95)
-    en la izquierda: 74 75, en la derecha: 73 74
-ty_iteracion (96)
-    en la izquierda: 76 77, en la derecha: 70
-ty_it_cota_exp (97)
-    en la izquierda: 78, en la derecha: 77
-ty_it_cota_fija (98)
-    en la izquierda: 79, en la derecha: 76
-ty_accion_d (99)
-    en la izquierda: 80, en la derecha: 7
-ty_funcion_d (100)
-    en la izquierda: 81, en la derecha: 8
-ty_a_cabecera (101)
-    en la izquierda: 82, en la derecha: 80
-ty_f_cabecera (102)
-    en la izquierda: 83, en la derecha: 81
-ty_d_par_form (103)
-    en la izquierda: 84 85, en la derecha: 82 84
-ty_d_p_form (104)
-    en la izquierda: 86 87 88, en la derecha: 84
-ty_accion_ll (105)
-    en la izquierda: 89, en la derecha: 71
-ty_funcion_ll (106)
-    en la izquierda: 90, en la derecha: 48
-ty_l_ll (107)
-    en la izquierda: 91 92, en la derecha: 89 90 91
+ty_expresion (93)
+    en la izquierda: 46 47 48 49, en la derecha: 26 48 68 77 78 79
+    83 84 86 96 97
+ty_exp_a (94)
+    en la izquierda: 50 51 52 53 54 55 56 57 58 59 60, en la derecha:
+    46 50 51 52 53 54 55 56 60
+ty_exp_b (95)
+    en la izquierda: 61 62 63 64 65, en la derecha: 47 61 62 63 65
+ty_operando (96)
+    en la izquierda: 66 67 68 69, en la derecha: 57 67 68 69 77
+ty_instrucciones (97)
+    en la izquierda: 70 71, en la derecha: 10 70 78 79 83 84
+ty_instruccion (98)
+    en la izquierda: 72 73 74 75 76, en la derecha: 70 71
+ty_asignacion (99)
+    en la izquierda: 77, en la derecha: 73
+ty_alternativa (100)
+    en la izquierda: 78, en la derecha: 74
+ty_lista_opciones (101)
+    en la izquierda: 79 80, en la derecha: 78 79
+ty_iteracion (102)
+    en la izquierda: 81 82, en la derecha: 75
+ty_it_cota_exp (103)
+    en la izquierda: 83, en la derecha: 82
+ty_it_cota_fija (104)
+    en la izquierda: 84, en la derecha: 81
+ty_accion_d (105)
+    en la izquierda: 85, en la derecha: 7
+ty_funcion_d (106)
+    en la izquierda: 86, en la derecha: 8
+ty_a_cabecera (107)
+    en la izquierda: 87, en la derecha: 85
+ty_f_cabecera (108)
+    en la izquierda: 88, en la derecha: 86
+ty_d_par_form (109)
+    en la izquierda: 89 90, en la derecha: 87 89
+ty_d_p_form (110)
+    en la izquierda: 91 92 93, en la derecha: 89
+ty_accion_ll (111)
+    en la izquierda: 94, en la derecha: 76
+ty_funcion_ll (112)
+    en la izquierda: 95, en la derecha: 49
+ty_l_ll (113)
+    en la izquierda: 96 97, en la derecha: 94 95 96
 
 
 Estado 0
@@ -568,7 +574,7 @@ Estado 22
 
 Estado 23
 
-   80 ty_accion_d: TK_PR_ACCION . ty_a_cabecera ty_bloque TK_PR_FACCION
+   85 ty_accion_d: TK_PR_ACCION . ty_a_cabecera ty_bloque TK_PR_FACCION
 
     TK_IDENTIFICADOR  desplazar e ir al estado 56
 
@@ -577,7 +583,7 @@ Estado 23
 
 Estado 24
 
-   81 ty_funcion_d: TK_PR_FUNCION . ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION
+   86 ty_funcion_d: TK_PR_FUNCION . ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION
 
     TK_IDENTIFICADOR  desplazar e ir al estado 58
 
@@ -675,8 +681,8 @@ Estado 32
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
     TK_PR_REF              desplazar e ir al estado 84
 
     ty_d_tipo       ir al estado 85
@@ -736,22 +742,22 @@ Estado 38
 
 Estado 39
 
-   67 ty_instruccion: TK_PR_CONTINUAR .
+   72 ty_instruccion: TK_PR_CONTINUAR .
 
-    $default  reduce usando la regla 67 (ty_instruccion)
+    $default  reduce usando la regla 72 (ty_instruccion)
 
 
 Estado 40
 
-   78 ty_it_cota_exp: TK_PR_MIENTRAS . ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS
+   83 ty_it_cota_exp: TK_PR_MIENTRAS . ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
     TK_IDENTIFICADOR       desplazar e ir al estado 97
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
     ty_expresion   ir al estado 98
     ty_exp_a       ir al estado 89
@@ -762,22 +768,22 @@ Estado 40
 
 Estado 41
 
-   79 ty_it_cota_fija: TK_PR_PARA . TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
+   84 ty_it_cota_fija: TK_PR_PARA . TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
 
     TK_IDENTIFICADOR  desplazar e ir al estado 99
 
 
 Estado 42
 
-   73 ty_alternativa: TK_PR_SI . ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI
+   78 ty_alternativa: TK_PR_SI . ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
     TK_IDENTIFICADOR       desplazar e ir al estado 97
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
     ty_expresion   ir al estado 100
     ty_exp_a       ir al estado 89
@@ -788,20 +794,20 @@ Estado 42
 
 Estado 43
 
-   61 ty_operando: TK_IDENTIFICADOR .
-   89 ty_accion_ll: TK_IDENTIFICADOR . TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL
+   66 ty_operando: TK_IDENTIFICADOR .
+   94 ty_accion_ll: TK_IDENTIFICADOR . TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 101
 
-    $default  reduce usando la regla 61 (ty_operando)
+    $default  reduce usando la regla 66 (ty_operando)
 
 
 Estado 44
 
-   62 ty_operando: ty_operando . TK_PUNTO ty_operando
-   63            | ty_operando . TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY
-   64            | ty_operando . TK_PR_REF
-   72 ty_asignacion: ty_operando . TK_ASIGNACION ty_expresion
+   67 ty_operando: ty_operando . TK_PUNTO ty_operando
+   68            | ty_operando . TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY
+   69            | ty_operando . TK_PR_REF
+   77 ty_asignacion: ty_operando . TK_ASIGNACION ty_expresion
 
     TK_ASIGNACION    desplazar e ir al estado 102
     TK_INICIO_ARRAY  desplazar e ir al estado 103
@@ -818,54 +824,54 @@ Estado 45
 
 Estado 46
 
-   65 ty_instrucciones: ty_instruccion . TK_PUNTOYCOMA ty_instrucciones
-   66                 | ty_instruccion .
+   70 ty_instrucciones: ty_instruccion . TK_PUNTOYCOMA ty_instrucciones
+   71                 | ty_instruccion .
 
     TK_PUNTOYCOMA  desplazar e ir al estado 106
 
-    $default  reduce usando la regla 66 (ty_instrucciones)
+    $default  reduce usando la regla 71 (ty_instrucciones)
 
 
 Estado 47
 
-   68 ty_instruccion: ty_asignacion .
+   73 ty_instruccion: ty_asignacion .
 
-    $default  reduce usando la regla 68 (ty_instruccion)
+    $default  reduce usando la regla 73 (ty_instruccion)
 
 
 Estado 48
 
-   69 ty_instruccion: ty_alternativa .
+   74 ty_instruccion: ty_alternativa .
 
-    $default  reduce usando la regla 69 (ty_instruccion)
+    $default  reduce usando la regla 74 (ty_instruccion)
 
 
 Estado 49
 
-   70 ty_instruccion: ty_iteracion .
+   75 ty_instruccion: ty_iteracion .
 
-    $default  reduce usando la regla 70 (ty_instruccion)
+    $default  reduce usando la regla 75 (ty_instruccion)
 
 
 Estado 50
 
-   77 ty_iteracion: ty_it_cota_exp .
+   82 ty_iteracion: ty_it_cota_exp .
 
-    $default  reduce usando la regla 77 (ty_iteracion)
+    $default  reduce usando la regla 82 (ty_iteracion)
 
 
 Estado 51
 
-   76 ty_iteracion: ty_it_cota_fija .
+   81 ty_iteracion: ty_it_cota_fija .
 
-    $default  reduce usando la regla 76 (ty_iteracion)
+    $default  reduce usando la regla 81 (ty_iteracion)
 
 
 Estado 52
 
-   71 ty_instruccion: ty_accion_ll .
+   76 ty_instruccion: ty_accion_ll .
 
-    $default  reduce usando la regla 71 (ty_instruccion)
+    $default  reduce usando la regla 76 (ty_instruccion)
 
 
 Estado 53
@@ -891,14 +897,14 @@ Estado 55
 
 Estado 56
 
-   82 ty_a_cabecera: TK_IDENTIFICADOR . TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA
+   87 ty_a_cabecera: TK_IDENTIFICADOR . TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 107
 
 
 Estado 57
 
-   80 ty_accion_d: TK_PR_ACCION ty_a_cabecera . ty_bloque TK_PR_FACCION
+   85 ty_accion_d: TK_PR_ACCION ty_a_cabecera . ty_bloque TK_PR_FACCION
 
     TK_PR_CONST  desplazar e ir al estado 6
     TK_PR_TIPO   desplazar e ir al estado 7
@@ -915,14 +921,14 @@ Estado 57
 
 Estado 58
 
-   83 ty_f_cabecera: TK_IDENTIFICADOR . TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA
+   88 ty_f_cabecera: TK_IDENTIFICADOR . TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 109
 
 
 Estado 59
 
-   81 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera . ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION
+   86 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera . ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION
 
     TK_PR_CONST  desplazar e ir al estado 6
     TK_PR_TIPO   desplazar e ir al estado 7
@@ -1052,22 +1058,20 @@ Estado 73
 
 Estado 74
 
-   50 ty_exp_a: TK_PARENTESIS_INICIAL . ty_exp_a TK_PARENTESIS_FINAL
-   60 ty_exp_b: TK_PARENTESIS_INICIAL . ty_exp_b TK_PARENTESIS_FINAL
+   56 ty_exp_a: TK_PARENTESIS_INICIAL . ty_exp_a TK_PARENTESIS_FINAL
+   65 ty_exp_b: TK_PARENTESIS_INICIAL . ty_exp_b TK_PARENTESIS_FINAL
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
-    TK_IDENTIFICADOR       desplazar e ir al estado 97
+    TK_IDENTIFICADOR       desplazar e ir al estado 116
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion   ir al estado 116
-    ty_exp_a       ir al estado 117
-    ty_exp_b       ir al estado 118
-    ty_operando    ir al estado 91
-    ty_funcion_ll  ir al estado 92
+    ty_exp_a     ir al estado 117
+    ty_exp_b     ir al estado 118
+    ty_operando  ir al estado 91
 
 
 Estado 75
@@ -1098,67 +1102,59 @@ Estado 77
 Estado 78
 
    22 ty_d_tipo: TK_IDENTIFICADOR .
-   61 ty_operando: TK_IDENTIFICADOR .
-   90 ty_funcion_ll: TK_IDENTIFICADOR . TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL
+   66 ty_operando: TK_IDENTIFICADOR .
+   95 ty_funcion_ll: TK_IDENTIFICADOR . TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 122
 
     TK_PUNTOYCOMA  reduce usando la regla 22 (ty_d_tipo)
-    $default       reduce usando la regla 61 (ty_operando)
+    $default       reduce usando la regla 66 (ty_operando)
 
 
 Estado 79
 
-   52 ty_exp_a: TK_ENTERO .
+   58 ty_exp_a: TK_ENTERO .
 
-    $default  reduce usando la regla 52 (ty_exp_a)
+    $default  reduce usando la regla 58 (ty_exp_a)
 
 
 Estado 80
 
-   53 ty_exp_a: TK_REAL .
+   59 ty_exp_a: TK_REAL .
 
-    $default  reduce usando la regla 53 (ty_exp_a)
+    $default  reduce usando la regla 59 (ty_exp_a)
 
 
 Estado 81
 
-   58 ty_exp_b: TK_BOOLEANO .
+   64 ty_exp_b: TK_BOOLEANO .
 
-    $default  reduce usando la regla 58 (ty_exp_b)
+    $default  reduce usando la regla 64 (ty_exp_b)
 
 
 Estado 82
 
-   54 ty_exp_a: TK_OP_ARITMETICO . ty_exp_a
+   63 ty_exp_b: TK_PR_NO . ty_exp_b
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 123
-    TK_IDENTIFICADOR       desplazar e ir al estado 124
-    TK_ENTERO              desplazar e ir al estado 79
-    TK_REAL                desplazar e ir al estado 80
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
+    TK_BOOLEANO            desplazar e ir al estado 81
+    TK_PR_NO               desplazar e ir al estado 82
 
-    ty_exp_a     ir al estado 125
-    ty_operando  ir al estado 91
+    ty_exp_b  ir al estado 124
 
 
 Estado 83
 
-   57 ty_exp_b: TK_PR_NO . ty_exp_b
+   60 ty_exp_a: TK_MENOS . ty_exp_a
 
-    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
-    TK_IDENTIFICADOR       desplazar e ir al estado 97
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 125
+    TK_IDENTIFICADOR       desplazar e ir al estado 116
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
-    TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion   ir al estado 116
-    ty_exp_a       ir al estado 89
-    ty_exp_b       ir al estado 126
-    ty_operando    ir al estado 91
-    ty_funcion_ll  ir al estado 92
+    ty_exp_a     ir al estado 126
+    ty_operando  ir al estado 91
 
 
 Estado 84
@@ -1178,8 +1174,8 @@ Estado 84
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
     TK_PR_REF              desplazar e ir al estado 84
 
     ty_d_tipo       ir al estado 127
@@ -1216,7 +1212,7 @@ Estado 87
 Estado 88
 
    26 ty_expresion_t: ty_expresion .
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   48 ty_expresion: ty_expresion . TK_OP_RELACIONAL ty_expresion
 
     TK_OP_RELACIONAL  desplazar e ir al estado 130
 
@@ -1226,9 +1222,19 @@ Estado 88
 Estado 89
 
    46 ty_expresion: ty_exp_a .
-   49 ty_exp_a: ty_exp_a . TK_OP_ARITMETICO ty_exp_a
+   50 ty_exp_a: ty_exp_a . TK_MAS ty_exp_a
+   51         | ty_exp_a . TK_MENOS ty_exp_a
+   52         | ty_exp_a . TK_MULT ty_exp_a
+   53         | ty_exp_a . TK_DIV ty_exp_a
+   54         | ty_exp_a . TK_MOD ty_exp_a
+   55         | ty_exp_a . TK_DIV_ENT ty_exp_a
 
-    TK_OP_ARITMETICO  desplazar e ir al estado 131
+    TK_MAS      desplazar e ir al estado 131
+    TK_MENOS    desplazar e ir al estado 132
+    TK_MULT     desplazar e ir al estado 133
+    TK_DIV      desplazar e ir al estado 134
+    TK_DIV_ENT  desplazar e ir al estado 135
+    TK_MOD      desplazar e ir al estado 136
 
     $default  reduce usando la regla 46 (ty_expresion)
 
@@ -1236,34 +1242,34 @@ Estado 89
 Estado 90
 
    47 ty_expresion: ty_exp_b .
-   55 ty_exp_b: ty_exp_b . TK_PR_Y ty_exp_b
-   56         | ty_exp_b . TK_PR_O ty_exp_b
+   61 ty_exp_b: ty_exp_b . TK_PR_Y ty_exp_b
+   62         | ty_exp_b . TK_PR_O ty_exp_b
 
-    TK_PR_O  desplazar e ir al estado 132
-    TK_PR_Y  desplazar e ir al estado 133
+    TK_PR_O  desplazar e ir al estado 137
+    TK_PR_Y  desplazar e ir al estado 138
 
     $default  reduce usando la regla 47 (ty_expresion)
 
 
 Estado 91
 
-   51 ty_exp_a: ty_operando .
-   62 ty_operando: ty_operando . TK_PUNTO ty_operando
-   63            | ty_operando . TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY
-   64            | ty_operando . TK_PR_REF
+   57 ty_exp_a: ty_operando .
+   67 ty_operando: ty_operando . TK_PUNTO ty_operando
+   68            | ty_operando . TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY
+   69            | ty_operando . TK_PR_REF
 
     TK_INICIO_ARRAY  desplazar e ir al estado 103
     TK_PUNTO         desplazar e ir al estado 104
     TK_PR_REF        desplazar e ir al estado 105
 
-    $default  reduce usando la regla 51 (ty_exp_a)
+    $default  reduce usando la regla 57 (ty_exp_a)
 
 
 Estado 92
 
-   48 ty_expresion: ty_funcion_ll .
+   49 ty_expresion: ty_funcion_ll .
 
-    $default  reduce usando la regla 48 (ty_expresion)
+    $default  reduce usando la regla 49 (ty_expresion)
 
 
 Estado 93
@@ -1279,14 +1285,14 @@ Estado 94
 
     TK_IDENTIFICADOR  desplazar e ir al estado 34
 
-    ty_lista_id  ir al estado 134
+    ty_lista_id  ir al estado 139
 
 
 Estado 95
 
    17 ty_decl_var: TK_PR_VAR ty_lista_d_var TK_PR_FVAR . TK_PUNTOYCOMA
 
-    TK_PUNTOYCOMA  desplazar e ir al estado 135
+    TK_PUNTOYCOMA  desplazar e ir al estado 140
 
 
 Estado 96
@@ -1306,11 +1312,11 @@ Estado 96
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
     TK_PR_REF              desplazar e ir al estado 84
 
-    ty_d_tipo       ir al estado 136
+    ty_d_tipo       ir al estado 141
     ty_expresion_t  ir al estado 86
     ty_tipo_base    ir al estado 87
     ty_expresion    ir al estado 88
@@ -1322,72 +1328,72 @@ Estado 96
 
 Estado 97
 
-   61 ty_operando: TK_IDENTIFICADOR .
-   90 ty_funcion_ll: TK_IDENTIFICADOR . TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL
+   66 ty_operando: TK_IDENTIFICADOR .
+   95 ty_funcion_ll: TK_IDENTIFICADOR . TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 122
 
-    $default  reduce usando la regla 61 (ty_operando)
+    $default  reduce usando la regla 66 (ty_operando)
 
 
 Estado 98
 
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
-   78 ty_it_cota_exp: TK_PR_MIENTRAS ty_expresion . TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS
+   48 ty_expresion: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   83 ty_it_cota_exp: TK_PR_MIENTRAS ty_expresion . TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS
 
-    TK_PR_HACER       desplazar e ir al estado 137
+    TK_PR_HACER       desplazar e ir al estado 142
     TK_OP_RELACIONAL  desplazar e ir al estado 130
 
 
 Estado 99
 
-   79 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR . TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
+   84 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR . TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
 
-    TK_ASIGNACION  desplazar e ir al estado 138
+    TK_ASIGNACION  desplazar e ir al estado 143
 
 
 Estado 100
 
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
-   73 ty_alternativa: TK_PR_SI ty_expresion . TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI
+   48 ty_expresion: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   78 ty_alternativa: TK_PR_SI ty_expresion . TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI
 
-    TK_ENTONCES       desplazar e ir al estado 139
+    TK_ENTONCES       desplazar e ir al estado 144
     TK_OP_RELACIONAL  desplazar e ir al estado 130
 
 
 Estado 101
 
-   89 ty_accion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL . ty_l_ll TK_PARENTESIS_FINAL
+   94 ty_accion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL . ty_l_ll TK_PARENTESIS_FINAL
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
     TK_IDENTIFICADOR       desplazar e ir al estado 97
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion   ir al estado 140
+    ty_expresion   ir al estado 145
     ty_exp_a       ir al estado 89
     ty_exp_b       ir al estado 90
     ty_operando    ir al estado 91
     ty_funcion_ll  ir al estado 92
-    ty_l_ll        ir al estado 141
+    ty_l_ll        ir al estado 146
 
 
 Estado 102
 
-   72 ty_asignacion: ty_operando TK_ASIGNACION . ty_expresion
+   77 ty_asignacion: ty_operando TK_ASIGNACION . ty_expresion
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
     TK_IDENTIFICADOR       desplazar e ir al estado 97
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion   ir al estado 142
+    ty_expresion   ir al estado 147
     ty_exp_a       ir al estado 89
     ty_exp_b       ir al estado 90
     ty_operando    ir al estado 91
@@ -1396,17 +1402,17 @@ Estado 102
 
 Estado 103
 
-   63 ty_operando: ty_operando TK_INICIO_ARRAY . ty_expresion TK_FIN_ARRAY
+   68 ty_operando: ty_operando TK_INICIO_ARRAY . ty_expresion TK_FIN_ARRAY
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
     TK_IDENTIFICADOR       desplazar e ir al estado 97
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion   ir al estado 143
+    ty_expresion   ir al estado 148
     ty_exp_a       ir al estado 89
     ty_exp_b       ir al estado 90
     ty_operando    ir al estado 91
@@ -1415,23 +1421,23 @@ Estado 103
 
 Estado 104
 
-   62 ty_operando: ty_operando TK_PUNTO . ty_operando
+   67 ty_operando: ty_operando TK_PUNTO . ty_operando
 
-    TK_IDENTIFICADOR  desplazar e ir al estado 124
+    TK_IDENTIFICADOR  desplazar e ir al estado 116
 
-    ty_operando  ir al estado 144
+    ty_operando  ir al estado 149
 
 
 Estado 105
 
-   64 ty_operando: ty_operando TK_PR_REF .
+   69 ty_operando: ty_operando TK_PR_REF .
 
-    $default  reduce usando la regla 64 (ty_operando)
+    $default  reduce usando la regla 69 (ty_operando)
 
 
 Estado 106
 
-   65 ty_instrucciones: ty_instruccion TK_PUNTOYCOMA . ty_instrucciones
+   70 ty_instrucciones: ty_instruccion TK_PUNTOYCOMA . ty_instrucciones
 
     TK_PR_CONTINUAR   desplazar e ir al estado 39
     TK_PR_MIENTRAS    desplazar e ir al estado 40
@@ -1440,7 +1446,7 @@ Estado 106
     TK_IDENTIFICADOR  desplazar e ir al estado 43
 
     ty_operando       ir al estado 44
-    ty_instrucciones  ir al estado 145
+    ty_instrucciones  ir al estado 150
     ty_instruccion    ir al estado 46
     ty_asignacion     ir al estado 47
     ty_alternativa    ir al estado 48
@@ -1452,42 +1458,42 @@ Estado 106
 
 Estado 107
 
-   82 ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL . ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA
+   87 ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL . ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA
 
-    TK_PR_ENT  desplazar e ir al estado 146
-    TK_PR_ES   desplazar e ir al estado 147
-    TK_PR_SAL  desplazar e ir al estado 148
+    TK_PR_ENT  desplazar e ir al estado 151
+    TK_PR_ES   desplazar e ir al estado 152
+    TK_PR_SAL  desplazar e ir al estado 153
 
-    $default  reduce usando la regla 85 (ty_d_par_form)
+    $default  reduce usando la regla 90 (ty_d_par_form)
 
-    ty_d_par_form  ir al estado 149
-    ty_d_p_form    ir al estado 150
+    ty_d_par_form  ir al estado 154
+    ty_d_p_form    ir al estado 155
 
 
 Estado 108
 
-   80 ty_accion_d: TK_PR_ACCION ty_a_cabecera ty_bloque . TK_PR_FACCION
+   85 ty_accion_d: TK_PR_ACCION ty_a_cabecera ty_bloque . TK_PR_FACCION
 
-    TK_PR_FACCION  desplazar e ir al estado 151
+    TK_PR_FACCION  desplazar e ir al estado 156
 
 
 Estado 109
 
-   83 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL . ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA
+   88 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL . ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA
 
     TK_IDENTIFICADOR  desplazar e ir al estado 34
 
     $default  reduce usando la regla 38 (ty_lista_d_var)
 
-    ty_lista_d_var  ir al estado 152
+    ty_lista_d_var  ir al estado 157
     ty_lista_id     ir al estado 36
 
 
 Estado 110
 
-   81 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque . TK_PR_DEV ty_expresion TK_PR_FFUNCION
+   86 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque . TK_PR_DEV ty_expresion TK_PR_FFUNCION
 
-    TK_PR_DEV  desplazar e ir al estado 153
+    TK_PR_DEV  desplazar e ir al estado 158
 
 
 Estado 111
@@ -1526,40 +1532,44 @@ Estado 115
 
     $default  reduce usando la regla 36 (ty_lista_d_cte)
 
-    ty_lista_d_cte  ir al estado 154
+    ty_lista_d_cte  ir al estado 159
 
 
 Estado 116
 
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   66 ty_operando: TK_IDENTIFICADOR .
 
-    TK_OP_RELACIONAL  desplazar e ir al estado 130
+    $default  reduce usando la regla 66 (ty_operando)
 
 
 Estado 117
 
-   46 ty_expresion: ty_exp_a .
-   49 ty_exp_a: ty_exp_a . TK_OP_ARITMETICO ty_exp_a
-   50         | TK_PARENTESIS_INICIAL ty_exp_a . TK_PARENTESIS_FINAL
+   50 ty_exp_a: ty_exp_a . TK_MAS ty_exp_a
+   51         | ty_exp_a . TK_MENOS ty_exp_a
+   52         | ty_exp_a . TK_MULT ty_exp_a
+   53         | ty_exp_a . TK_DIV ty_exp_a
+   54         | ty_exp_a . TK_MOD ty_exp_a
+   55         | ty_exp_a . TK_DIV_ENT ty_exp_a
+   56         | TK_PARENTESIS_INICIAL ty_exp_a . TK_PARENTESIS_FINAL
 
-    TK_PARENTESIS_FINAL  desplazar e ir al estado 155
-    TK_OP_ARITMETICO     desplazar e ir al estado 131
-
-    $default  reduce usando la regla 46 (ty_expresion)
+    TK_PARENTESIS_FINAL  desplazar e ir al estado 160
+    TK_MAS               desplazar e ir al estado 131
+    TK_MENOS             desplazar e ir al estado 132
+    TK_MULT              desplazar e ir al estado 133
+    TK_DIV               desplazar e ir al estado 134
+    TK_DIV_ENT           desplazar e ir al estado 135
+    TK_MOD               desplazar e ir al estado 136
 
 
 Estado 118
 
-   47 ty_expresion: ty_exp_b .
-   55 ty_exp_b: ty_exp_b . TK_PR_Y ty_exp_b
-   56         | ty_exp_b . TK_PR_O ty_exp_b
-   60         | TK_PARENTESIS_INICIAL ty_exp_b . TK_PARENTESIS_FINAL
+   61 ty_exp_b: ty_exp_b . TK_PR_Y ty_exp_b
+   62         | ty_exp_b . TK_PR_O ty_exp_b
+   65         | TK_PARENTESIS_INICIAL ty_exp_b . TK_PARENTESIS_FINAL
 
-    TK_PARENTESIS_FINAL  desplazar e ir al estado 156
-    TK_PR_O              desplazar e ir al estado 132
-    TK_PR_Y              desplazar e ir al estado 133
-
-    $default  reduce usando la regla 47 (ty_expresion)
+    TK_PARENTESIS_FINAL  desplazar e ir al estado 161
+    TK_PR_O              desplazar e ir al estado 137
+    TK_PR_Y              desplazar e ir al estado 138
 
 
 Estado 119
@@ -1572,10 +1582,10 @@ Estado 119
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion_t  ir al estado 157
+    ty_expresion_t  ir al estado 162
     ty_expresion    ir al estado 88
     ty_exp_a        ir al estado 89
     ty_exp_b        ir al estado 90
@@ -1587,75 +1597,91 @@ Estado 120
 
    28 ty_lista_campos: TK_IDENTIFICADOR . TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_campos
 
-    TK_TIPO_VAR  desplazar e ir al estado 158
+    TK_TIPO_VAR  desplazar e ir al estado 163
 
 
 Estado 121
 
    20 ty_d_tipo: TK_PR_TUPLA ty_lista_campos . TK_PR_FTUPLA
 
-    TK_PR_FTUPLA  desplazar e ir al estado 159
+    TK_PR_FTUPLA  desplazar e ir al estado 164
 
 
 Estado 122
 
-   90 ty_funcion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL . ty_l_ll TK_PARENTESIS_FINAL
+   95 ty_funcion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL . ty_l_ll TK_PARENTESIS_FINAL
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
     TK_IDENTIFICADOR       desplazar e ir al estado 97
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion   ir al estado 140
+    ty_expresion   ir al estado 145
     ty_exp_a       ir al estado 89
     ty_exp_b       ir al estado 90
     ty_operando    ir al estado 91
     ty_funcion_ll  ir al estado 92
-    ty_l_ll        ir al estado 160
+    ty_l_ll        ir al estado 165
 
 
 Estado 123
 
-   50 ty_exp_a: TK_PARENTESIS_INICIAL . ty_exp_a TK_PARENTESIS_FINAL
+   65 ty_exp_b: TK_PARENTESIS_INICIAL . ty_exp_b TK_PARENTESIS_FINAL
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 123
-    TK_IDENTIFICADOR       desplazar e ir al estado 124
-    TK_ENTERO              desplazar e ir al estado 79
-    TK_REAL                desplazar e ir al estado 80
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
+    TK_BOOLEANO            desplazar e ir al estado 81
+    TK_PR_NO               desplazar e ir al estado 82
 
-    ty_exp_a     ir al estado 161
-    ty_operando  ir al estado 91
+    ty_exp_b  ir al estado 118
 
 
 Estado 124
 
-   61 ty_operando: TK_IDENTIFICADOR .
+   61 ty_exp_b: ty_exp_b . TK_PR_Y ty_exp_b
+   62         | ty_exp_b . TK_PR_O ty_exp_b
+   63         | TK_PR_NO ty_exp_b .
 
-    $default  reduce usando la regla 61 (ty_operando)
+    $default  reduce usando la regla 63 (ty_exp_b)
+
+    El conflicto entre la regla 63 y el terminal TK_PR_O se resuelve como reducción (TK_PR_O < TK_PR_NO).
+    El conflicto entre la regla 63 y el terminal TK_PR_Y se resuelve como reducción (TK_PR_Y < TK_PR_NO).
 
 
 Estado 125
 
-   49 ty_exp_a: ty_exp_a . TK_OP_ARITMETICO ty_exp_a
-   54         | TK_OP_ARITMETICO ty_exp_a .
+   56 ty_exp_a: TK_PARENTESIS_INICIAL . ty_exp_a TK_PARENTESIS_FINAL
 
-    $default  reduce usando la regla 54 (ty_exp_a)
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 125
+    TK_IDENTIFICADOR       desplazar e ir al estado 116
+    TK_ENTERO              desplazar e ir al estado 79
+    TK_REAL                desplazar e ir al estado 80
+    TK_MENOS               desplazar e ir al estado 83
+
+    ty_exp_a     ir al estado 117
+    ty_operando  ir al estado 91
 
 
 Estado 126
 
-   47 ty_expresion: ty_exp_b .
-   55 ty_exp_b: ty_exp_b . TK_PR_Y ty_exp_b
-   56         | ty_exp_b . TK_PR_O ty_exp_b
-   57         | TK_PR_NO ty_exp_b .
+   50 ty_exp_a: ty_exp_a . TK_MAS ty_exp_a
+   51         | ty_exp_a . TK_MENOS ty_exp_a
+   52         | ty_exp_a . TK_MULT ty_exp_a
+   53         | ty_exp_a . TK_DIV ty_exp_a
+   54         | ty_exp_a . TK_MOD ty_exp_a
+   55         | ty_exp_a . TK_DIV_ENT ty_exp_a
+   60         | TK_MENOS ty_exp_a .
 
-    TK_OP_RELACIONAL  reduce usando la regla 47 (ty_expresion)
-    TK_OP_RELACIONAL  [reduce usando la regla 57 (ty_exp_b)]
-    $default          reduce usando la regla 57 (ty_exp_b)
+    $default  reduce usando la regla 60 (ty_exp_a)
+
+    El conflicto entre la regla 60 y el terminal TK_MAS se resuelve como reducción (TK_MAS < TK_MENOS_U).
+    El conflicto entre la regla 60 y el terminal TK_MENOS se resuelve como reducción (TK_MENOS < TK_MENOS_U).
+    El conflicto entre la regla 60 y el terminal TK_MULT se resuelve como reducción (TK_MULT < TK_MENOS_U).
+    El conflicto entre la regla 60 y el terminal TK_DIV se resuelve como reducción (TK_DIV < TK_MENOS_U).
+    El conflicto entre la regla 60 y el terminal TK_DIV_ENT se resuelve como reducción (TK_DIV_ENT < TK_MENOS_U).
+    El conflicto entre la regla 60 y el terminal TK_MOD se resuelve como reducción (TK_MOD < TK_MENOS_U).
 
 
 Estado 127
@@ -1673,7 +1699,7 @@ Estado 128
 
     $default  reduce usando la regla 19 (ty_lista_d_tipo)
 
-    ty_lista_d_tipo  ir al estado 162
+    ty_lista_d_tipo  ir al estado 166
 
 
 Estado 129
@@ -1686,10 +1712,10 @@ Estado 129
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion_t  ir al estado 163
+    ty_expresion_t  ir al estado 167
     ty_expresion    ir al estado 88
     ty_exp_a        ir al estado 89
     ty_exp_b        ir al estado 90
@@ -1699,17 +1725,17 @@ Estado 129
 
 Estado 130
 
-   59 ty_exp_b: ty_expresion TK_OP_RELACIONAL . ty_expresion
+   48 ty_expresion: ty_expresion TK_OP_RELACIONAL . ty_expresion
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
     TK_IDENTIFICADOR       desplazar e ir al estado 97
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion   ir al estado 164
+    ty_expresion   ir al estado 168
     ty_exp_a       ir al estado 89
     ty_exp_b       ir al estado 90
     ty_operando    ir al estado 91
@@ -1718,298 +1744,356 @@ Estado 130
 
 Estado 131
 
-   49 ty_exp_a: ty_exp_a TK_OP_ARITMETICO . ty_exp_a
+   50 ty_exp_a: ty_exp_a TK_MAS . ty_exp_a
 
-    TK_PARENTESIS_INICIAL  desplazar e ir al estado 123
-    TK_IDENTIFICADOR       desplazar e ir al estado 124
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 125
+    TK_IDENTIFICADOR       desplazar e ir al estado 116
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_exp_a     ir al estado 165
+    ty_exp_a     ir al estado 169
     ty_operando  ir al estado 91
 
 
 Estado 132
 
-   56 ty_exp_b: ty_exp_b TK_PR_O . ty_exp_b
+   51 ty_exp_a: ty_exp_a TK_MENOS . ty_exp_a
 
-    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
-    TK_IDENTIFICADOR       desplazar e ir al estado 97
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 125
+    TK_IDENTIFICADOR       desplazar e ir al estado 116
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
-    TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion   ir al estado 116
-    ty_exp_a       ir al estado 89
-    ty_exp_b       ir al estado 166
-    ty_operando    ir al estado 91
-    ty_funcion_ll  ir al estado 92
+    ty_exp_a     ir al estado 170
+    ty_operando  ir al estado 91
 
 
 Estado 133
 
-   55 ty_exp_b: ty_exp_b TK_PR_Y . ty_exp_b
+   52 ty_exp_a: ty_exp_a TK_MULT . ty_exp_a
 
-    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
-    TK_IDENTIFICADOR       desplazar e ir al estado 97
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 125
+    TK_IDENTIFICADOR       desplazar e ir al estado 116
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
-    TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion   ir al estado 116
-    ty_exp_a       ir al estado 89
-    ty_exp_b       ir al estado 167
-    ty_operando    ir al estado 91
-    ty_funcion_ll  ir al estado 92
+    ty_exp_a     ir al estado 171
+    ty_operando  ir al estado 91
 
 
 Estado 134
+
+   53 ty_exp_a: ty_exp_a TK_DIV . ty_exp_a
+
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 125
+    TK_IDENTIFICADOR       desplazar e ir al estado 116
+    TK_ENTERO              desplazar e ir al estado 79
+    TK_REAL                desplazar e ir al estado 80
+    TK_MENOS               desplazar e ir al estado 83
+
+    ty_exp_a     ir al estado 172
+    ty_operando  ir al estado 91
+
+
+Estado 135
+
+   55 ty_exp_a: ty_exp_a TK_DIV_ENT . ty_exp_a
+
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 125
+    TK_IDENTIFICADOR       desplazar e ir al estado 116
+    TK_ENTERO              desplazar e ir al estado 79
+    TK_REAL                desplazar e ir al estado 80
+    TK_MENOS               desplazar e ir al estado 83
+
+    ty_exp_a     ir al estado 173
+    ty_operando  ir al estado 91
+
+
+Estado 136
+
+   54 ty_exp_a: ty_exp_a TK_MOD . ty_exp_a
+
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 125
+    TK_IDENTIFICADOR       desplazar e ir al estado 116
+    TK_ENTERO              desplazar e ir al estado 79
+    TK_REAL                desplazar e ir al estado 80
+    TK_MENOS               desplazar e ir al estado 83
+
+    ty_exp_a     ir al estado 174
+    ty_operando  ir al estado 91
+
+
+Estado 137
+
+   62 ty_exp_b: ty_exp_b TK_PR_O . ty_exp_b
+
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 123
+    TK_BOOLEANO            desplazar e ir al estado 81
+    TK_PR_NO               desplazar e ir al estado 82
+
+    ty_exp_b  ir al estado 175
+
+
+Estado 138
+
+   61 ty_exp_b: ty_exp_b TK_PR_Y . ty_exp_b
+
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 123
+    TK_BOOLEANO            desplazar e ir al estado 81
+    TK_PR_NO               desplazar e ir al estado 82
+
+    ty_exp_b  ir al estado 176
+
+
+Estado 139
 
    39 ty_lista_id: TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id .
 
     $default  reduce usando la regla 39 (ty_lista_id)
 
 
-Estado 135
+Estado 140
 
    17 ty_decl_var: TK_PR_VAR ty_lista_d_var TK_PR_FVAR TK_PUNTOYCOMA .
 
     $default  reduce usando la regla 17 (ty_decl_var)
 
 
-Estado 136
+Estado 141
 
    37 ty_lista_d_var: ty_lista_id TK_TIPO_VAR ty_d_tipo . TK_PUNTOYCOMA ty_lista_d_var
 
-    TK_PUNTOYCOMA  desplazar e ir al estado 168
-
-
-Estado 137
-
-   78 ty_it_cota_exp: TK_PR_MIENTRAS ty_expresion TK_PR_HACER . ty_instrucciones TK_PR_FMIENTRAS
-
-    TK_PR_CONTINUAR   desplazar e ir al estado 39
-    TK_PR_MIENTRAS    desplazar e ir al estado 40
-    TK_PR_PARA        desplazar e ir al estado 41
-    TK_PR_SI          desplazar e ir al estado 42
-    TK_IDENTIFICADOR  desplazar e ir al estado 43
-
-    ty_operando       ir al estado 44
-    ty_instrucciones  ir al estado 169
-    ty_instruccion    ir al estado 46
-    ty_asignacion     ir al estado 47
-    ty_alternativa    ir al estado 48
-    ty_iteracion      ir al estado 49
-    ty_it_cota_exp    ir al estado 50
-    ty_it_cota_fija   ir al estado 51
-    ty_accion_ll      ir al estado 52
-
-
-Estado 138
-
-   79 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION . ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
-
-    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
-    TK_IDENTIFICADOR       desplazar e ir al estado 97
-    TK_ENTERO              desplazar e ir al estado 79
-    TK_REAL                desplazar e ir al estado 80
-    TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
-
-    ty_expresion   ir al estado 170
-    ty_exp_a       ir al estado 89
-    ty_exp_b       ir al estado 90
-    ty_operando    ir al estado 91
-    ty_funcion_ll  ir al estado 92
-
-
-Estado 139
-
-   73 ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES . ty_instrucciones ty_lista_opciones TK_PR_FSI
-
-    TK_PR_CONTINUAR   desplazar e ir al estado 39
-    TK_PR_MIENTRAS    desplazar e ir al estado 40
-    TK_PR_PARA        desplazar e ir al estado 41
-    TK_PR_SI          desplazar e ir al estado 42
-    TK_IDENTIFICADOR  desplazar e ir al estado 43
-
-    ty_operando       ir al estado 44
-    ty_instrucciones  ir al estado 171
-    ty_instruccion    ir al estado 46
-    ty_asignacion     ir al estado 47
-    ty_alternativa    ir al estado 48
-    ty_iteracion      ir al estado 49
-    ty_it_cota_exp    ir al estado 50
-    ty_it_cota_fija   ir al estado 51
-    ty_accion_ll      ir al estado 52
-
-
-Estado 140
-
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
-   91 ty_l_ll: ty_expresion . TK_SEPARADOR ty_l_ll
-   92        | ty_expresion .
-
-    TK_SEPARADOR      desplazar e ir al estado 172
-    TK_OP_RELACIONAL  desplazar e ir al estado 130
-
-    $default  reduce usando la regla 92 (ty_l_ll)
-
-
-Estado 141
-
-   89 ty_accion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll . TK_PARENTESIS_FINAL
-
-    TK_PARENTESIS_FINAL  desplazar e ir al estado 173
+    TK_PUNTOYCOMA  desplazar e ir al estado 177
 
 
 Estado 142
 
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
-   72 ty_asignacion: ty_operando TK_ASIGNACION ty_expresion .
+   83 ty_it_cota_exp: TK_PR_MIENTRAS ty_expresion TK_PR_HACER . ty_instrucciones TK_PR_FMIENTRAS
 
-    TK_OP_RELACIONAL  desplazar e ir al estado 130
+    TK_PR_CONTINUAR   desplazar e ir al estado 39
+    TK_PR_MIENTRAS    desplazar e ir al estado 40
+    TK_PR_PARA        desplazar e ir al estado 41
+    TK_PR_SI          desplazar e ir al estado 42
+    TK_IDENTIFICADOR  desplazar e ir al estado 43
 
-    $default  reduce usando la regla 72 (ty_asignacion)
+    ty_operando       ir al estado 44
+    ty_instrucciones  ir al estado 178
+    ty_instruccion    ir al estado 46
+    ty_asignacion     ir al estado 47
+    ty_alternativa    ir al estado 48
+    ty_iteracion      ir al estado 49
+    ty_it_cota_exp    ir al estado 50
+    ty_it_cota_fija   ir al estado 51
+    ty_accion_ll      ir al estado 52
 
 
 Estado 143
 
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
-   63 ty_operando: ty_operando TK_INICIO_ARRAY ty_expresion . TK_FIN_ARRAY
-
-    TK_FIN_ARRAY      desplazar e ir al estado 174
-    TK_OP_RELACIONAL  desplazar e ir al estado 130
-
-
-Estado 144
-
-   62 ty_operando: ty_operando . TK_PUNTO ty_operando
-   62            | ty_operando TK_PUNTO ty_operando .
-   63            | ty_operando . TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY
-   64            | ty_operando . TK_PR_REF
-
-    TK_PR_REF  desplazar e ir al estado 105
-
-    $default  reduce usando la regla 62 (ty_operando)
-
-
-Estado 145
-
-   65 ty_instrucciones: ty_instruccion TK_PUNTOYCOMA ty_instrucciones .
-
-    $default  reduce usando la regla 65 (ty_instrucciones)
-
-
-Estado 146
-
-   86 ty_d_p_form: TK_PR_ENT . ty_lista_id TK_TIPO_VAR ty_d_tipo
-
-    TK_IDENTIFICADOR  desplazar e ir al estado 34
-
-    ty_lista_id  ir al estado 175
-
-
-Estado 147
-
-   88 ty_d_p_form: TK_PR_ES . ty_lista_id TK_TIPO_VAR ty_d_tipo
-
-    TK_IDENTIFICADOR  desplazar e ir al estado 34
-
-    ty_lista_id  ir al estado 176
-
-
-Estado 148
-
-   87 ty_d_p_form: TK_PR_SAL . ty_lista_id TK_TIPO_VAR ty_d_tipo
-
-    TK_IDENTIFICADOR  desplazar e ir al estado 34
-
-    ty_lista_id  ir al estado 177
-
-
-Estado 149
-
-   82 ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form . TK_PARENTESIS_FINAL TK_PUNTOYCOMA
-
-    TK_PARENTESIS_FINAL  desplazar e ir al estado 178
-
-
-Estado 150
-
-   84 ty_d_par_form: ty_d_p_form . TK_PUNTOYCOMA ty_d_par_form
-
-    TK_PUNTOYCOMA  desplazar e ir al estado 179
-
-
-Estado 151
-
-   80 ty_accion_d: TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION .
-
-    $default  reduce usando la regla 80 (ty_accion_d)
-
-
-Estado 152
-
-   83 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var . TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA
-
-    TK_PARENTESIS_FINAL  desplazar e ir al estado 180
-
-
-Estado 153
-
-   81 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV . ty_expresion TK_PR_FFUNCION
+   84 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION . ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
     TK_IDENTIFICADOR       desplazar e ir al estado 97
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion   ir al estado 181
+    ty_expresion   ir al estado 179
     ty_exp_a       ir al estado 89
     ty_exp_b       ir al estado 90
     ty_operando    ir al estado 91
     ty_funcion_ll  ir al estado 92
 
 
+Estado 144
+
+   78 ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES . ty_instrucciones ty_lista_opciones TK_PR_FSI
+
+    TK_PR_CONTINUAR   desplazar e ir al estado 39
+    TK_PR_MIENTRAS    desplazar e ir al estado 40
+    TK_PR_PARA        desplazar e ir al estado 41
+    TK_PR_SI          desplazar e ir al estado 42
+    TK_IDENTIFICADOR  desplazar e ir al estado 43
+
+    ty_operando       ir al estado 44
+    ty_instrucciones  ir al estado 180
+    ty_instruccion    ir al estado 46
+    ty_asignacion     ir al estado 47
+    ty_alternativa    ir al estado 48
+    ty_iteracion      ir al estado 49
+    ty_it_cota_exp    ir al estado 50
+    ty_it_cota_fija   ir al estado 51
+    ty_accion_ll      ir al estado 52
+
+
+Estado 145
+
+   48 ty_expresion: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   96 ty_l_ll: ty_expresion . TK_SEPARADOR ty_l_ll
+   97        | ty_expresion .
+
+    TK_SEPARADOR      desplazar e ir al estado 181
+    TK_OP_RELACIONAL  desplazar e ir al estado 130
+
+    $default  reduce usando la regla 97 (ty_l_ll)
+
+
+Estado 146
+
+   94 ty_accion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll . TK_PARENTESIS_FINAL
+
+    TK_PARENTESIS_FINAL  desplazar e ir al estado 182
+
+
+Estado 147
+
+   48 ty_expresion: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   77 ty_asignacion: ty_operando TK_ASIGNACION ty_expresion .
+
+    TK_OP_RELACIONAL  desplazar e ir al estado 130
+
+    $default  reduce usando la regla 77 (ty_asignacion)
+
+
+Estado 148
+
+   48 ty_expresion: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   68 ty_operando: ty_operando TK_INICIO_ARRAY ty_expresion . TK_FIN_ARRAY
+
+    TK_FIN_ARRAY      desplazar e ir al estado 183
+    TK_OP_RELACIONAL  desplazar e ir al estado 130
+
+
+Estado 149
+
+   67 ty_operando: ty_operando . TK_PUNTO ty_operando
+   67            | ty_operando TK_PUNTO ty_operando .
+   68            | ty_operando . TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY
+   69            | ty_operando . TK_PR_REF
+
+    TK_PR_REF  desplazar e ir al estado 105
+
+    $default  reduce usando la regla 67 (ty_operando)
+
+    El conflicto entre la regla 67 y el terminal TK_INICIO_ARRAY se resuelve como reducción (TK_INICIO_ARRAY < TK_PUNTO).
+    El conflicto entre la regla 67 y el terminal TK_PUNTO se resuelve como reducción (%left TK_PUNTO).
+    El conflicto entre la regla 67 y el aviso TK_PR_REF se resuelve como cambio. (TK_PUNTO < TK_PR_REF).
+
+
+Estado 150
+
+   70 ty_instrucciones: ty_instruccion TK_PUNTOYCOMA ty_instrucciones .
+
+    $default  reduce usando la regla 70 (ty_instrucciones)
+
+
+Estado 151
+
+   91 ty_d_p_form: TK_PR_ENT . ty_lista_id TK_TIPO_VAR ty_d_tipo
+
+    TK_IDENTIFICADOR  desplazar e ir al estado 34
+
+    ty_lista_id  ir al estado 184
+
+
+Estado 152
+
+   93 ty_d_p_form: TK_PR_ES . ty_lista_id TK_TIPO_VAR ty_d_tipo
+
+    TK_IDENTIFICADOR  desplazar e ir al estado 34
+
+    ty_lista_id  ir al estado 185
+
+
+Estado 153
+
+   92 ty_d_p_form: TK_PR_SAL . ty_lista_id TK_TIPO_VAR ty_d_tipo
+
+    TK_IDENTIFICADOR  desplazar e ir al estado 34
+
+    ty_lista_id  ir al estado 186
+
+
 Estado 154
+
+   87 ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form . TK_PARENTESIS_FINAL TK_PUNTOYCOMA
+
+    TK_PARENTESIS_FINAL  desplazar e ir al estado 187
+
+
+Estado 155
+
+   89 ty_d_par_form: ty_d_p_form . TK_PUNTOYCOMA ty_d_par_form
+
+    TK_PUNTOYCOMA  desplazar e ir al estado 188
+
+
+Estado 156
+
+   85 ty_accion_d: TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION .
+
+    $default  reduce usando la regla 85 (ty_accion_d)
+
+
+Estado 157
+
+   88 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var . TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA
+
+    TK_PARENTESIS_FINAL  desplazar e ir al estado 189
+
+
+Estado 158
+
+   86 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV . ty_expresion TK_PR_FFUNCION
+
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
+    TK_IDENTIFICADOR       desplazar e ir al estado 97
+    TK_ENTERO              desplazar e ir al estado 79
+    TK_REAL                desplazar e ir al estado 80
+    TK_BOOLEANO            desplazar e ir al estado 81
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
+
+    ty_expresion   ir al estado 190
+    ty_exp_a       ir al estado 89
+    ty_exp_b       ir al estado 90
+    ty_operando    ir al estado 91
+    ty_funcion_ll  ir al estado 92
+
+
+Estado 159
 
    35 ty_lista_d_cte: TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte .
 
     $default  reduce usando la regla 35 (ty_lista_d_cte)
 
 
-Estado 155
+Estado 160
 
-   50 ty_exp_a: TK_PARENTESIS_INICIAL ty_exp_a TK_PARENTESIS_FINAL .
+   56 ty_exp_a: TK_PARENTESIS_INICIAL ty_exp_a TK_PARENTESIS_FINAL .
 
-    $default  reduce usando la regla 50 (ty_exp_a)
-
-
-Estado 156
-
-   60 ty_exp_b: TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL .
-
-    $default  reduce usando la regla 60 (ty_exp_b)
+    $default  reduce usando la regla 56 (ty_exp_a)
 
 
-Estado 157
+Estado 161
+
+   65 ty_exp_b: TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL .
+
+    $default  reduce usando la regla 65 (ty_exp_b)
+
+
+Estado 162
 
    21 ty_d_tipo: TK_PR_TABLA TK_INICIO_ARRAY ty_expresion_t . TK_SUBRANGO ty_expresion_t TK_FIN_ARRAY TK_PR_DE ty_d_tipo
 
-    TK_SUBRANGO  desplazar e ir al estado 182
+    TK_SUBRANGO  desplazar e ir al estado 191
 
 
-Estado 158
+Estado 163
 
    28 ty_lista_campos: TK_IDENTIFICADOR TK_TIPO_VAR . ty_d_tipo TK_PUNTOYCOMA ty_lista_campos
 
@@ -2026,11 +2110,11 @@ Estado 158
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
     TK_PR_REF              desplazar e ir al estado 84
 
-    ty_d_tipo       ir al estado 183
+    ty_d_tipo       ir al estado 192
     ty_expresion_t  ir al estado 86
     ty_tipo_base    ir al estado 87
     ty_expresion    ir al estado 88
@@ -2040,88 +2124,203 @@ Estado 158
     ty_funcion_ll   ir al estado 92
 
 
-Estado 159
+Estado 164
 
    20 ty_d_tipo: TK_PR_TUPLA ty_lista_campos TK_PR_FTUPLA .
 
     $default  reduce usando la regla 20 (ty_d_tipo)
 
 
-Estado 160
+Estado 165
 
-   90 ty_funcion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll . TK_PARENTESIS_FINAL
+   95 ty_funcion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll . TK_PARENTESIS_FINAL
 
-    TK_PARENTESIS_FINAL  desplazar e ir al estado 184
-
-
-Estado 161
-
-   49 ty_exp_a: ty_exp_a . TK_OP_ARITMETICO ty_exp_a
-   50         | TK_PARENTESIS_INICIAL ty_exp_a . TK_PARENTESIS_FINAL
-
-    TK_PARENTESIS_FINAL  desplazar e ir al estado 155
-    TK_OP_ARITMETICO     desplazar e ir al estado 131
+    TK_PARENTESIS_FINAL  desplazar e ir al estado 193
 
 
-Estado 162
+Estado 166
 
    18 ty_lista_d_tipo: TK_IDENTIFICADOR TK_IGUAL ty_d_tipo TK_PUNTOYCOMA ty_lista_d_tipo .
 
     $default  reduce usando la regla 18 (ty_lista_d_tipo)
 
 
-Estado 163
+Estado 167
 
    23 ty_d_tipo: ty_expresion_t TK_SUBRANGO ty_expresion_t .
 
     $default  reduce usando la regla 23 (ty_d_tipo)
 
 
-Estado 164
+Estado 168
 
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
-   59         | ty_expresion TK_OP_RELACIONAL ty_expresion .
+   48 ty_expresion: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   48             | ty_expresion TK_OP_RELACIONAL ty_expresion .
 
     TK_OP_RELACIONAL  error (no asociativo)
 
-    $default  reduce usando la regla 59 (ty_exp_b)
+    $default  reduce usando la regla 48 (ty_expresion)
+
+    El conflicto entre la regla 48 y el terminal TK_OP_RELACIONAL se resuelve como un error (%nonassoc TK_OP_RELACIONAL).
 
 
-Estado 165
+Estado 169
 
-   49 ty_exp_a: ty_exp_a . TK_OP_ARITMETICO ty_exp_a
-   49         | ty_exp_a TK_OP_ARITMETICO ty_exp_a .
+   50 ty_exp_a: ty_exp_a . TK_MAS ty_exp_a
+   50         | ty_exp_a TK_MAS ty_exp_a .
+   51         | ty_exp_a . TK_MENOS ty_exp_a
+   52         | ty_exp_a . TK_MULT ty_exp_a
+   53         | ty_exp_a . TK_DIV ty_exp_a
+   54         | ty_exp_a . TK_MOD ty_exp_a
+   55         | ty_exp_a . TK_DIV_ENT ty_exp_a
 
-    $default  reduce usando la regla 49 (ty_exp_a)
+    TK_MULT     desplazar e ir al estado 133
+    TK_DIV      desplazar e ir al estado 134
+    TK_DIV_ENT  desplazar e ir al estado 135
+    TK_MOD      desplazar e ir al estado 136
 
+    $default  reduce usando la regla 50 (ty_exp_a)
 
-Estado 166
-
-   47 ty_expresion: ty_exp_b .
-   55 ty_exp_b: ty_exp_b . TK_PR_Y ty_exp_b
-   56         | ty_exp_b . TK_PR_O ty_exp_b
-   56         | ty_exp_b TK_PR_O ty_exp_b .
-
-    TK_PR_Y  desplazar e ir al estado 133
-
-    TK_OP_RELACIONAL  reduce usando la regla 47 (ty_expresion)
-    TK_OP_RELACIONAL  [reduce usando la regla 56 (ty_exp_b)]
-    $default          reduce usando la regla 56 (ty_exp_b)
-
-
-Estado 167
-
-   47 ty_expresion: ty_exp_b .
-   55 ty_exp_b: ty_exp_b . TK_PR_Y ty_exp_b
-   55         | ty_exp_b TK_PR_Y ty_exp_b .
-   56         | ty_exp_b . TK_PR_O ty_exp_b
-
-    TK_OP_RELACIONAL  reduce usando la regla 47 (ty_expresion)
-    TK_OP_RELACIONAL  [reduce usando la regla 55 (ty_exp_b)]
-    $default          reduce usando la regla 55 (ty_exp_b)
+    El conflicto entre la regla 50 y el terminal TK_MAS se resuelve como reducción (%left TK_MAS).
+    El conflicto entre la regla 50 y el terminal TK_MENOS se resuelve como reducción (%left TK_MENOS).
+    El conflicto entre la regla 50 y el aviso TK_MULT se resuelve como cambio. (TK_MAS < TK_MULT).
+    El conflicto entre la regla 50 y el aviso TK_DIV se resuelve como cambio. (TK_MAS < TK_DIV).
+    El conflicto entre la regla 50 y el aviso TK_DIV_ENT se resuelve como cambio. (TK_MAS < TK_DIV_ENT).
+    El conflicto entre la regla 50 y el aviso TK_MOD se resuelve como cambio. (TK_MAS < TK_MOD).
 
 
-Estado 168
+Estado 170
+
+   50 ty_exp_a: ty_exp_a . TK_MAS ty_exp_a
+   51         | ty_exp_a . TK_MENOS ty_exp_a
+   51         | ty_exp_a TK_MENOS ty_exp_a .
+   52         | ty_exp_a . TK_MULT ty_exp_a
+   53         | ty_exp_a . TK_DIV ty_exp_a
+   54         | ty_exp_a . TK_MOD ty_exp_a
+   55         | ty_exp_a . TK_DIV_ENT ty_exp_a
+
+    TK_MULT     desplazar e ir al estado 133
+    TK_DIV      desplazar e ir al estado 134
+    TK_DIV_ENT  desplazar e ir al estado 135
+    TK_MOD      desplazar e ir al estado 136
+
+    $default  reduce usando la regla 51 (ty_exp_a)
+
+    El conflicto entre la regla 51 y el terminal TK_MAS se resuelve como reducción (%left TK_MAS).
+    El conflicto entre la regla 51 y el terminal TK_MENOS se resuelve como reducción (%left TK_MENOS).
+    El conflicto entre la regla 51 y el aviso TK_MULT se resuelve como cambio. (TK_MENOS < TK_MULT).
+    El conflicto entre la regla 51 y el aviso TK_DIV se resuelve como cambio. (TK_MENOS < TK_DIV).
+    El conflicto entre la regla 51 y el aviso TK_DIV_ENT se resuelve como cambio. (TK_MENOS < TK_DIV_ENT).
+    El conflicto entre la regla 51 y el aviso TK_MOD se resuelve como cambio. (TK_MENOS < TK_MOD).
+
+
+Estado 171
+
+   50 ty_exp_a: ty_exp_a . TK_MAS ty_exp_a
+   51         | ty_exp_a . TK_MENOS ty_exp_a
+   52         | ty_exp_a . TK_MULT ty_exp_a
+   52         | ty_exp_a TK_MULT ty_exp_a .
+   53         | ty_exp_a . TK_DIV ty_exp_a
+   54         | ty_exp_a . TK_MOD ty_exp_a
+   55         | ty_exp_a . TK_DIV_ENT ty_exp_a
+
+    $default  reduce usando la regla 52 (ty_exp_a)
+
+    El conflicto entre la regla 52 y el terminal TK_MAS se resuelve como reducción (TK_MAS < TK_MULT).
+    El conflicto entre la regla 52 y el terminal TK_MENOS se resuelve como reducción (TK_MENOS < TK_MULT).
+    El conflicto entre la regla 52 y el terminal TK_MULT se resuelve como reducción (%left TK_MULT).
+    El conflicto entre la regla 52 y el terminal TK_DIV se resuelve como reducción (%left TK_DIV).
+    El conflicto entre la regla 52 y el terminal TK_DIV_ENT se resuelve como reducción (%left TK_DIV_ENT).
+    El conflicto entre la regla 52 y el terminal TK_MOD se resuelve como reducción (%left TK_MOD).
+
+
+Estado 172
+
+   50 ty_exp_a: ty_exp_a . TK_MAS ty_exp_a
+   51         | ty_exp_a . TK_MENOS ty_exp_a
+   52         | ty_exp_a . TK_MULT ty_exp_a
+   53         | ty_exp_a . TK_DIV ty_exp_a
+   53         | ty_exp_a TK_DIV ty_exp_a .
+   54         | ty_exp_a . TK_MOD ty_exp_a
+   55         | ty_exp_a . TK_DIV_ENT ty_exp_a
+
+    $default  reduce usando la regla 53 (ty_exp_a)
+
+    El conflicto entre la regla 53 y el terminal TK_MAS se resuelve como reducción (TK_MAS < TK_DIV).
+    El conflicto entre la regla 53 y el terminal TK_MENOS se resuelve como reducción (TK_MENOS < TK_DIV).
+    El conflicto entre la regla 53 y el terminal TK_MULT se resuelve como reducción (%left TK_MULT).
+    El conflicto entre la regla 53 y el terminal TK_DIV se resuelve como reducción (%left TK_DIV).
+    El conflicto entre la regla 53 y el terminal TK_DIV_ENT se resuelve como reducción (%left TK_DIV_ENT).
+    El conflicto entre la regla 53 y el terminal TK_MOD se resuelve como reducción (%left TK_MOD).
+
+
+Estado 173
+
+   50 ty_exp_a: ty_exp_a . TK_MAS ty_exp_a
+   51         | ty_exp_a . TK_MENOS ty_exp_a
+   52         | ty_exp_a . TK_MULT ty_exp_a
+   53         | ty_exp_a . TK_DIV ty_exp_a
+   54         | ty_exp_a . TK_MOD ty_exp_a
+   55         | ty_exp_a . TK_DIV_ENT ty_exp_a
+   55         | ty_exp_a TK_DIV_ENT ty_exp_a .
+
+    $default  reduce usando la regla 55 (ty_exp_a)
+
+    El conflicto entre la regla 55 y el terminal TK_MAS se resuelve como reducción (TK_MAS < TK_DIV_ENT).
+    El conflicto entre la regla 55 y el terminal TK_MENOS se resuelve como reducción (TK_MENOS < TK_DIV_ENT).
+    El conflicto entre la regla 55 y el terminal TK_MULT se resuelve como reducción (%left TK_MULT).
+    El conflicto entre la regla 55 y el terminal TK_DIV se resuelve como reducción (%left TK_DIV).
+    El conflicto entre la regla 55 y el terminal TK_DIV_ENT se resuelve como reducción (%left TK_DIV_ENT).
+    El conflicto entre la regla 55 y el terminal TK_MOD se resuelve como reducción (%left TK_MOD).
+
+
+Estado 174
+
+   50 ty_exp_a: ty_exp_a . TK_MAS ty_exp_a
+   51         | ty_exp_a . TK_MENOS ty_exp_a
+   52         | ty_exp_a . TK_MULT ty_exp_a
+   53         | ty_exp_a . TK_DIV ty_exp_a
+   54         | ty_exp_a . TK_MOD ty_exp_a
+   54         | ty_exp_a TK_MOD ty_exp_a .
+   55         | ty_exp_a . TK_DIV_ENT ty_exp_a
+
+    $default  reduce usando la regla 54 (ty_exp_a)
+
+    El conflicto entre la regla 54 y el terminal TK_MAS se resuelve como reducción (TK_MAS < TK_MOD).
+    El conflicto entre la regla 54 y el terminal TK_MENOS se resuelve como reducción (TK_MENOS < TK_MOD).
+    El conflicto entre la regla 54 y el terminal TK_MULT se resuelve como reducción (%left TK_MULT).
+    El conflicto entre la regla 54 y el terminal TK_DIV se resuelve como reducción (%left TK_DIV).
+    El conflicto entre la regla 54 y el terminal TK_DIV_ENT se resuelve como reducción (%left TK_DIV_ENT).
+    El conflicto entre la regla 54 y el terminal TK_MOD se resuelve como reducción (%left TK_MOD).
+
+
+Estado 175
+
+   61 ty_exp_b: ty_exp_b . TK_PR_Y ty_exp_b
+   62         | ty_exp_b . TK_PR_O ty_exp_b
+   62         | ty_exp_b TK_PR_O ty_exp_b .
+
+    TK_PR_Y  desplazar e ir al estado 138
+
+    $default  reduce usando la regla 62 (ty_exp_b)
+
+    El conflicto entre la regla 62 y el terminal TK_PR_O se resuelve como reducción (%left TK_PR_O).
+    El conflicto entre la regla 62 y el aviso TK_PR_Y se resuelve como cambio. (TK_PR_O < TK_PR_Y).
+
+
+Estado 176
+
+   61 ty_exp_b: ty_exp_b . TK_PR_Y ty_exp_b
+   61         | ty_exp_b TK_PR_Y ty_exp_b .
+   62         | ty_exp_b . TK_PR_O ty_exp_b
+
+    $default  reduce usando la regla 61 (ty_exp_b)
+
+    El conflicto entre la regla 61 y el terminal TK_PR_O se resuelve como reducción (TK_PR_O < TK_PR_Y).
+    El conflicto entre la regla 61 y el terminal TK_PR_Y se resuelve como reducción (%left TK_PR_Y).
+
+
+Estado 177
 
    37 ty_lista_d_var: ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA . ty_lista_d_var
 
@@ -2129,130 +2328,130 @@ Estado 168
 
     $default  reduce usando la regla 38 (ty_lista_d_var)
 
-    ty_lista_d_var  ir al estado 185
+    ty_lista_d_var  ir al estado 194
     ty_lista_id     ir al estado 36
 
 
-Estado 169
+Estado 178
 
-   78 ty_it_cota_exp: TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones . TK_PR_FMIENTRAS
+   83 ty_it_cota_exp: TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones . TK_PR_FMIENTRAS
 
-    TK_PR_FMIENTRAS  desplazar e ir al estado 186
+    TK_PR_FMIENTRAS  desplazar e ir al estado 195
 
 
-Estado 170
+Estado 179
 
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
-   79 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion . TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
+   48 ty_expresion: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   84 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion . TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
 
-    TK_PR_HASTA       desplazar e ir al estado 187
+    TK_PR_HASTA       desplazar e ir al estado 196
     TK_OP_RELACIONAL  desplazar e ir al estado 130
 
 
-Estado 171
+Estado 180
 
-   73 ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones . ty_lista_opciones TK_PR_FSI
+   78 ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones . ty_lista_opciones TK_PR_FSI
 
-    TK_SINOSI  desplazar e ir al estado 188
+    TK_SINOSI  desplazar e ir al estado 197
 
-    $default  reduce usando la regla 75 (ty_lista_opciones)
+    $default  reduce usando la regla 80 (ty_lista_opciones)
 
-    ty_lista_opciones  ir al estado 189
+    ty_lista_opciones  ir al estado 198
 
 
-Estado 172
+Estado 181
 
-   91 ty_l_ll: ty_expresion TK_SEPARADOR . ty_l_ll
+   96 ty_l_ll: ty_expresion TK_SEPARADOR . ty_l_ll
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
     TK_IDENTIFICADOR       desplazar e ir al estado 97
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion   ir al estado 140
+    ty_expresion   ir al estado 145
     ty_exp_a       ir al estado 89
     ty_exp_b       ir al estado 90
     ty_operando    ir al estado 91
     ty_funcion_ll  ir al estado 92
-    ty_l_ll        ir al estado 190
-
-
-Estado 173
-
-   89 ty_accion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL .
-
-    $default  reduce usando la regla 89 (ty_accion_ll)
-
-
-Estado 174
-
-   63 ty_operando: ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY .
-
-    $default  reduce usando la regla 63 (ty_operando)
-
-
-Estado 175
-
-   86 ty_d_p_form: TK_PR_ENT ty_lista_id . TK_TIPO_VAR ty_d_tipo
-
-    TK_TIPO_VAR  desplazar e ir al estado 191
-
-
-Estado 176
-
-   88 ty_d_p_form: TK_PR_ES ty_lista_id . TK_TIPO_VAR ty_d_tipo
-
-    TK_TIPO_VAR  desplazar e ir al estado 192
-
-
-Estado 177
-
-   87 ty_d_p_form: TK_PR_SAL ty_lista_id . TK_TIPO_VAR ty_d_tipo
-
-    TK_TIPO_VAR  desplazar e ir al estado 193
-
-
-Estado 178
-
-   82 ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL . TK_PUNTOYCOMA
-
-    TK_PUNTOYCOMA  desplazar e ir al estado 194
-
-
-Estado 179
-
-   84 ty_d_par_form: ty_d_p_form TK_PUNTOYCOMA . ty_d_par_form
-
-    TK_PR_ENT  desplazar e ir al estado 146
-    TK_PR_ES   desplazar e ir al estado 147
-    TK_PR_SAL  desplazar e ir al estado 148
-
-    $default  reduce usando la regla 85 (ty_d_par_form)
-
-    ty_d_par_form  ir al estado 195
-    ty_d_p_form    ir al estado 150
-
-
-Estado 180
-
-   83 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL . TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA
-
-    TK_PR_DEV  desplazar e ir al estado 196
-
-
-Estado 181
-
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
-   81 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion . TK_PR_FFUNCION
-
-    TK_PR_FFUNCION    desplazar e ir al estado 197
-    TK_OP_RELACIONAL  desplazar e ir al estado 130
+    ty_l_ll        ir al estado 199
 
 
 Estado 182
+
+   94 ty_accion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL .
+
+    $default  reduce usando la regla 94 (ty_accion_ll)
+
+
+Estado 183
+
+   68 ty_operando: ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY .
+
+    $default  reduce usando la regla 68 (ty_operando)
+
+
+Estado 184
+
+   91 ty_d_p_form: TK_PR_ENT ty_lista_id . TK_TIPO_VAR ty_d_tipo
+
+    TK_TIPO_VAR  desplazar e ir al estado 200
+
+
+Estado 185
+
+   93 ty_d_p_form: TK_PR_ES ty_lista_id . TK_TIPO_VAR ty_d_tipo
+
+    TK_TIPO_VAR  desplazar e ir al estado 201
+
+
+Estado 186
+
+   92 ty_d_p_form: TK_PR_SAL ty_lista_id . TK_TIPO_VAR ty_d_tipo
+
+    TK_TIPO_VAR  desplazar e ir al estado 202
+
+
+Estado 187
+
+   87 ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL . TK_PUNTOYCOMA
+
+    TK_PUNTOYCOMA  desplazar e ir al estado 203
+
+
+Estado 188
+
+   89 ty_d_par_form: ty_d_p_form TK_PUNTOYCOMA . ty_d_par_form
+
+    TK_PR_ENT  desplazar e ir al estado 151
+    TK_PR_ES   desplazar e ir al estado 152
+    TK_PR_SAL  desplazar e ir al estado 153
+
+    $default  reduce usando la regla 90 (ty_d_par_form)
+
+    ty_d_par_form  ir al estado 204
+    ty_d_p_form    ir al estado 155
+
+
+Estado 189
+
+   88 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL . TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA
+
+    TK_PR_DEV  desplazar e ir al estado 205
+
+
+Estado 190
+
+   48 ty_expresion: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   86 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion . TK_PR_FFUNCION
+
+    TK_PR_FFUNCION    desplazar e ir al estado 206
+    TK_OP_RELACIONAL  desplazar e ir al estado 130
+
+
+Estado 191
 
    21 ty_d_tipo: TK_PR_TABLA TK_INICIO_ARRAY ty_expresion_t TK_SUBRANGO . ty_expresion_t TK_FIN_ARRAY TK_PR_DE ty_d_tipo
 
@@ -2262,121 +2461,10 @@ Estado 182
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
 
-    ty_expresion_t  ir al estado 198
-    ty_expresion    ir al estado 88
-    ty_exp_a        ir al estado 89
-    ty_exp_b        ir al estado 90
-    ty_operando     ir al estado 91
-    ty_funcion_ll   ir al estado 92
-
-
-Estado 183
-
-   28 ty_lista_campos: TK_IDENTIFICADOR TK_TIPO_VAR ty_d_tipo . TK_PUNTOYCOMA ty_lista_campos
-
-    TK_PUNTOYCOMA  desplazar e ir al estado 199
-
-
-Estado 184
-
-   90 ty_funcion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL .
-
-    $default  reduce usando la regla 90 (ty_funcion_ll)
-
-
-Estado 185
-
-   37 ty_lista_d_var: ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var .
-
-    $default  reduce usando la regla 37 (ty_lista_d_var)
-
-
-Estado 186
-
-   78 ty_it_cota_exp: TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS .
-
-    $default  reduce usando la regla 78 (ty_it_cota_exp)
-
-
-Estado 187
-
-   79 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA . ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
-
-    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
-    TK_IDENTIFICADOR       desplazar e ir al estado 97
-    TK_ENTERO              desplazar e ir al estado 79
-    TK_REAL                desplazar e ir al estado 80
-    TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
-
-    ty_expresion   ir al estado 200
-    ty_exp_a       ir al estado 89
-    ty_exp_b       ir al estado 90
-    ty_operando    ir al estado 91
-    ty_funcion_ll  ir al estado 92
-
-
-Estado 188
-
-   74 ty_lista_opciones: TK_SINOSI . ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones
-
-    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
-    TK_IDENTIFICADOR       desplazar e ir al estado 97
-    TK_ENTERO              desplazar e ir al estado 79
-    TK_REAL                desplazar e ir al estado 80
-    TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
-
-    ty_expresion   ir al estado 201
-    ty_exp_a       ir al estado 89
-    ty_exp_b       ir al estado 90
-    ty_operando    ir al estado 91
-    ty_funcion_ll  ir al estado 92
-
-
-Estado 189
-
-   73 ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones . TK_PR_FSI
-
-    TK_PR_FSI  desplazar e ir al estado 202
-
-
-Estado 190
-
-   91 ty_l_ll: ty_expresion TK_SEPARADOR ty_l_ll .
-
-    $default  reduce usando la regla 91 (ty_l_ll)
-
-
-Estado 191
-
-   86 ty_d_p_form: TK_PR_ENT ty_lista_id TK_TIPO_VAR . ty_d_tipo
-
-    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
-    TK_PR_BOOLEANO         desplazar e ir al estado 67
-    TK_PR_CADENA           desplazar e ir al estado 68
-    TK_PR_CARACTER         desplazar e ir al estado 69
-    TK_PR_ENTERO           desplazar e ir al estado 70
-    TK_PR_REAL             desplazar e ir al estado 71
-    TK_PR_TABLA            desplazar e ir al estado 75
-    TK_PR_TUPLA            desplazar e ir al estado 76
-    TK_CARACTER            desplazar e ir al estado 77
-    TK_IDENTIFICADOR       desplazar e ir al estado 78
-    TK_ENTERO              desplazar e ir al estado 79
-    TK_REAL                desplazar e ir al estado 80
-    TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
-    TK_PR_REF              desplazar e ir al estado 84
-
-    ty_d_tipo       ir al estado 203
-    ty_expresion_t  ir al estado 86
-    ty_tipo_base    ir al estado 87
+    ty_expresion_t  ir al estado 207
     ty_expresion    ir al estado 88
     ty_exp_a        ir al estado 89
     ty_exp_b        ir al estado 90
@@ -2386,83 +2474,87 @@ Estado 191
 
 Estado 192
 
-   88 ty_d_p_form: TK_PR_ES ty_lista_id TK_TIPO_VAR . ty_d_tipo
+   28 ty_lista_campos: TK_IDENTIFICADOR TK_TIPO_VAR ty_d_tipo . TK_PUNTOYCOMA ty_lista_campos
 
-    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
-    TK_PR_BOOLEANO         desplazar e ir al estado 67
-    TK_PR_CADENA           desplazar e ir al estado 68
-    TK_PR_CARACTER         desplazar e ir al estado 69
-    TK_PR_ENTERO           desplazar e ir al estado 70
-    TK_PR_REAL             desplazar e ir al estado 71
-    TK_PR_TABLA            desplazar e ir al estado 75
-    TK_PR_TUPLA            desplazar e ir al estado 76
-    TK_CARACTER            desplazar e ir al estado 77
-    TK_IDENTIFICADOR       desplazar e ir al estado 78
-    TK_ENTERO              desplazar e ir al estado 79
-    TK_REAL                desplazar e ir al estado 80
-    TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
-    TK_PR_REF              desplazar e ir al estado 84
-
-    ty_d_tipo       ir al estado 204
-    ty_expresion_t  ir al estado 86
-    ty_tipo_base    ir al estado 87
-    ty_expresion    ir al estado 88
-    ty_exp_a        ir al estado 89
-    ty_exp_b        ir al estado 90
-    ty_operando     ir al estado 91
-    ty_funcion_ll   ir al estado 92
+    TK_PUNTOYCOMA  desplazar e ir al estado 208
 
 
 Estado 193
 
-   87 ty_d_p_form: TK_PR_SAL ty_lista_id TK_TIPO_VAR . ty_d_tipo
+   95 ty_funcion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL .
 
-    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
-    TK_PR_BOOLEANO         desplazar e ir al estado 67
-    TK_PR_CADENA           desplazar e ir al estado 68
-    TK_PR_CARACTER         desplazar e ir al estado 69
-    TK_PR_ENTERO           desplazar e ir al estado 70
-    TK_PR_REAL             desplazar e ir al estado 71
-    TK_PR_TABLA            desplazar e ir al estado 75
-    TK_PR_TUPLA            desplazar e ir al estado 76
-    TK_CARACTER            desplazar e ir al estado 77
-    TK_IDENTIFICADOR       desplazar e ir al estado 78
-    TK_ENTERO              desplazar e ir al estado 79
-    TK_REAL                desplazar e ir al estado 80
-    TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
-    TK_PR_REF              desplazar e ir al estado 84
-
-    ty_d_tipo       ir al estado 205
-    ty_expresion_t  ir al estado 86
-    ty_tipo_base    ir al estado 87
-    ty_expresion    ir al estado 88
-    ty_exp_a        ir al estado 89
-    ty_exp_b        ir al estado 90
-    ty_operando     ir al estado 91
-    ty_funcion_ll   ir al estado 92
+    $default  reduce usando la regla 95 (ty_funcion_ll)
 
 
 Estado 194
 
-   82 ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA .
+   37 ty_lista_d_var: ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var .
 
-    $default  reduce usando la regla 82 (ty_a_cabecera)
+    $default  reduce usando la regla 37 (ty_lista_d_var)
 
 
 Estado 195
 
-   84 ty_d_par_form: ty_d_p_form TK_PUNTOYCOMA ty_d_par_form .
+   83 ty_it_cota_exp: TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS .
 
-    $default  reduce usando la regla 84 (ty_d_par_form)
+    $default  reduce usando la regla 83 (ty_it_cota_exp)
 
 
 Estado 196
 
-   83 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV . ty_d_tipo TK_PUNTOYCOMA
+   84 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA . ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA
+
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
+    TK_IDENTIFICADOR       desplazar e ir al estado 97
+    TK_ENTERO              desplazar e ir al estado 79
+    TK_REAL                desplazar e ir al estado 80
+    TK_BOOLEANO            desplazar e ir al estado 81
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
+
+    ty_expresion   ir al estado 209
+    ty_exp_a       ir al estado 89
+    ty_exp_b       ir al estado 90
+    ty_operando    ir al estado 91
+    ty_funcion_ll  ir al estado 92
+
+
+Estado 197
+
+   79 ty_lista_opciones: TK_SINOSI . ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones
+
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
+    TK_IDENTIFICADOR       desplazar e ir al estado 97
+    TK_ENTERO              desplazar e ir al estado 79
+    TK_REAL                desplazar e ir al estado 80
+    TK_BOOLEANO            desplazar e ir al estado 81
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
+
+    ty_expresion   ir al estado 210
+    ty_exp_a       ir al estado 89
+    ty_exp_b       ir al estado 90
+    ty_operando    ir al estado 91
+    ty_funcion_ll  ir al estado 92
+
+
+Estado 198
+
+   78 ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones . TK_PR_FSI
+
+    TK_PR_FSI  desplazar e ir al estado 211
+
+
+Estado 199
+
+   96 ty_l_ll: ty_expresion TK_SEPARADOR ty_l_ll .
+
+    $default  reduce usando la regla 96 (ty_l_ll)
+
+
+Estado 200
+
+   91 ty_d_p_form: TK_PR_ENT ty_lista_id TK_TIPO_VAR . ty_d_tipo
 
     TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
     TK_PR_BOOLEANO         desplazar e ir al estado 67
@@ -2477,11 +2569,11 @@ Estado 196
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
     TK_PR_REF              desplazar e ir al estado 84
 
-    ty_d_tipo       ir al estado 206
+    ty_d_tipo       ir al estado 212
     ty_expresion_t  ir al estado 86
     ty_tipo_base    ir al estado 87
     ty_expresion    ir al estado 88
@@ -2491,21 +2583,128 @@ Estado 196
     ty_funcion_ll   ir al estado 92
 
 
-Estado 197
+Estado 201
 
-   81 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION .
+   93 ty_d_p_form: TK_PR_ES ty_lista_id TK_TIPO_VAR . ty_d_tipo
 
-    $default  reduce usando la regla 81 (ty_funcion_d)
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
+    TK_PR_BOOLEANO         desplazar e ir al estado 67
+    TK_PR_CADENA           desplazar e ir al estado 68
+    TK_PR_CARACTER         desplazar e ir al estado 69
+    TK_PR_ENTERO           desplazar e ir al estado 70
+    TK_PR_REAL             desplazar e ir al estado 71
+    TK_PR_TABLA            desplazar e ir al estado 75
+    TK_PR_TUPLA            desplazar e ir al estado 76
+    TK_CARACTER            desplazar e ir al estado 77
+    TK_IDENTIFICADOR       desplazar e ir al estado 78
+    TK_ENTERO              desplazar e ir al estado 79
+    TK_REAL                desplazar e ir al estado 80
+    TK_BOOLEANO            desplazar e ir al estado 81
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
+    TK_PR_REF              desplazar e ir al estado 84
+
+    ty_d_tipo       ir al estado 213
+    ty_expresion_t  ir al estado 86
+    ty_tipo_base    ir al estado 87
+    ty_expresion    ir al estado 88
+    ty_exp_a        ir al estado 89
+    ty_exp_b        ir al estado 90
+    ty_operando     ir al estado 91
+    ty_funcion_ll   ir al estado 92
 
 
-Estado 198
+Estado 202
+
+   92 ty_d_p_form: TK_PR_SAL ty_lista_id TK_TIPO_VAR . ty_d_tipo
+
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
+    TK_PR_BOOLEANO         desplazar e ir al estado 67
+    TK_PR_CADENA           desplazar e ir al estado 68
+    TK_PR_CARACTER         desplazar e ir al estado 69
+    TK_PR_ENTERO           desplazar e ir al estado 70
+    TK_PR_REAL             desplazar e ir al estado 71
+    TK_PR_TABLA            desplazar e ir al estado 75
+    TK_PR_TUPLA            desplazar e ir al estado 76
+    TK_CARACTER            desplazar e ir al estado 77
+    TK_IDENTIFICADOR       desplazar e ir al estado 78
+    TK_ENTERO              desplazar e ir al estado 79
+    TK_REAL                desplazar e ir al estado 80
+    TK_BOOLEANO            desplazar e ir al estado 81
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
+    TK_PR_REF              desplazar e ir al estado 84
+
+    ty_d_tipo       ir al estado 214
+    ty_expresion_t  ir al estado 86
+    ty_tipo_base    ir al estado 87
+    ty_expresion    ir al estado 88
+    ty_exp_a        ir al estado 89
+    ty_exp_b        ir al estado 90
+    ty_operando     ir al estado 91
+    ty_funcion_ll   ir al estado 92
+
+
+Estado 203
+
+   87 ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA .
+
+    $default  reduce usando la regla 87 (ty_a_cabecera)
+
+
+Estado 204
+
+   89 ty_d_par_form: ty_d_p_form TK_PUNTOYCOMA ty_d_par_form .
+
+    $default  reduce usando la regla 89 (ty_d_par_form)
+
+
+Estado 205
+
+   88 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV . ty_d_tipo TK_PUNTOYCOMA
+
+    TK_PARENTESIS_INICIAL  desplazar e ir al estado 74
+    TK_PR_BOOLEANO         desplazar e ir al estado 67
+    TK_PR_CADENA           desplazar e ir al estado 68
+    TK_PR_CARACTER         desplazar e ir al estado 69
+    TK_PR_ENTERO           desplazar e ir al estado 70
+    TK_PR_REAL             desplazar e ir al estado 71
+    TK_PR_TABLA            desplazar e ir al estado 75
+    TK_PR_TUPLA            desplazar e ir al estado 76
+    TK_CARACTER            desplazar e ir al estado 77
+    TK_IDENTIFICADOR       desplazar e ir al estado 78
+    TK_ENTERO              desplazar e ir al estado 79
+    TK_REAL                desplazar e ir al estado 80
+    TK_BOOLEANO            desplazar e ir al estado 81
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
+    TK_PR_REF              desplazar e ir al estado 84
+
+    ty_d_tipo       ir al estado 215
+    ty_expresion_t  ir al estado 86
+    ty_tipo_base    ir al estado 87
+    ty_expresion    ir al estado 88
+    ty_exp_a        ir al estado 89
+    ty_exp_b        ir al estado 90
+    ty_operando     ir al estado 91
+    ty_funcion_ll   ir al estado 92
+
+
+Estado 206
+
+   86 ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION .
+
+    $default  reduce usando la regla 86 (ty_funcion_d)
+
+
+Estado 207
 
    21 ty_d_tipo: TK_PR_TABLA TK_INICIO_ARRAY ty_expresion_t TK_SUBRANGO ty_expresion_t . TK_FIN_ARRAY TK_PR_DE ty_d_tipo
 
-    TK_FIN_ARRAY  desplazar e ir al estado 207
+    TK_FIN_ARRAY  desplazar e ir al estado 216
 
 
-Estado 199
+Estado 208
 
    28 ty_lista_campos: TK_IDENTIFICADOR TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA . ty_lista_campos
 
@@ -2513,79 +2712,79 @@ Estado 199
 
     $default  reduce usando la regla 29 (ty_lista_campos)
 
-    ty_lista_campos  ir al estado 208
+    ty_lista_campos  ir al estado 217
 
 
-Estado 200
+Estado 209
 
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
-   79 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion . TK_PR_HACER ty_instrucciones TK_PR_FPARA
+   48 ty_expresion: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   84 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion . TK_PR_HACER ty_instrucciones TK_PR_FPARA
 
-    TK_PR_HACER       desplazar e ir al estado 209
+    TK_PR_HACER       desplazar e ir al estado 218
     TK_OP_RELACIONAL  desplazar e ir al estado 130
 
 
-Estado 201
+Estado 210
 
-   59 ty_exp_b: ty_expresion . TK_OP_RELACIONAL ty_expresion
-   74 ty_lista_opciones: TK_SINOSI ty_expresion . TK_ENTONCES ty_instrucciones ty_lista_opciones
+   48 ty_expresion: ty_expresion . TK_OP_RELACIONAL ty_expresion
+   79 ty_lista_opciones: TK_SINOSI ty_expresion . TK_ENTONCES ty_instrucciones ty_lista_opciones
 
-    TK_ENTONCES       desplazar e ir al estado 210
+    TK_ENTONCES       desplazar e ir al estado 219
     TK_OP_RELACIONAL  desplazar e ir al estado 130
 
 
-Estado 202
+Estado 211
 
-   73 ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI .
+   78 ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI .
 
-    $default  reduce usando la regla 73 (ty_alternativa)
-
-
-Estado 203
-
-   86 ty_d_p_form: TK_PR_ENT ty_lista_id TK_TIPO_VAR ty_d_tipo .
-
-    $default  reduce usando la regla 86 (ty_d_p_form)
+    $default  reduce usando la regla 78 (ty_alternativa)
 
 
-Estado 204
+Estado 212
 
-   88 ty_d_p_form: TK_PR_ES ty_lista_id TK_TIPO_VAR ty_d_tipo .
+   91 ty_d_p_form: TK_PR_ENT ty_lista_id TK_TIPO_VAR ty_d_tipo .
 
-    $default  reduce usando la regla 88 (ty_d_p_form)
-
-
-Estado 205
-
-   87 ty_d_p_form: TK_PR_SAL ty_lista_id TK_TIPO_VAR ty_d_tipo .
-
-    $default  reduce usando la regla 87 (ty_d_p_form)
+    $default  reduce usando la regla 91 (ty_d_p_form)
 
 
-Estado 206
+Estado 213
 
-   83 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo . TK_PUNTOYCOMA
+   93 ty_d_p_form: TK_PR_ES ty_lista_id TK_TIPO_VAR ty_d_tipo .
 
-    TK_PUNTOYCOMA  desplazar e ir al estado 211
+    $default  reduce usando la regla 93 (ty_d_p_form)
 
 
-Estado 207
+Estado 214
+
+   92 ty_d_p_form: TK_PR_SAL ty_lista_id TK_TIPO_VAR ty_d_tipo .
+
+    $default  reduce usando la regla 92 (ty_d_p_form)
+
+
+Estado 215
+
+   88 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo . TK_PUNTOYCOMA
+
+    TK_PUNTOYCOMA  desplazar e ir al estado 220
+
+
+Estado 216
 
    21 ty_d_tipo: TK_PR_TABLA TK_INICIO_ARRAY ty_expresion_t TK_SUBRANGO ty_expresion_t TK_FIN_ARRAY . TK_PR_DE ty_d_tipo
 
-    TK_PR_DE  desplazar e ir al estado 212
+    TK_PR_DE  desplazar e ir al estado 221
 
 
-Estado 208
+Estado 217
 
    28 ty_lista_campos: TK_IDENTIFICADOR TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_campos .
 
     $default  reduce usando la regla 28 (ty_lista_campos)
 
 
-Estado 209
+Estado 218
 
-   79 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER . ty_instrucciones TK_PR_FPARA
+   84 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER . ty_instrucciones TK_PR_FPARA
 
     TK_PR_CONTINUAR   desplazar e ir al estado 39
     TK_PR_MIENTRAS    desplazar e ir al estado 40
@@ -2594,7 +2793,7 @@ Estado 209
     TK_IDENTIFICADOR  desplazar e ir al estado 43
 
     ty_operando       ir al estado 44
-    ty_instrucciones  ir al estado 213
+    ty_instrucciones  ir al estado 222
     ty_instruccion    ir al estado 46
     ty_asignacion     ir al estado 47
     ty_alternativa    ir al estado 48
@@ -2604,9 +2803,9 @@ Estado 209
     ty_accion_ll      ir al estado 52
 
 
-Estado 210
+Estado 219
 
-   74 ty_lista_opciones: TK_SINOSI ty_expresion TK_ENTONCES . ty_instrucciones ty_lista_opciones
+   79 ty_lista_opciones: TK_SINOSI ty_expresion TK_ENTONCES . ty_instrucciones ty_lista_opciones
 
     TK_PR_CONTINUAR   desplazar e ir al estado 39
     TK_PR_MIENTRAS    desplazar e ir al estado 40
@@ -2615,7 +2814,7 @@ Estado 210
     TK_IDENTIFICADOR  desplazar e ir al estado 43
 
     ty_operando       ir al estado 44
-    ty_instrucciones  ir al estado 214
+    ty_instrucciones  ir al estado 223
     ty_instruccion    ir al estado 46
     ty_asignacion     ir al estado 47
     ty_alternativa    ir al estado 48
@@ -2625,14 +2824,14 @@ Estado 210
     ty_accion_ll      ir al estado 52
 
 
-Estado 211
+Estado 220
 
-   83 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA .
+   88 ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA .
 
-    $default  reduce usando la regla 83 (ty_f_cabecera)
+    $default  reduce usando la regla 88 (ty_f_cabecera)
 
 
-Estado 212
+Estado 221
 
    21 ty_d_tipo: TK_PR_TABLA TK_INICIO_ARRAY ty_expresion_t TK_SUBRANGO ty_expresion_t TK_FIN_ARRAY TK_PR_DE . ty_d_tipo
 
@@ -2649,11 +2848,11 @@ Estado 212
     TK_ENTERO              desplazar e ir al estado 79
     TK_REAL                desplazar e ir al estado 80
     TK_BOOLEANO            desplazar e ir al estado 81
-    TK_OP_ARITMETICO       desplazar e ir al estado 82
-    TK_PR_NO               desplazar e ir al estado 83
+    TK_PR_NO               desplazar e ir al estado 82
+    TK_MENOS               desplazar e ir al estado 83
     TK_PR_REF              desplazar e ir al estado 84
 
-    ty_d_tipo       ir al estado 215
+    ty_d_tipo       ir al estado 224
     ty_expresion_t  ir al estado 86
     ty_tipo_base    ir al estado 87
     ty_expresion    ir al estado 88
@@ -2663,40 +2862,40 @@ Estado 212
     ty_funcion_ll   ir al estado 92
 
 
-Estado 213
+Estado 222
 
-   79 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones . TK_PR_FPARA
+   84 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones . TK_PR_FPARA
 
-    TK_PR_FPARA  desplazar e ir al estado 216
-
-
-Estado 214
-
-   74 ty_lista_opciones: TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones . ty_lista_opciones
-
-    TK_SINOSI  desplazar e ir al estado 188
-
-    $default  reduce usando la regla 75 (ty_lista_opciones)
-
-    ty_lista_opciones  ir al estado 217
+    TK_PR_FPARA  desplazar e ir al estado 225
 
 
-Estado 215
+Estado 223
+
+   79 ty_lista_opciones: TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones . ty_lista_opciones
+
+    TK_SINOSI  desplazar e ir al estado 197
+
+    $default  reduce usando la regla 80 (ty_lista_opciones)
+
+    ty_lista_opciones  ir al estado 226
+
+
+Estado 224
 
    21 ty_d_tipo: TK_PR_TABLA TK_INICIO_ARRAY ty_expresion_t TK_SUBRANGO ty_expresion_t TK_FIN_ARRAY TK_PR_DE ty_d_tipo .
 
     $default  reduce usando la regla 21 (ty_d_tipo)
 
 
-Estado 216
+Estado 225
 
-   79 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA .
+   84 ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA .
 
-    $default  reduce usando la regla 79 (ty_it_cota_fija)
+    $default  reduce usando la regla 84 (ty_it_cota_fija)
 
 
-Estado 217
+Estado 226
 
-   74 ty_lista_opciones: TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones .
+   79 ty_lista_opciones: TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones .
 
-    $default  reduce usando la regla 74 (ty_lista_opciones)
+    $default  reduce usando la regla 79 (ty_lista_opciones)
