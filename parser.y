@@ -247,6 +247,7 @@ ty_expresion:
     no se puede hacer a:= "hola"   ???????????????????*/
       ty_exp_a {printf("\n");}
     | ty_exp_b %prec TK_NADA_PRIORITARIO{printf("\n");} /*ESTO NO TIENE QUE FUNCIONAR ASI!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!*/
+    | ty_expresion TK_OP_RELACIONAL ty_expresion {printf("\n");} /* NO TENÍA NINGÚN SENTIDO EN EXPRESION_B, DABA PROBLEMAS SERIOS DE RR. OROEL CREE QUE ESTO ESTA MAL Y DEBERIA SER UN TY_EXP_B Y NO UN TY_EXPRESION*/
     | ty_funcion_ll {printf("\n");}
     ;
 ty_exp_a:
@@ -270,7 +271,7 @@ ty_exp_b:
     /*| ty_operando {printf("\n");} /* ESTO ESTA COMENTADO PORQUE SINO DA ERROR EL BISON PERO NO SE PORQUE!!!!!!!!!*/
     | TK_BOOLEANO {printf("\n");}
     /*ESTADO 165: AQUI TENEMOS OTRO CONFLICTO S/R: SI TENEMOS x < y < z ESTO TIENE QUE DAR ERROR. TENEMOS QUE HACER TK_OP_RELACIONAL %nonassoc PORQUE SIEMPRE TIENE QUE HABER PARENTESIS */
-    | ty_expresion TK_OP_RELACIONAL ty_expresion {printf("\n");}
+  /*| ty_expresion TK_OP_RELACIONAL ty_expresion {printf("\n");} CARLOS HA QUITADO ESTO Y OROEL OPINA QUE DEBERIA ESTAR AQUI*/
     | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL {printf("\n");}
     ;
     
