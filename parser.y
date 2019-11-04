@@ -16,8 +16,6 @@ void yyerror(const char *s);
 
 %start ty_desc_algoritmo
 
-
-
 %token TK_PARENTESIS_INICIAL
 %token TK_PARENTESIS_FINAL
 %token TK_IGUAL
@@ -29,7 +27,6 @@ void yyerror(const char *s);
 %token TK_ENTONCES
 %token TK_SINOSI
 %token TK_FIN_ARRAY
-
 
 %token TK_PR_ACCION
 %token TK_PR_ALGORITMO
@@ -76,9 +73,9 @@ void yyerror(const char *s);
 
 
 %precedence TK_NADA_PRIORITARIO
+/*no todos los TK_OP_RELACIONAL pueden usarse para boolenaos, solo = y <>.  PERO NO <,>,=>,=<*/
 %left TK_PR_O 
 %left TK_PR_Y
-/*no todos los TK_OP_RELACIONAL pueden usarse para boolenaos, solo = y <>.  PERO NO <,>,=>,=<*/
 %nonassoc <str> TK_OP_RELACIONAL
 %nonassoc TK_PR_NO
 %left TK_MAS TK_MENOS
@@ -156,7 +153,6 @@ ty_decl_globales:
     | /*vacio*/{printf("\n");}
     ;
 
-
 ty_decl_a_f:
       ty_accion_d  ty_decl_a_f {printf("\n");}
     | ty_funcion_d ty_decl_a_f {printf("\n");}
@@ -177,16 +173,20 @@ ty_declaraciones:
 ty_decl_tipo:
     TK_PR_TIPO ty_lista_d_tipo TK_PR_FTIPO TK_PUNTOYCOMA {printf("\n");}
     ;
+
 ty_decl_cte:
     TK_PR_CONST ty_lista_d_cte TK_PR_FCONST TK_PUNTOYCOMA{printf("\n");}
     ;
+
 ty_decl_var:
     TK_PR_VAR ty_lista_d_var TK_PR_FVAR TK_PUNTOYCOMA{printf("\n");}//los programas de fitxi no tienen ;
     ;
+
 ty_lista_d_tipo:
       TK_IDENTIFICADOR TK_IGUAL ty_d_tipo TK_PUNTOYCOMA ty_lista_d_tipo {printf("\n");}
     | /*vacio*/{printf("\n");}
     ;
+
 ty_d_tipo:
       TK_PR_TUPLA ty_lista_campos TK_PR_FTUPLA {printf("\n");}
     | TK_PR_TABLA TK_INICIO_ARRAY ty_expresion_t TK_SUBRANGO ty_expresion_t TK_FIN_ARRAY TK_PR_DE ty_d_tipo {printf("\n");}
@@ -214,11 +214,11 @@ ty_tipo_base:
     |TK_PR_CADENA {printf("\n");}
     ;
 
-
 ty_lista_d_cte:/*esto de ty_tipo_base lo hemos cambiado por "literal"*/
     TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte{printf("\n");}
     |/*vacio*/{printf("\n");}
     ;
+
 ty_lista_d_var:
       /*PROBABLEMENTE HAYA QUE QUITAR LA PRIMERA REGLA PORQUE UN ty_d_tipo YA PUEDE SER UN IDENTIFICADOR Y POR ESO ESTA
       EL CONFLICTO SHIFT/REDUCE. MEJOR IDENTIFICARLO SIEMRE COMO QUE ES UN ty_d_tipo Y NO HACER UNA REGLA ESPECIAL PARA EL IDENTIFICADOR*/
@@ -226,6 +226,7 @@ ty_lista_d_var:
     |*/ ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var {printf("\n");}
     | /*vacio*/{printf("\n");}
     ;
+
 ty_lista_id:
       TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id {printf("\n");}
     | TK_IDENTIFICADOR {printf("\n");}
@@ -236,12 +237,15 @@ ty_decl_ent_sal:
     | ty_decl_ent ty_decl_sal {printf("\n");}
     | ty_decl_sal {printf("\n");}
     ;
+
 ty_decl_ent:
     TK_PR_ENT ty_lista_d_var {printf("\n");}
     ;
+
 ty_decl_sal:
     TK_PR_SAL ty_lista_d_var {printf("\n");}
     ;
+
 ty_expresion:
     /*porque hay expresiones de cadena ni de caracter???
     no se puede hacer a:= "hola"   ???????????????????*/
@@ -250,6 +254,7 @@ ty_expresion:
     | ty_expresion TK_OP_RELACIONAL ty_expresion {printf("\n");} /* NO TENÍA NINGÚN SENTIDO EN EXPRESION_B, DABA PROBLEMAS SERIOS DE RR. OROEL CREE QUE ESTO ESTA MAL Y DEBERIA SER UN TY_EXP_B Y NO UN TY_EXPRESION*/
     | ty_funcion_ll {printf("\n");}
     ;
+
 ty_exp_a:
       ty_exp_a TK_MAS ty_exp_a {printf("\n");}
     | ty_exp_a TK_MENOS ty_exp_a {printf("\n");}
@@ -274,8 +279,7 @@ ty_exp_b:
   /*| ty_expresion TK_OP_RELACIONAL ty_expresion {printf("\n");} CARLOS HA QUITADO ESTO Y OROEL OPINA QUE DEBERIA ESTAR AQUI*/
     | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL {printf("\n");}
     ;
-    
-    
+
 ty_operando:
     /*AQUI EN EL CONFLICTO SUPONGO QUE HABRA QUE HACER UN SHIFT POR PURA ASOCIATIVIDAD, PARA REDUCIR LA PILA.
     ADEMAS ES EL MODO DE ACCEDER A LAS VARIABLES: SI TIENES variable1.variable2[variable3] PRIMERO HABRA QUE IR DE FUERA HACIA ADENTRO Y REDUCIR variable1.variable2 A UNA SOLA VARIABLE (variable12) PARA LUEGO ACCEDER A ESA VARIABLE variable12[variable3]*/
@@ -285,7 +289,6 @@ ty_operando:
     | ty_operando TK_PR_REF {printf("\n");}
     ;
     
-
 ty_instrucciones:
       ty_instruccion TK_PUNTOYCOMA ty_instrucciones {printf("\n");}
     | ty_instruccion {printf("\n");}
