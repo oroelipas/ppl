@@ -6,8 +6,10 @@ extern int yylineno;
 void yyerror(const char *s);
 FILE *fSaR;
 %}
-
-
+/*
+%glr-parser ESTO DE CAMBIAR DE TIPO DE PARSER NO CREO QUE SEA BUENA IDEA
+%expect-rr 6
+*/
 %union{
   char *str;
   char caracter;
@@ -19,7 +21,6 @@ FILE *fSaR;
 
 %token TK_PARENTESIS_INICIAL
 %token TK_PARENTESIS_FINAL
-%token TK_IGUAL
 %token TK_ASIGNACION
 %token TK_PUNTOYCOMA
 %token TK_SEPARADOR
@@ -78,7 +79,8 @@ FILE *fSaR;
 %left TK_PR_O
 %left TK_PR_Y
 /*%nonassoc para no permitir 3<4<5*/
-%nonassoc <str> TK_OP_RELACIONAL
+%nonassoc TK_IGUAL
+%nonassoc <str> TK_OP_RELACIONAL 
 %nonassoc TK_PR_NO
 %left TK_MAS TK_MENOS
 %left TK_MULT TK_DIV TK_DIV_ENT TK_MOD
@@ -247,12 +249,6 @@ ty_decl_sal:
     TK_PR_SAL ty_lista_d_var {fprintf(fSaR,"REDUCE ty_decl_sal: TK_PR_SAL ty_lista_d_var\n");}
     ;
 
-ty_expresion:
-      ty_exp_a {fprintf(fSaR,"REDUCE ty_expresion: ty_exp_a\n");}
-    | ty_exp_b %prec TK_NADA_PRIORITARIO{fprintf(fSaR,"REDUCE ty_expresion: ty_exp_b\n");} /*ESTO NO TIENE QUE FUNCIONAR ASI!!!!!*/
-    | ty_funcion_ll {fprintf(fSaR,"REDUCE ty_expresion: ty_funcion_ll\n");}
-    ;
-
 ty_exp_a:
       ty_exp_a TK_MAS ty_exp_a {fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MAS ty_exp_a\n");}
     | ty_exp_a TK_MENOS ty_exp_a {fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MENOS ty_exp_a\n");}
@@ -267,13 +263,30 @@ ty_exp_a:
     | TK_MENOS ty_exp_a %prec TK_MENOS_U {fprintf(fSaR,"REDUCE ty_exp_a: TK_MENOS ty_exp_a\n");}
     ;
 
+/*
+ESTO ES PARA ELIMINAR LOS S/R
+(TAMBIEN MOLARIA QUE MAS, MENOS, MULT, DIV.... ESTUVIESEN JUNTOS COMO ESTOS)
+NO SABEMOS LA FORMA DE QUE AL HACER ESTO ty_op_relacional TAMBIEN SEA NONASOC
+ty_op_relacional:
+      TK_OP_RELACIONAL {}
+    | TK_IGUAL {}
+    ;
+*/
+    
 ty_exp_b:
       ty_exp_b TK_PR_Y ty_exp_b {fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_Y ty_exp_b\n");}/*AQUI IGUAL SE PUEDEN DEFINIR OP_LOGICO: CUYOS VALORES SEAN Y,O*/
     | ty_exp_b TK_PR_O ty_exp_b {fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_O ty_exp_b\n");}
-    | TK_PR_NO ty_exp_b %prec TK_MUY_PRIORITARIO{fprintf(fSaR,"REDUCE ty_exp_b: TK_PR_NO ty_exp_b\n");}
+    | TK_PR_NO ty_exp_b /*%prec TK_MUY_PRIORITARIO*/{fprintf(fSaR,"REDUCE ty_exp_b: TK_PR_NO ty_exp_b\n");}
     | TK_BOOLEANO {fprintf(fSaR,"REDUCE ty_exp_b: TK_BOOLEANO\n");}
     | ty_expresion TK_OP_RELACIONAL ty_expresion {fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_OP_RELACIONAL ty_expresion\n");}
+    | ty_expresion TK_IGUAL ty_expresion {fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_IGUAL ty_expresion\n");}
     | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL {fprintf(fSaR,"REDUCE ty_exp_b: TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL\n");}
+    ;
+
+ty_expresion:
+      ty_exp_a {fprintf(fSaR,"REDUCE ty_expresion: ty_exp_a\n");}
+    | ty_exp_b %prec TK_NADA_PRIORITARIO{fprintf(fSaR,"REDUCE ty_expresion: ty_exp_b\n");} /*ESTO NO TIENE QUE FUNCIONAR ASI!!!!!*/
+    | ty_funcion_ll {fprintf(fSaR,"REDUCE ty_expresion: ty_funcion_ll\n");}
     ;
 
 
