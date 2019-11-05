@@ -277,91 +277,91 @@ ty_exp_b:
 ty_operando:
     /*AQUI EN EL CONFLICTO SUPONGO QUE HABRA QUE HACER UN SHIFT POR PURA ASOCIATIVIDAD, PARA REDUCIR LA PILA.
     ADEMAS ES EL MODO DE ACCEDER A LAS VARIABLES: SI TIENES variable1.variable2[variable3] PRIMERO HABRA QUE IR DE FUERA HACIA ADENTRO Y REDUCIR variable1.variable2 A UNA SOLA VARIABLE (variable12) PARA LUEGO ACCEDER A ESA VARIABLE variable12[variable3]*/
-      TK_IDENTIFICADOR {printf("REDUCE\n");}
-    | ty_operando TK_PUNTO ty_operando {printf("REDUCE\n");}
-    | ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY {printf("REDUCE\n");}
-    | ty_operando TK_PR_REF {printf("REDUCE\n");}
+      TK_IDENTIFICADOR {printf("REDUCE ty_operando: TK_IDENTIFICADOR\n");}
+    | ty_operando TK_PUNTO ty_operando {printf("REDUCE ty_operando: ty_operando TK_PUNTO ty_operando\n");}
+    | ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY {printf("REDUCE ty_operando: ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY\n");}
+    | ty_operando TK_PR_REF {printf("REDUCE ty_operando: ty_operando TK_PR_REF\n");}
     ;
 
 ty_instrucciones:
-      ty_instruccion TK_PUNTOYCOMA ty_instrucciones {printf("REDUCE\n");}
-    | ty_instruccion {printf("REDUCE\n");}
+      ty_instruccion TK_PUNTOYCOMA ty_instrucciones {printf("REDUCE ty_instrucciones: ty_instruccion TK_PUNTOYCOMA ty_instrucciones\n");}
+    | ty_instruccion {printf("REDUCE ty_instrucciones: ty_instruccion\n");}
     ;
 
 ty_instruccion:
-      TK_PR_CONTINUAR {printf("REDUCE\n");}
-    | ty_asignacion {printf("REDUCE\n");}
-    | ty_alternativa {printf("REDUCE\n");}
-    | ty_iteracion {printf("REDUCE\n");}
-    | ty_accion_ll {printf("REDUCE\n");}
+      TK_PR_CONTINUAR {printf("REDUCE ty_instruccion: TK_PR_CONTINUAR\n");}
+    | ty_asignacion {printf("REDUCE ty_instruccion: ty_asignacion\n");}
+    | ty_alternativa {printf("REDUCE ty_instruccion: ty_alternativa\n");}
+    | ty_iteracion {printf("REDUCE ty_instruccion: ty_iteracion\n");}
+    | ty_accion_ll {printf("REDUCE ty_instruccion: ty_accion_ll\n");}
     ;
 
 ty_asignacion:
     /*Hemos puesto ty_expresion_t en vex de ty_expresion para poder hacer a = 'a'*/
     /*AUN NO SE PUEDEN HACER ASIGNACIONES CON CADENAS a = "hola"     */
-    ty_operando TK_ASIGNACION ty_expresion_t {printf("REDUCE\n");}
+    ty_operando TK_ASIGNACION ty_expresion_t {printf("REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");}
     ;
 
 ty_alternativa:
-    TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI {printf("REDUCE\n");}
+    TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI {printf("REDUCE ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI\n");}
     ;
 
 ty_lista_opciones:
-     TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones {printf("REDUCE\n");}
-    | /*vacio*/{printf("REDUCE\n");}
+     TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones {printf("REDUCE TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones\n");}
+    | /*vacio*/{printf("REDUCE ty_lista_opciones: vacio\n");}
     ;
 
 ty_iteracion:
-      ty_it_cota_fija {printf("REDUCE\n");}
-    | ty_it_cota_exp {printf("REDUCE\n");}
+      ty_it_cota_fija {printf("REDUCE ty_iteracion: ty_it_cota_fija\n");}
+    | ty_it_cota_exp {printf("REDUCE ty_iteracion: ty_it_cota_exp\n");}
     ;
 
 ty_it_cota_exp:
-    TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS {printf("REDUCE\n");}
+    TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS {printf("REDUCE ty_it_cota_exp:  TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS\n");}
     ;
 
 ty_it_cota_fija:
-    TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA {printf("REDUCE\n");}
+    TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA {printf("REDUCE ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA\n");}
     ;
 
 ty_accion_d:
-    TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION {printf("REDUCE\n");}
+    TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION {printf("REDUCE ty_accion_d: TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION\n");}
     ;
 
 ty_funcion_d:
-    TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION {printf("REDUCE\n");}
+    TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION {printf("REDUCE ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION\n");}
     ;
 
 ty_a_cabecera:
-    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA {printf("REDUCE\n");}
+    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA {printf("REDUCE ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA\n");}
     ;
 
  ty_f_cabecera:
-    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA {printf("REDUCE\n");}
+    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA {printf("REDUCE ty_f_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_lista_d_var TK_PARENTESIS_FINAL TK_PR_DEV ty_d_tipo TK_PUNTOYCOMA\n");}
     ;
 
 ty_d_par_form:
-    ty_d_p_form TK_PUNTOYCOMA ty_d_par_form {printf("REDUCE\n");}
-    | /*vacio*/{printf("REDUCE\n");}
+    ty_d_p_form TK_PUNTOYCOMA ty_d_par_form {printf("REDUCE ty_d_par_form: ty_d_p_form TK_PUNTOYCOMA ty_d_par_form\n");}
+    | /*vacio*/{printf("REDUCE ty_d_par_form: vacio\n");}
     ;
 
 ty_d_p_form:
-      TK_PR_ENT ty_lista_id TK_TIPO_VAR ty_d_tipo {printf("REDUCE\n");}
-    | TK_PR_SAL ty_lista_id TK_TIPO_VAR ty_d_tipo {printf("REDUCE\n");}
-    | TK_PR_ES  ty_lista_id TK_TIPO_VAR ty_d_tipo {printf("REDUCE\n");}
+      TK_PR_ENT ty_lista_id TK_TIPO_VAR ty_d_tipo {printf("REDUCE ty_d_p_form: TK_PR_ENT ty_lista_id TK_TIPO_VAR ty_d_tipo\n");}
+    | TK_PR_SAL ty_lista_id TK_TIPO_VAR ty_d_tipo {printf("REDUCE ty_d_p_form: TK_PR_SAL ty_lista_id TK_TIPO_VAR ty_d_tipo\n");}
+    | TK_PR_ES  ty_lista_id TK_TIPO_VAR ty_d_tipo {printf("REDUCE ty_d_p_form: TK_PR_ES  ty_lista_id TK_TIPO_VAR ty_d_tip\n");}
     ;
 
 ty_accion_ll:
-    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL {printf("REDUCE\n");}
+    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL {printf("REDUCE ty_accion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL\n");}
     ;
 
 ty_funcion_ll:
-    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL {printf("REDUCE\n");}
+    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL {printf("REDUCE ty_funcion_ll: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL\n");}
     ;
 
 ty_l_ll:
-      ty_expresion TK_SEPARADOR ty_l_ll {printf("REDUCE\n");}
-    | ty_expresion {printf("REDUCE\n");}
+      ty_expresion TK_SEPARADOR ty_l_ll {printf("REDUCE ty_l_ll: ty_expresion TK_SEPARADOR ty_l_ll\n");}
+    | ty_expresion {printf("REDUCE ty_l_ll: ty_expresion\n");}
     ;
 
 
