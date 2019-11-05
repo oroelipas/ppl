@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "y.tab.h"
+extern FILE *fSaR;//fichero para escribir los SHIFTs que hacemos
 %}
 
 %option yylineno
@@ -94,75 +95,75 @@ dr_entrada_a_omitir [\n\t ]
 
 %%
 {dr_parentesis_inicial} {
-    printf("parentesis_inicial: (\n");
+    fprintf(fSaR,"SHIFT  parentesis_inicial: (\n");
     return TK_PARENTESIS_INICIAL;
 }
 {dr_parentesis_final} {
-    printf("parentesis_final: )\n");
+    fprintf(fSaR,"SHIFT  parentesis_final: )\n");
     return TK_PARENTESIS_FINAL;
 }
 
 
 
 {dr_op_rel_mayor_que} {
-    printf("op_relacional (>)\n");
+    fprintf(fSaR,"SHIFT  op_relacional (>)\n");
     yylval.str = strdup(yytext);
     return TK_OP_RELACIONAL;
 }
 {dr_op_rel_menor_que} {
-    printf("op_relacional (<)\n");
+    fprintf(fSaR,"SHIFT  op_relacional (<)\n");
     yylval.str = strdup(yytext);
     return TK_OP_RELACIONAL;
 }
 {dr_op_rel_mayor_igual_que} {
-    printf("op_relacional (>=)\n");
+    fprintf(fSaR,"SHIFT  op_relacional (>=)\n");
     yylval.str = strdup(yytext);
     return TK_OP_RELACIONAL;
 }
 {dr_op_rel_menor_igual_que} {
-    printf("op_relacional (<=)\n");
+    fprintf(fSaR,"SHIFT  op_relacional (<=)\n");
     yylval.str = strdup(yytext);
     return TK_OP_RELACIONAL;
 }
 {dr_op_rel_desigual} {
-    printf("op_relacional (<>)\n");
+    fprintf(fSaR,"SHIFT  op_relacional (<>)\n");
     yylval.str = strdup(yytext);
     return TK_OP_RELACIONAL;
 }
 
 {dr_simbolo_igual} {
-    printf("simbolo_igual: =\n");
+    fprintf(fSaR,"SHIFT  simbolo_igual: =\n");
     return TK_IGUAL;
 }
 
 
 {dr_op_arit_suma} {
-    printf("op_aritmetico (+)\n");
+    fprintf(fSaR,"SHIFT  op_aritmetico (+)\n");
     yylval.caracter = yytext[0];
     return TK_MAS;
 }
 {dr_op_arit_resta} {
-    printf("op_aritmetico (-)\n");
+    fprintf(fSaR,"SHIFT  op_aritmetico (-)\n");
     yylval.caracter = yytext[0];
     return TK_MENOS;
 }
 {dr_op_arit_mult} {
-    printf("op_aritmetico (*)\n");
+    fprintf(fSaR,"SHIFT  op_aritmetico (*)\n");
     yylval.caracter = yytext[0];
     return TK_MULT;
 }
 {dr_op_arit_div} {
-    printf("op_aritmetico (/)\n");
+    fprintf(fSaR,"SHIFT  op_aritmetico (/)\n");
     yylval.caracter = yytext[0];
     return TK_DIV;
 }
 {dr_op_arit_mod} {
-    printf("op_aritmetico (mod)\n");
+    fprintf(fSaR,"SHIFT  op_aritmetico (mod)\n");
     yylval.caracter = yytext[0];//ESTO VA A DEVOLVER UNA 'M'
     return TK_MOD;
 }
 {dr_op_arit_div_ent} {
-    printf("op_aritmetico (div)\n");
+    fprintf(fSaR,"SHIFT  op_aritmetico (div)\n");
     yylval.caracter = yytext[0];//ESTO VA A DEVOLVER UNA 'D'
     return TK_DIV_ENT;
 }
@@ -170,225 +171,225 @@ dr_entrada_a_omitir [\n\t ]
 
 
 {dr_asignacion} {
-    printf("asignacion (:=)\n");
+    fprintf(fSaR,"SHIFT  asignacion (:=)\n");
     return TK_ASIGNACION;
 }
 {dr_comp_secuencial} {
-    printf("comp_secuencial (;)\n");
+    fprintf(fSaR,"SHIFT  comp_secuencial (;)\n");
     return TK_PUNTOYCOMA;
 }
 {dr_separador} {
-    printf("separador (,)\n");
+    fprintf(fSaR,"SHIFT  separador (,)\n");
     return TK_SEPARADOR;
 }
 {dr_subrango} {
-    printf("subrango (..)\n");//CHECKEAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    fprintf(fSaR,"SHIFT  subrango (..)\n");//CHECKEAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     return TK_SUBRANGO;
 }
 {dr_tipo_var} {
-    printf("tipo_var (:)\n");
+    fprintf(fSaR,"SHIFT  tipo_var (:)\n");
     return TK_TIPO_VAR;
 }
 {dr_punto} {
-    printf("punto (.)\n");
+    fprintf(fSaR,"SHIFT  punto (.)\n");
     return TK_PUNTO;
 }
 
 {dr_entonces} {
-    printf("entonces (->)\n");
+    fprintf(fSaR,"SHIFT  entonces (->)\n");
     return TK_ENTONCES;
 }
 {dr_si_no_si} {
-    printf("si_no_si: []\n");//CHECKEAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    fprintf(fSaR,"SHIFT  si_no_si: []\n");//CHECKEAR!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     return TK_SINOSI;
 }
 {dr_inicio_array} {
-    printf("inicio_array ([)\n");
+    fprintf(fSaR,"SHIFT  inicio_array ([)\n");
     return TK_INICIO_ARRAY;
 }
 {dr_fin_array} {
-    printf("fin_array (])\n");
+    fprintf(fSaR,"SHIFT  fin_array (])\n");
     return TK_FIN_ARRAY;
 }
 
 
 
 {dr_pr_accion} {
-    printf("palabra reservada: accion\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: accion\n");
 	return TK_PR_ACCION;
 }
 {dr_pr_algoritmo} {
-    printf("palabra reservada: algoritmo\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: algoritmo\n");
 	return TK_PR_ALGORITMO;
 }
 {dr_pr_booleano} {
-    printf("palabra reservada: booleano\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: booleano\n");
 	return TK_PR_BOOLEANO;
 }
 {dr_pr_cadena} {
-    printf("palabra reservada: cadena\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: cadena\n");
 	return TK_PR_CADENA;
 }
 {dr_pr_caracter} {
-    printf("palabra reservada: caracter\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: caracter\n");
 	return TK_PR_CARACTER;
 }
 {dr_pr_const} {
-    printf("palabra reservada: const\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: const\n");
 	return TK_PR_CONST;
 }
 {dr_pr_continuar} {
-    printf("palabra reservada: continuar\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: continuar\n");
 	return TK_PR_CONTINUAR;
 }
 {dr_pr_de} {
-    printf("palabra reservada: de\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: de\n");
 	return TK_PR_DE;
 }
 {dr_pr_dev} {
-    printf("palabra reservada: dev\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: dev\n");
 	return TK_PR_DEV;
 }
 {dr_pr_ent} {
-    printf("palabra reservada: ent\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: ent\n");
 	return TK_PR_ENT;
 }
 {dr_pr_entero} {
-    printf("palabra reservada: entero\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: entero\n");
 	return TK_PR_ENTERO;
 }
 {dr_pr_es} {
-    printf("palabra reservada: es\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: es\n");
 	return TK_PR_ES;
 }
 {dr_pr_faccion} {
-    printf("palabra reservada: faccion\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: faccion\n");
 	return TK_PR_FACCION;
 }
 {dr_pr_falgoritmo} {
-    printf("palabra reservada: falgoritmo\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: falgoritmo\n");
 	return TK_PR_FALGORITMO;
 }
 {dr_pr_falso} {
-    printf("booleano: 0\n");
+    fprintf(fSaR,"SHIFT  booleano: 0\n");
     yylval.entero = 0;
 	return TK_BOOLEANO;
 }
 {dr_pr_fconst} {
-    printf("palabra reservada: fconst\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: fconst\n");
 	return TK_PR_FCONST;
 }
 {dr_pr_ffuncion} {
-    printf("palabra reservada: ffuncion\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: ffuncion\n");
 	return TK_PR_FFUNCION;
 }
 {dr_pr_fmientras} {
-    printf("palabra reservada: fmientras\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: fmientras\n");
 	return TK_PR_FMIENTRAS;
 }
 {dr_pr_fpara} {
-    printf("palabra reservada: fpara\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: fpara\n");
 	return TK_PR_FPARA;
 }
 {dr_pr_fsi} {
-    printf("palabra reservada: fsi\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: fsi\n");
 	return TK_PR_FSI;
 }
 {dr_pr_ftipo} {
-    printf("palabra reservada: ftipo\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: ftipo\n");
 	return TK_PR_FTIPO;
 }
 {dr_pr_ftupla} {
-    printf("palabra reservada: ftupla\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: ftupla\n");
 	return TK_PR_FTUPLA;
 }
 {dr_pr_funcion} {
-    printf("palabra reservada: funcion\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: funcion\n");
 	return TK_PR_FUNCION;
 }
 {dr_pr_fvar} {
-    printf("palabra reservada: fvar\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: fvar\n");
 	return TK_PR_FVAR;
 }
 {dr_pr_hacer} {
-    printf("palabra reservada: hacer\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: hacer\n");
 	return TK_PR_HACER;
 }
 {dr_pr_hasta} {
-    printf("palabra reservada: hasta\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: hasta\n");
 	return TK_PR_HASTA;
 }
 {dr_pr_mientras} {
-    printf("palabra reservada: mientras\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: mientras\n");
 	return TK_PR_MIENTRAS;
 }
 {dr_pr_no} {
-    printf("palabra reservada: no\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: no\n");
 	return TK_PR_NO;
 }
 {dr_pr_o} {
-    printf("palabra reservada: o\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: o\n");
 	return TK_PR_O;
 }
 {dr_pr_para} {
-    printf("palabra reservada: para\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: para\n");
 	return TK_PR_PARA;
 }
 {dr_pr_real} {
-    printf("palabra reservada: real\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: real\n");
 	return TK_PR_REAL;
 }
 {dr_pr_ref} {
-    printf("palabra reservada: ref\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: ref\n");
 	return TK_PR_REF;
 }
 {dr_pr_sal} {
-    printf("palabra reservada: sal\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: sal\n");
 	return TK_PR_SAL;
 }
 {dr_pr_si} {
-    printf("palabra reservada: si\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: si\n");
 	return TK_PR_SI;
 }
 {dr_pr_tabla} {
-    printf("palabra reservada: tabla\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: tabla\n");
 	return TK_PR_TABLA;
 }
 {dr_pr_tipo} {
-    printf("palabra reservada: tipo\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: tipo\n");
 	return TK_PR_TIPO;
 }
 {dr_pr_tupla} {
-    printf("palabra reservada: tupla\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: tupla\n");
 	return TK_PR_TUPLA;
 }
 {dr_pr_var} {
-    printf("palabra reservada: var\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: var\n");
 	return TK_PR_VAR;
 }
 {dr_pr_verdadero} {
-    printf("booleano: 1\n");
+    fprintf(fSaR,"SHIFT  booleano: 1\n");
     yylval.entero = 1;
 	return TK_BOOLEANO;
 }
 {dr_pr_y} {
-    printf("palabra reservada: y\n");
+    fprintf(fSaR,"SHIFT  palabra reservada: y\n");
 	return TK_PR_Y;
 }
 
 
 
 {dr_comentario} {
-    printf("comentario: %s\n", yytext);
+    fprintf(fSaR,"SHIFT  comentario: %s\n", yytext);
     return TK_COMENTARIO;
 }
 {dr_cadena} {
-    printf("Una cadena: %s\n", yytext);
+    fprintf(fSaR,"SHIFT  Una cadena: %s\n", yytext);
     yylval.str = strdup(yytext);
     return TK_CADENA;
 }
 {dr_caracter} {
-    printf("caracter: %c\n ", yytext[0]);
+    fprintf(fSaR,"SHIFT  caracter: %c\n ", yytext[0]);
     yylval.caracter = yytext[0];//mirar si esto esta mal y en realidad es una cadena de un elemento
     return TK_CARACTER;
 }
@@ -403,16 +404,16 @@ dr_entrada_a_omitir [\n\t ]
     }
     lowerId[yyleng] = '\0';
     yylval.str = strdup(lowerId);
-    printf("identificador: %s\n", yytext);
+    fprintf(fSaR,"SHIFT  identificador: %s\n", yytext);
     return TK_IDENTIFICADOR;
 }
 {dr_entero} {
-    printf("entero: %f\n", atof(yytext));
+    fprintf(fSaR,"SHIFT  entero: %f\n", atof(yytext));
     yylval.doble = atof( yytext );//atoi o atof???
     return TK_ENTERO;
 }
 {dr_real} {
-	printf("real: %g\n",atof( yytext ));
+	fprintf(fSaR,"SHIFT  real: %g\n",atof( yytext ));
 	yylval.doble = atof(yytext);
 	return TK_REAL;
 }
@@ -422,18 +423,10 @@ dr_entrada_a_omitir [\n\t ]
 
 /*
 
-
 -He modificado la exp regular de los enteros y decimales para que admitan un signo menos desdes de la 'e'.
 Ahora pueden existir numeros como 3e-4 PERO NO 3e+4
 
--HAY QUE DISTRIBUIR LAS CONCATENACIONES!!!
-
 -ojo con no escribir un string Y CON LOS ENTEROS (QUE TIPO ENVIAR, PORQUE NUESTROS ENTEROS NO SON ENTEROS
-
-
--SOBRE COMO HACER EL RETURN: https://www.gnu.org/software/bison/manual/html_node/Token-Values.html
-
-
 
 -LIBRO DE COMO HACER COMPILADORES
  http://dlsiisv.fi.upm.es/traductores/Software/Flex-Bison.pdf
@@ -450,23 +443,4 @@ Ahora pueden existir numeros como 3e-4 PERO NO 3e+4
 - Introducing Flex and Bison:
 https://www.oreilly.com/library/view/flex-bison/9780596805418/ch01.html
 
-
-para ejecutarlo:
-./a.out < programa.txt > salida.txt
-
-
-dr_desc_algoritomo algoritmo{dr_id};{dr_cabezera_alg}{dr_bloque_alg}falgoritmo\.
-dr_cabecera_alg {dr_decl_globales}{dr_decl_a_f}{dr_decl_ent_sal}{dr_comentario}
-dr_bloque_alg {dr_bloque}{dr_comentario}
-decl_globales ({dr_declaracion_tipo} | {dr_declaracion_const}){dr_decl_globales}|\0
-dr_decl_a_f ({dr_accion_d}|{dr_funcion_d}){decl_a_f}|\0
-dr_bloque {dr_declaraciones}{dr_instrucciones}
-dr_declaraciones ({dr_declaracion_tipo}|{dr_declaracion_const}|{dr_declaracion_var}){dr_declaraciones}|\0
-
-dr_declaracion_tipo tipo{dr_lista_d_tipo}ftipo
-dr_declaracion_cte const{lista_d_cte}fconst
-dr_declaracion_var var{lista_d_var}fvar
-
-dr_lista_d_tipo {dr_id}={dr_d_tipo};{dr_lista_d_tipo}|\0
-dr_d_tipo tupla{dr_lista_campos}ftupla|tabla\[{dr_expresion_t}\.\.{df_expresion_t}\]de{dr_d_tipo}
 */

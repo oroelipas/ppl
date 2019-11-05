@@ -3,7 +3,6 @@ lex.yy.c
 lex.yy.o
 y.tab.c
 y.tab.h
-salida1.txt
-salida2.txt
-salida3.txt
+ShiftsAndReduces.txt
+tablaSimbolos.txt
 Intro_Flex_Bison.pdf
