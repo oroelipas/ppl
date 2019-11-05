@@ -6,7 +6,7 @@ algoritmo intercambio;
     
     var
         aux: entero;
-    fvar
+    fvar;
 
     aux:= a;
     a:= b;
