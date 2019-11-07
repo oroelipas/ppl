@@ -1,15 +1,15 @@
 %{
 #include <stdio.h>
 #include <stdlib.h> //para hacer exit()
+#include "defines.h"
 extern int yylex();
 extern int yylineno;
 void yyerror(const char *s);
 FILE *fSaR;
+
 %}
-/*
-%glr-parser ESTO DE CAMBIAR DE TIPO DE PARSER NO CREO QUE SEA BUENA IDEA
-%expect-rr 6
-*/
+
+
 %union{
   char *str;
   char caracter;
@@ -64,7 +64,8 @@ FILE *fSaR;
 %token TK_PR_TIPO
 %token TK_PR_TUPLA
 %token TK_PR_VAR
-%token TK_COMENTARIO
+%token TK_COMENT_PREC
+%token TK_COMENT_POST
 /* TK_CADENA DE MOMENTO EN LA GRAMATICA NO SE USA*/
 %token <str> TK_CADENA
 %token <caracter> TK_CARACTER
@@ -144,11 +145,11 @@ ty_desc_algoritmo:
     ;
 
 ty_cabecera_alg:
-    ty_decl_globales ty_decl_a_f ty_decl_ent_sal TK_COMENTARIO {fprintf(fSaR,"REDUCE ty_cabecera_alg: ty_decl_globales ty_decl_a_f ty_decl_ent_sal TK_COMENTARIO\n");}
+    ty_decl_globales ty_decl_a_f ty_decl_ent_sal TK_COMENT_PREC {fprintf(fSaR,"REDUCE ty_cabecera_alg: ty_decl_globales ty_decl_a_f ty_decl_ent_sal TK_COMENT_PREC\n");}
     ;
 
 ty_bloque_alg:
-    ty_bloque TK_COMENTARIO {fprintf(fSaR,"REDUCE ty_bloque_alg: ty_bloque TK_COMENTARIO\n");}
+    ty_bloque TK_COMENT_POST {fprintf(fSaR,"REDUCE ty_bloque_alg: ty_bloque TK_COMENT_POST\n");}
     ;
 
 ty_decl_globales:
@@ -276,7 +277,7 @@ ty_op_relacional:
 ty_exp_b:
       ty_exp_b TK_PR_Y ty_exp_b {fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_Y ty_exp_b\n");}/*AQUI IGUAL SE PUEDEN DEFINIR OP_LOGICO: CUYOS VALORES SEAN Y,O*/
     | ty_exp_b TK_PR_O ty_exp_b {fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_O ty_exp_b\n");}
-    | TK_PR_NO ty_exp_b /*%prec TK_MUY_PRIORITARIO*/{fprintf(fSaR,"REDUCE ty_exp_b: TK_PR_NO ty_exp_b\n");}
+    | TK_PR_NO ty_exp_b /*%prec TK_MUY_PRIORITARIO ESTO NO NOS ESTA QUITANDO R/R*/{fprintf(fSaR,"REDUCE ty_exp_b: TK_PR_NO ty_exp_b\n");}
     | TK_BOOLEANO {fprintf(fSaR,"REDUCE ty_exp_b: TK_BOOLEANO\n");}
     | ty_expresion TK_OP_RELACIONAL ty_expresion {fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_OP_RELACIONAL ty_expresion\n");}
     | ty_expresion TK_IGUAL ty_expresion {fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_IGUAL ty_expresion\n");}
@@ -313,9 +314,9 @@ ty_instruccion:
     ;
 
 ty_asignacion:
-    /*Hemos puesto ty_expresion_t en vex de ty_expresion para poder hacer a = 'a'*/
-    /*AUN NO SE PUEDEN HACER ASIGNACIONES CON CADENAS a = "hola"     */
-    ty_operando TK_ASIGNACION ty_expresion_t {fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");}
+    /*Hemos puesto ty_expresion_t en veZ de ty_expresion para poder hacer a = 'a'*/
+     ty_operando TK_ASIGNACION ty_expresion_t {fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");}
+    |ty_operando TK_ASIGNACION TK_CADENA {fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION TK_CADENA\n");}
     ;
 
 ty_alternativa:
@@ -383,6 +384,8 @@ ty_l_ll:
 
 %%
 FILE *fTablaSimbolos;
+char* programName;
+int hayErrores;
 
 int main (int argc, char *argv[]) {
     //checkear numero de parametros
@@ -390,9 +393,9 @@ int main (int argc, char *argv[]) {
         printf("Uso del compilador: ./a.out <NombreDelPprogama>\n");
         exit(1);
     }
-    
+    programName = argv[1];
     //redirigir el archivo del programa a la entrada estandar
-    FILE *fPrograma = freopen(argv[1], "r", stdin);
+    FILE *fPrograma = freopen(programName, "r", stdin);
     if(fPrograma == 0){
         printf("fichero %s no encontrado\n", argv[1]);
         exit(1);
@@ -413,17 +416,16 @@ int main (int argc, char *argv[]) {
     }
 
   yyparse();
+  if(hayErrores){
+    printf("Revise ShiftsAndReduces.txt\n");
+  }
 
 }
 
 void yyerror(const char *s) {
-	printf("Error en lina %i: %s\nRevise ShiftsAndReduces.txt\n",yylineno, s);
+	printf("%s:%i:"RED" %s\n"RESET,programName, yylineno, s);
+	hayErrores = 1;
 }
-
-
-
-
-
 
 
 

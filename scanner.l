@@ -3,7 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 #include "y.tab.h"
+#include "defines.h"
+
 extern FILE *fSaR;//fichero para escribir los SHIFTs que hacemos
+extern char *programName;
+extern int hayErrores;
+
 %}
 
 %option yylineno
@@ -13,12 +18,15 @@ dr_letra [A-Za-z]
 dr_cifra [0-9]
 dr_id {dr_letra}({dr_letra}|{dr_cifra})*
 dr_entero {dr_cifra}{dr_cifra}*((e){dr_cifra}{dr_cifra}*)?
+  //PORQUE AQUI SE USA \- Y EN LA LINEA DE dr_op_arit_resta Y dr_entonces SOLO SE USA -?????????????????????????????????
 dr_real  {dr_cifra}{dr_cifra}*(\.{dr_cifra}{dr_cifra}*)?((e)(\-)?{dr_cifra}{dr_cifra}*)?
   // HEMOS QUITADO EL (+|-)? de dr_entero y dr_real para no tener problemas de suma binaria vs. signo mas
   //                                                                          resta binaria vs. signo menos
 dr_caracter \"(.|\\.)\"
 dr_cadena '([^']|(\/'))*'
 dr_comentario \{([^\}]|(\/\}))*\}
+dr_coment_prec \{Prec:([^\}]|(\/\}))*\}
+dr_coment_post \{Post:([^\}]|(\/\}))*\}
 
 dr_pr_accion  accion
 dr_pr_algoritmo algoritmo
@@ -90,6 +98,7 @@ dr_op_arit_div_ent div
 dr_parentesis_inicial \(
 dr_parentesis_final \)
 
+dr_tk_inesperado [^\n\t ]
 
 dr_entrada_a_omitir [\n\t ]
 
@@ -378,10 +387,16 @@ dr_entrada_a_omitir [\n\t ]
 }
 
 
-
+{dr_coment_prec} {
+    fprintf(fSaR,"SHIFT  comentario precondicion: %s\n", yytext);
+    return TK_COMENT_PREC;
+}
+{dr_coment_post} {
+    fprintf(fSaR,"SHIFT  comentario postcondicion: %s\n", yytext);
+    return TK_COMENT_POST;
+}
 {dr_comentario} {
-    fprintf(fSaR,"SHIFT  comentario: %s\n", yytext);
-    return TK_COMENTARIO;
+    fprintf(fSaR,"Comentario omitido: %s\n", yytext);
 }
 {dr_cadena} {
     fprintf(fSaR,"SHIFT  Una cadena: %s\n", yytext);
@@ -389,8 +404,8 @@ dr_entrada_a_omitir [\n\t ]
     return TK_CADENA;
 }
 {dr_caracter} {
-    fprintf(fSaR,"SHIFT  caracter: %c\n ", yytext[0]);
-    yylval.caracter = yytext[0];//mirar si esto esta mal y en realidad es una cadena de un elemento
+    fprintf(fSaR,"SHIFT  caracter: %c\n", yytext[1]);
+    yylval.caracter = yytext[1];//mirar si esto esta mal y en realidad es una cadena de un elemento
     return TK_CARACTER;
 }
 {dr_id} {
@@ -416,6 +431,13 @@ dr_entrada_a_omitir [\n\t ]
 	fprintf(fSaR,"SHIFT  real: %g\n",atof( yytext ));
 	yylval.doble = atof(yytext);
 	return TK_REAL;
+}
+
+{dr_tk_inesperado} {
+	printf("%s:%i:"RED" token inesperado: '%s'\n"RESET,programName, yylineno, yytext);
+	hayErrores = 1;
+    //yylval.str = strdup(yytext);
+	//return TK_INESPERADO;g   
 }
 
 {dr_entrada_a_omitir} {}
