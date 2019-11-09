@@ -12,10 +12,36 @@ extern FILE *fSaR;//fichero para escribir los SHIFTs que hacemos
 extern char *programName;
 extern int hayErrores;
 
+
+//funcion YY_USER_ACTION:
+//https://stackoverflow.com/questions/656703/how-does-flex-support-bison-location-exactly
+//sirve para calcular la linea y la columna en la que estamos
+static void update_loc(){
+    static int curr_line = 1;
+    static int curr_col  = 1;
+
+    yylloc.first_line   = curr_line;
+    yylloc.first_column = curr_col;
+
+    char * s;
+    for(s = yytext; *s != '\0'; s++){
+        if(*s == '\n'){
+            curr_line++;
+            curr_col = 1;
+        }else{
+            curr_col++;
+        }
+    }
+
+    yylloc.last_line   = curr_line;
+    yylloc.last_column = curr_col-1;
+}
+#define YY_USER_ACTION update_loc();
+
 %}
 
-%option yylineno
-  //esto es para permitir dar la linea del error
+ //antes usaba esto pero ahora la funcion YY_USER_ACTION calcula la lina Y LA COLUMNA!
+ //%option yylineno//esto es para permitir dar la linea del error
 
 dr_letra [A-Za-z]
 dr_cifra [0-9]

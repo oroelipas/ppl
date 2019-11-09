@@ -4,14 +4,15 @@
 #include "defines.h"
 #include <string.h>
 #include "lista.h"
+#include <stdarg.h>//esto es para poder usar va_list y va_start() para tener funciones con nº de arg indefinidos: yyerror
 
+extern int yycolumn;
 extern int yylex();
-extern int yylineno;
-void yyerror(const char *s);
 extern char* yytext;
 //extern int yylineno; ya no se usa desde que usamos YY_USER_ACTION para calcular linea y columna
 
 char *tiposBase[] = {ENTERO, REAL, BOOLEANO, CARACTER, CADENA};
+void yyerror(const char *s, ...);
 FILE *fSaR;//fichero ShiftAndReduces.txt
 FILE *fTS; //fichero tablaSimbolos.txt
 lista_ligada *lista;//tabla de simbolos. igual habria que cambiar el nombre
@@ -30,7 +31,7 @@ int hayErrores;
   int entero;
   lista_ligada* lista;  //de momento las listas de id son listas_ligadas
 }
-
+%locations 
 %start ty_desc_algoritmo
 
 %token TK_PARENTESIS_INICIAL
@@ -259,9 +260,11 @@ ty_lista_d_var:
                         fprintf(fTS,"Insertada Variable %s '%s' en tabla de simbolos\n", $3, getNombre(idNodo));
                     }
                 }else{
+                    yyerror("%s no es un tipo. Es otra cosa", $3);
                 }
             }else{
                 //el tipo no existe
+                yyerror("El tipo %s no existe", $3);
             }
     	}
     | /*vacio*/{fprintf(fSaR,"REDUCE ty_lista_d_var: vacio\n");}
@@ -347,10 +350,12 @@ ty_operando:
     TK_IDENTIFICADOR {
         nodo *var = getNodo(lista, $1);
         if(var == NULL){
+            yyerror("variable %s usada pero no delarada", $1);
         }else
             if(getTipo(var) == VARIABLE){
                 marcarComoUsado(var);
             }else{
+                yyerror("%s no es una variable", $1);
             }
         fprintf(fSaR,"REDUCE ty_operando: TK_IDENTIFICADOR\n");
       }
@@ -486,11 +491,23 @@ int main (int argc, char *argv[]) {
 	   printf("Revise ShiftsAndReduces.txt\n");
 	}
 
-void yyerror(const char *s) {
-	printf("%s:%i:"RED" %s\n"RESET,programName, yylineno, s);
-	hayErrores = 1;
 }
 
+/**
+ * funcion yyerror de http://web.iitd.ac.in/~sumeet/flex__bison.pdf  pag.220
+ * puede ser llamada como se llama a la funcion printf (nº indeterminado de argumentos)
+ * errorText es la string con los %s y %i...
+ * 
+ */
+void yyerror(const char *errorText, ...) {
+    va_list args;  
+    va_start(args, errorText);
+    
+    printf("%s:%d:%d: "RED, programName, yylloc.first_line, yylloc.first_column);  
+    vprintf(errorText, args);
+    printf(RESET"\n    Antes de '%s'\n", yytext);
+    hayErrores = 1;
+}
 
 
 
