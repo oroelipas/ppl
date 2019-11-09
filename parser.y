@@ -2,10 +2,23 @@
 #include <stdio.h>
 #include <stdlib.h> //para hacer exit()
 #include "defines.h"
+#include <string.h>
+#include "lista.h"
+
 extern int yylex();
 extern int yylineno;
 void yyerror(const char *s);
-FILE *fSaR;
+extern char* yytext;
+//extern int yylineno; ya no se usa desde que usamos YY_USER_ACTION para calcular linea y columna
+
+char *tiposBase[] = {ENTERO, REAL, BOOLEANO, CARACTER, CADENA};
+FILE *fSaR;//fichero ShiftAndReduces.txt
+FILE *fTS; //fichero tablaSimbolos.txt
+lista_ligada *lista;//tabla de simbolos. igual habria que cambiar el nombre
+char* programName;
+int hayErrores;
+
+
 
 %}
 
@@ -15,6 +28,7 @@ FILE *fSaR;
   char caracter;
   double doble;
   int entero;
+  lista_ligada* lista;  //de momento las listas de id son listas_ligadas
 }
 
 %start ty_desc_algoritmo
@@ -32,15 +46,15 @@ FILE *fSaR;
 
 %token TK_PR_ACCION
 %token TK_PR_ALGORITMO
-%token TK_PR_BOOLEANO
-%token TK_PR_CADENA
-%token TK_PR_CARACTER
+%token <str>TK_PR_BOOLEANO
+%token <str>TK_PR_CADENA
+%token <str>TK_PR_CARACTER
 %token TK_PR_CONST
 %token TK_PR_CONTINUAR
 %token TK_PR_DE
 %token TK_PR_DEV
 %token TK_PR_ENT
-%token TK_PR_ENTERO
+%token <str>TK_PR_ENTERO
 %token TK_PR_ES
 %token TK_PR_FACCION
 %token TK_PR_FALGORITMO
@@ -57,7 +71,7 @@ FILE *fSaR;
 %token TK_PR_HASTA
 %token TK_PR_MIENTRAS
 %token TK_PR_PARA
-%token TK_PR_REAL
+%token <str>TK_PR_REAL
 %token TK_PR_SAL
 %token TK_PR_SI
 %token TK_PR_TABLA
@@ -110,7 +124,7 @@ FILE *fSaR;
 %type <str> ty_tipo_base
 %type <str> ty_lista_d_cte
 %type <str> ty_lista_d_var
-%type <str> ty_lista_id
+%type <lista> ty_lista_id
 %type <str> ty_decl_ent_sal
 %type <str> ty_decl_ent
 %type <str> ty_decl_sal
@@ -169,9 +183,9 @@ ty_bloque:
     ;
 
 ty_declaraciones:
-      ty_decl_tipo ty_declaraciones {fprintf(fSaR,"REDUCE ty_declaraciones: ty_decl_tipo  ty_declaraciones\n");}
-    | ty_decl_cte  ty_declaraciones {fprintf(fSaR,"REDUCE ty_declaraciones: ty_decl_cte ty_declaraciones \n");}
-    | ty_decl_var  ty_declaraciones {fprintf(fSaR,"REDUCE ty_declaraciones: ty_decl_var   ty_declaraciones\n");}
+      ty_decl_tipo ty_declaraciones {fprintf(fSaR,"REDUCE ty_declaraciones: ty_decl_tipo ty_declaraciones\n");}
+    | ty_decl_cte  ty_declaraciones {fprintf(fSaR,"REDUCE ty_declaraciones: ty_decl_cte  ty_declaraciones \n");}
+    | ty_decl_var  ty_declaraciones {fprintf(fSaR,"REDUCE ty_declaraciones: ty_decl_var  ty_declaraciones\n");}
     | /*vacio*/{fprintf(fSaR,"REDUCE ty_declaraciones: vacio\n");}
     ;
 
@@ -198,7 +212,7 @@ ty_d_tipo:
     | TK_IDENTIFICADOR {fprintf(fSaR,"REDUCE ty_d_tipo: TK_IDENTIFICADOR\n");}
     | ty_expresion_t TK_SUBRANGO ty_expresion_t {fprintf(fSaR,"REDUCE ty_d_tipo: ty_expresion_t TK_SUBRANGO ty_expresion_t\n");}
     | TK_PR_REF ty_d_tipo {fprintf(fSaR,"REDUCE ty_d_tipo: TK_PR_REF ty_d_tipo\n");}
-    | ty_tipo_base {fprintf(fSaR,"REDUCE ty_d_tipo: ty_tipo_base\n");}
+    | ty_tipo_base {$$=$1;fprintf(fSaR,"REDUCE ty_d_tipo: ty_tipo_base\n");}
     ;
 
 ty_expresion_t:
@@ -214,11 +228,12 @@ ty_lista_campos:
 
 ty_tipo_base:
     /*BOOLEANO NO ESTABA ORIGINALMENTE EN LA DOCUMENTACION*/
-     TK_PR_BOOLEANO {fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_BOOLEANO\n");}
-    |TK_PR_ENTERO {fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_ENTERO\n");}
-    |TK_PR_CARACTER {fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_CARACTER\n");}
-    |TK_PR_REAL {fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_REAL\n");}
-    |TK_PR_CADENA {fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_CADENA\n");}
+    // ES NECESARIO RELLENAR $$ PARA DESPUES VER QUE TIPO ES ty_tipo_base CUANDO SE ASIGNEN TIPOS
+     TK_PR_BOOLEANO {$$=BOOLEANO; fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_BOOLEANO\n");}
+    |TK_PR_ENTERO   {$$=ENTERO;   fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_ENTERO\n");}
+    |TK_PR_CARACTER {$$=CARACTER; fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_CARACTER\n");}
+    |TK_PR_REAL     {$$=REAL;     fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_REAL\n");}
+    |TK_PR_CADENA   {$$=CADENA;   fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_CADENA\n");}
     ;
 
 ty_lista_d_cte:/*En el enunciado pone "literal" pero se referira a ty_tipo_base*/
@@ -227,13 +242,48 @@ ty_lista_d_cte:/*En el enunciado pone "literal" pero se referira a ty_tipo_base*
     ;
 
 ty_lista_d_var:
-      ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var {fprintf(fSaR,"REDUCE ty_lista_d_var: ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var\n");}
+    ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var {
+            //Primero chequear si el tipo esta en la tabla de simbolos
+            nodo* nodoTipo = getNodo(lista, $3);
+            if(nodoTipo != NULL){
+                if(getTipo(nodoTipo) == TIPO){// si el tipo existe
+                    //marcar que el tipo ha sido usado
+                    marcarComoUsado(nodoTipo);
+                    nodo* idNodo;
+                    while((idNodo = pop($1))){//para cada id de la lista ty_lista_id
+                        //creamos un info_nodo que apunta a un infoVar. infoVar contendra el tipo de la variable ($3)
+                        info_nodo idInfo = crearInfoVariable($3);
+                        addInfoNodo (idNodo, idInfo);
+                        insertNodo(lista, idNodo);//lo metemos en la Tabla de simbolos
+                        //Escribimos tipo y nombre de la variable en el fichero tablaSimbolos.txt
+                        fprintf(fTS,"Insertada Variable %s '%s' en tabla de simbolos\n", $3, getNombre(idNodo));
+                    }
+                }else{
+                }
+            }else{
+                //el tipo no existe
+            }
+    	}
     | /*vacio*/{fprintf(fSaR,"REDUCE ty_lista_d_var: vacio\n");}
     ;
 
 ty_lista_id:
-      TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id {fprintf(fSaR,"REDUCE ty_lista_id: TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id\n");}
-    | TK_IDENTIFICADOR {fprintf(fSaR,"REDUCE ty_lista_id: TK_IDENTIFICADOR\n");}
+    TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id {
+  				fprintf(fSaR,"REDUCE ty_lista_id: TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id\n");
+                //introducimos el nuevo identificador a la lista de identificadores
+                nodo* var = crearNodo($1, VARIABLE);
+                insertNodo($3, var);
+                $$ = $3;
+
+			}
+
+    | TK_IDENTIFICADOR {
+				fprintf(fSaR,"REDUCE ty_lista_id: TK_IDENTIFICADOR\n");
+                //creamos una lista con un solo nodo cuyo nombre es el id
+				nodo* var = crearNodo($1, VARIABLE);
+                $$ = crearListaLigada();
+                insertNodo($$, var);
+			}
     ;
 
 ty_decl_ent_sal:
@@ -294,7 +344,16 @@ ty_expresion:
 ty_operando:
     /*AQUI EN EL CONFLICTO SUPONGO QUE HABRA QUE HACER UN SHIFT POR PURA ASOCIATIVIDAD, PARA REDUCIR LA PILA.
     ADEMAS ES EL MODO DE ACCEDER A LAS VARIABLES: SI TIENES variable1.variable2[variable3] PRIMERO HABRA QUE IR DE FUERA HACIA ADENTRO Y REDUCIR variable1.variable2 A UNA SOLA VARIABLE (variable12) PARA LUEGO ACCEDER A ESA VARIABLE variable12[variable3]*/
-      TK_IDENTIFICADOR {fprintf(fSaR,"REDUCE ty_operando: TK_IDENTIFICADOR\n");}
+    TK_IDENTIFICADOR {
+        nodo *var = getNodo(lista, $1);
+        if(var == NULL){
+        }else
+            if(getTipo(var) == VARIABLE){
+                marcarComoUsado(var);
+            }else{
+            }
+        fprintf(fSaR,"REDUCE ty_operando: TK_IDENTIFICADOR\n");
+      }
     | ty_operando TK_PUNTO ty_operando {fprintf(fSaR,"REDUCE ty_operando: ty_operando TK_PUNTO ty_operando\n");}
     | ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY {fprintf(fSaR,"REDUCE ty_operando: ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY\n");}
     | ty_operando TK_PR_REF {fprintf(fSaR,"REDUCE ty_operando: ty_operando TK_PR_REF\n");}
@@ -303,7 +362,8 @@ ty_operando:
 ty_instrucciones:
       ty_instruccion TK_PUNTOYCOMA ty_instrucciones {fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion TK_PUNTOYCOMA ty_instrucciones\n");}
     | ty_instruccion {fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion\n");}
-    ;
+    ;//la ultima instruccion no lleva PUNTOYCOMA 
+
 
 ty_instruccion:
       TK_PR_CONTINUAR {fprintf(fSaR,"REDUCE ty_instruccion: TK_PR_CONTINUAR\n");}
@@ -383,9 +443,6 @@ ty_l_ll:
 
 
 %%
-FILE *fTablaSimbolos;
-char* programName;
-int hayErrores;
 
 int main (int argc, char *argv[]) {
     //checkear numero de parametros
@@ -397,7 +454,7 @@ int main (int argc, char *argv[]) {
     //redirigir el archivo del programa a la entrada estandar
     FILE *fPrograma = freopen(programName, "r", stdin);
     if(fPrograma == 0){
-        printf("fichero %s no encontrado\n", argv[1]);
+        printf("algoritmo %s no encontrado\n", argv[1]);
         exit(1);
     }
     
@@ -409,18 +466,25 @@ int main (int argc, char *argv[]) {
     }
     
     //Abrir el fichero con con la tabla de simbolos
-    fTablaSimbolos = fopen("tablaSimbolos.txt", "w");
-    if (fTablaSimbolos == NULL){
+    fTS = fopen("tablaSimbolos.txt", "w");
+    if (fTS == NULL){
         printf("Error opening file tablaSimbolos.txt\n");
         exit(1);
     }
 
-  yyparse();
-  if(hayErrores){
-    printf("Revise ShiftsAndReduces.txt\n");
-  }
+	lista = crearListaLigada();
+    //inicializar la lista metiendo tipos basicos
+    for(int i=0; i < sizeof(tiposBase) / sizeof(tiposBase[0]); i++){
+        nodo* nodoTipo = crearNodo((char *)tiposBase[i], TIPO);
+        insertNodo(lista, nodoTipo);
+    }
 
-}
+	yyparse();
+	printSimbolosNoUsados(lista);
+
+    if(hayErrores){
+	   printf("Revise ShiftsAndReduces.txt\n");
+	}
 
 void yyerror(const char *s) {
 	printf("%s:%i:"RED" %s\n"RESET,programName, yylineno, s);
@@ -433,6 +497,7 @@ void yyerror(const char *s) {
 
 /*
 
-// DOCUMENTACION EN: http://dinosaur.compilertools.net/bison/
+DOCUMENTACION EN: http://dinosaur.compilertools.net/bison/
+                  http://web.iitd.ac.in/~sumeet/flex__bison.pdf
 
  */
