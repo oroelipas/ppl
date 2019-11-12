@@ -21,6 +21,7 @@ int hayErrores;
 
 
 
+
 %}
 
 
@@ -30,6 +31,10 @@ int hayErrores;
   double doble;
   int entero;
   lista_ligada* lista;  //de momento las listas de id son listas_ligadas
+  struct infoExpr{
+    int type;   //entero, real, ...(tipos basicos o definidos)
+    int place;  //index del simbolo de la tabla de simbolos 
+  } info;
 }
 %locations 
 %start ty_desc_algoritmo
@@ -120,7 +125,7 @@ int hayErrores;
 %type <str> ty_decl_var
 %type <str> ty_lista_d_tipo
 %type <str> ty_d_tipo
-%type <str> ty_expresion_t
+%type <info> ty_expresion_t
 %type <str> ty_lista_campos
 %type <str> ty_tipo_base
 %type <str> ty_lista_d_cte
@@ -129,10 +134,10 @@ int hayErrores;
 %type <str> ty_decl_ent_sal
 %type <str> ty_decl_ent
 %type <str> ty_decl_sal
-%type <str> ty_expresion
-%type <str> ty_exp_a
+%type <info> ty_expresion
+%type <info> ty_exp_a
 %type <str> ty_exp_b
-%type <str> ty_operando
+%type <info> ty_operando
 %type <str> ty_instrucciones
 %type <str> ty_instruccion
 %type <str> ty_asignacion
@@ -217,7 +222,11 @@ ty_d_tipo:
     ;
 
 ty_expresion_t:
-      ty_expresion {fprintf(fSaR,"REDUCE ty_expresion_t: ty_expresion\n");}
+      ty_expresion {
+        $$.place = $1.place;
+        $$.type = $1.type;
+        fprintf(fSaR,"REDUCE ty_expresion_t: ty_expresion\n");
+    }
     | TK_CARACTER{fprintf(fSaR,"REDUCE ty_expresion_t: TK_CARACTER\n");}
     /*AQUI NO HAY CADENAS?????? ENTONCES NO SE PUEDE HACER a:= "hola"   */
     ;
@@ -275,6 +284,8 @@ ty_lista_id:
   				fprintf(fSaR,"REDUCE ty_lista_id: TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id\n");
                 //introducimos el nuevo identificador a la lista de identificadores
                 nodo* var = crearNodo($1, VARIABLE);
+                //TODO: no pueden aparecer 2 veces la misma variable
+                //PERO si en entrada y en salida
                 insertNodo($3, var);
                 $$ = $3;
 
@@ -304,14 +315,27 @@ ty_decl_sal:
     ;
 
 ty_exp_a:
-      ty_exp_a TK_MAS ty_exp_a {fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MAS ty_exp_a\n");}
+      ty_exp_a TK_MAS ty_exp_a {
+        int T = newTemp();//new temp crea un nodo y nos devuelve su id
+        $$.place = T;
+        if(getTipo($1) == getTipo($3)){
+            modifica_tipo_TS(lista, T, ENTERO);
+            printf("+,%s,%s,%s\n", getNombre($1.place), getNombre($3.place), getNombre($$.place));
+            $$.type = ENTERO;
+        }
+        fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MAS ty_exp_a\n");
+    }
     | ty_exp_a TK_MENOS ty_exp_a {fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MENOS ty_exp_a\n");}
     | ty_exp_a TK_MULT ty_exp_a {fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MULT ty_exp_a\n");}
     | ty_exp_a TK_DIV ty_exp_a {fprintf(fSaR,"REDUCE ty_exp_a:  ty_exp_a TK_DIV ty_exp_a \n");}
     | ty_exp_a TK_MOD ty_exp_a {fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MOD ty_exp_a\n");}
     | ty_exp_a TK_DIV_ENT ty_exp_a {fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_DIV_ENT ty_exp_a\n");}
     | TK_PARENTESIS_INICIAL ty_exp_a TK_PARENTESIS_FINAL {fprintf(fSaR,"REDUCE ty_exp_a: TK_PARENTESIS_INICIAL ty_exp_a TK_PARENTESIS_FINAL\n");}
-    | ty_operando {fprintf(fSaR,"REDUCE ty_exp_a: ty_operando\n");}
+    | ty_operando {
+        $$.place = $1.place;
+        $$.type = $1.type;
+        fprintf(fSaR,"REDUCE ty_exp_a: ty_operando\n");
+    }
     | TK_ENTERO {fprintf(fSaR,"REDUCE ty_exp_a: TK_ENTERO\n");}
     | TK_REAL {fprintf(fSaR,"REDUCE ty_exp_a: TK_REAL\n");}
     | TK_MENOS ty_exp_a %prec TK_MENOS_U {fprintf(fSaR,"REDUCE ty_exp_a: TK_MENOS ty_exp_a\n");}
@@ -338,7 +362,11 @@ ty_exp_b:
     ;
 
 ty_expresion:
-      ty_exp_a {fprintf(fSaR,"REDUCE ty_expresion: ty_exp_a\n");}
+      ty_exp_a {
+        fprintf(fSaR,"REDUCE ty_expresion: ty_exp_a\n");
+        $$.place = $1.place;
+        $$.type = $1.type;
+    }
     | ty_exp_b %prec TK_NADA_PRIORITARIO{fprintf(fSaR,"REDUCE ty_expresion: ty_exp_b\n");} /*ESTO NO TIENE QUE FUNCIONAR ASI!!!!!*/
     | ty_funcion_ll {fprintf(fSaR,"REDUCE ty_expresion: ty_funcion_ll\n");}
     ;
@@ -351,12 +379,15 @@ ty_operando:
         nodo *var = getNodo(lista, $1);
         if(var == NULL){
             yyerror("variable %s usada pero no delarada", $1);
-        }else
+        }else{
             if(getTipo(var) == VARIABLE){
                 marcarComoUsado(var);
+                $$.place = getIndex(var);
+                $$.type = getTipo(var);
             }else{
                 yyerror("%s no es una variable", $1);
             }
+        }
         fprintf(fSaR,"REDUCE ty_operando: TK_IDENTIFICADOR\n");
       }
     | ty_operando TK_PUNTO ty_operando {fprintf(fSaR,"REDUCE ty_operando: ty_operando TK_PUNTO ty_operando\n");}
@@ -380,7 +411,12 @@ ty_instruccion:
 
 ty_asignacion:
     /*Hemos puesto ty_expresion_t en veZ de ty_expresion para poder hacer a = 'a'*/
-     ty_operando TK_ASIGNACION ty_expresion_t {fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");}
+     ty_operando TK_ASIGNACION ty_expresion_t {
+        if($1.type == $3.type){
+            printf(":=,%s, NULL, %s\n",getNombre(lista, $3.place), getNombre(lista, $1.place));
+        }
+        fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");
+    }
     |ty_operando TK_ASIGNACION TK_CADENA {fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION TK_CADENA\n");}
     ;
 
