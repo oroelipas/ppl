@@ -11,6 +11,7 @@
 extern FILE *fSaR;//fichero para escribir los SHIFTs que hacemos
 extern char *programName;
 extern int hayErrores;
+extern void yyerror(const char *errorText, ...);
 
 
 //funcion YY_USER_ACTION:
@@ -127,9 +128,9 @@ dr_op_arit_div_ent div
 dr_parentesis_inicial \(
 dr_parentesis_final \)
 
-dr_tk_inesperado [^\n\t ]
+dr_tk_inesperado [^\n\t\r ]
 
-dr_entrada_a_omitir [\n\t ]
+dr_entrada_a_omitir [\n\t\r ]
 
 %%
 {dr_parentesis_inicial} {
@@ -463,10 +464,8 @@ dr_entrada_a_omitir [\n\t ]
 }
 
 {dr_tk_inesperado} {
-	printf("%s:%i:"RED" token inesperado: '%s'\n"RESET,programName, yylineno, yytext);
-	hayErrores = 1;
-    //yylval.str = strdup(yytext);
-	//return TK_INESPERADO;g   
+    yyerror("token inesperado: %s", yytext);
+	hayErrores = 1; 
 }
 
 {dr_entrada_a_omitir} {}

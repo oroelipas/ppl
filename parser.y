@@ -11,7 +11,6 @@ extern int yylex();
 extern char* yytext;
 //extern int yylineno; ya no se usa desde que usamos YY_USER_ACTION para calcular linea y columna
 
-char *tiposBase[] = {ENTERO, REAL, BOOLEANO, CARACTER, CADENA};
 void yyerror(const char *s, ...);
 FILE *fSaR;//fichero ShiftAndReduces.txt
 FILE *fTS; //fichero tablaSimbolos.txt
@@ -124,10 +123,10 @@ int hayErrores;
 %type <str> ty_decl_cte
 %type <str> ty_decl_var
 %type <str> ty_lista_d_tipo
-%type <str> ty_d_tipo
+%type <entero> ty_d_tipo
 %type <info> ty_expresion_t
 %type <str> ty_lista_campos
-%type <str> ty_tipo_base
+%type <entero> ty_tipo_base
 %type <str> ty_lista_d_cte
 %type <str> ty_lista_d_var
 %type <lista> ty_lista_id
@@ -247,6 +246,7 @@ ty_tipo_base:
     ;
 
 ty_lista_d_cte:/*En el enunciado pone "literal" pero se referira a ty_tipo_base*/
+    //las cte solo pueden ser de tipobase???????????????????????????????
     TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte{fprintf(fSaR,"REDUCE ty_lista_d_cte: TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte\n");}
     |/*vacio*/{fprintf(fSaR,"REDUCE ty_lista_d_cte: vacio\n");}
     ;
@@ -254,19 +254,22 @@ ty_lista_d_cte:/*En el enunciado pone "literal" pero se referira a ty_tipo_base*
 ty_lista_d_var:
     ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var {
             //Primero chequear si el tipo esta en la tabla de simbolos
-            nodo* nodoTipo = getNodo(lista, $3);
+            nodo* nodoTipo = getSimboloPorId(lista, $3);
             if(nodoTipo != NULL){
-                if(getTipo(nodoTipo) == TIPO){// si el tipo existe
+                if(simboloEsUnTipo(nodoTipo)){// si el tipo existe
                     //marcar que el tipo ha sido usado
                     marcarComoUsado(nodoTipo);
                     nodo* idNodo;
                     while((idNodo = pop($1))){//para cada id de la lista ty_lista_id
                         //creamos un info_nodo que apunta a un infoVar. infoVar contendra el tipo de la variable ($3)
-                        info_nodo idInfo = crearInfoVariable($3);
-                        addInfoNodo (idNodo, idInfo);
-                        insertNodo(lista, idNodo);//lo metemos en la Tabla de simbolos
+                        //info_nodo idInfo = crearInfoVariable($3);
+                        //addInfoNodo (idNodo, idInfo);
+                        //insertNodo(lista, idNodo);//lo metemos en la Tabla de simbolos
+
+                        insertarVariable(lista, getNombreSimbolo(idNodo), getIdSimbolo(nodoTipo));
+
                         //Escribimos tipo y nombre de la variable en el fichero tablaSimbolos.txt
-                        fprintf(fTS,"Insertada Variable %s '%s' en tabla de simbolos\n", $3, getNombre(idNodo));
+                        fprintf(fTS,"Insertada Variable %i '%s' en tabla de simbolos\n", $3, getNombreSimbolo(idNodo));
                     }
                 }else{
                     yyerror("%s no es un tipo. Es otra cosa", $3);
@@ -283,10 +286,10 @@ ty_lista_id:
     TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id {
   				fprintf(fSaR,"REDUCE ty_lista_id: TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id\n");
                 //introducimos el nuevo identificador a la lista de identificadores
-                nodo* var = crearNodo($1, VARIABLE);
+                //nodo* var = crearNodo($1, VARIABLE);
                 //TODO: no pueden aparecer 2 veces la misma variable
                 //PERO si en entrada y en salida
-                insertNodo($3, var);
+                insertarVariable($3, $1, SIM_SIN_TIPO);//es un buen nombre??????
                 $$ = $3;
 
 			}
@@ -294,9 +297,9 @@ ty_lista_id:
     | TK_IDENTIFICADOR {
 				fprintf(fSaR,"REDUCE ty_lista_id: TK_IDENTIFICADOR\n");
                 //creamos una lista con un solo nodo cuyo nombre es el id
-				nodo* var = crearNodo($1, VARIABLE);
+				//nodo* var = crearNodo($1, VARIABLE);
                 $$ = crearListaLigada();
-                insertNodo($$, var);
+                insertarVariable($$, $1, SIM_SIN_TIPO);
 			}
     ;
 
@@ -316,11 +319,14 @@ ty_decl_sal:
 
 ty_exp_a:
       ty_exp_a TK_MAS ty_exp_a {
-        int T = newTemp();//new temp crea un nodo y nos devuelve su id
-        $$.place = T;
-        if(getTipo($1) == getTipo($3)){
-            modifica_tipo_TS(lista, T, ENTERO);
-            printf("+,%s,%s,%s\n", getNombre($1.place), getNombre($3.place), getNombre($$.place));
+        nodo* T = newTemp(lista);//new temp crea un nodo y nos devuelve su id
+        $$.place = getIdSimbolo(T);
+        //if(getTipoExp($1) == getTipoExp($3)){
+        if($1.type == $3.type){
+            modificaTipoVar(T, ENTERO);
+            printf("+,%s,%s,%s\n", getNombreSimbolo(getSimboloPorId(lista, $1.place)),
+                                getNombreSimbolo(getSimboloPorId(lista, $3.place)), 
+                                getNombreSimbolo(getSimboloPorId(lista, $$.place)));
             $$.type = ENTERO;
         }
         fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MAS ty_exp_a\n");
@@ -376,14 +382,14 @@ ty_operando:
     /*AQUI EN EL CONFLICTO SUPONGO QUE HABRA QUE HACER UN SHIFT POR PURA ASOCIATIVIDAD, PARA REDUCIR LA PILA.
     ADEMAS ES EL MODO DE ACCEDER A LAS VARIABLES: SI TIENES variable1.variable2[variable3] PRIMERO HABRA QUE IR DE FUERA HACIA ADENTRO Y REDUCIR variable1.variable2 A UNA SOLA VARIABLE (variable12) PARA LUEGO ACCEDER A ESA VARIABLE variable12[variable3]*/
     TK_IDENTIFICADOR {
-        nodo *var = getNodo(lista, $1);
+        nodo* var = getSimboloPorNombre(lista, $1);
         if(var == NULL){
             yyerror("variable %s usada pero no delarada", $1);
         }else{
-            if(getTipo(var) == VARIABLE){
+            if(simboloEsUnaVariable(var)){
                 marcarComoUsado(var);
-                $$.place = getIndex(var);
-                $$.type = getTipo(var);
+                $$.place = getIdSimbolo(var);
+                $$.type = getTipoVar(var);
             }else{
                 yyerror("%s no es una variable", $1);
             }
@@ -413,7 +419,8 @@ ty_asignacion:
     /*Hemos puesto ty_expresion_t en veZ de ty_expresion para poder hacer a = 'a'*/
      ty_operando TK_ASIGNACION ty_expresion_t {
         if($1.type == $3.type){
-            printf(":=,%s, NULL, %s\n",getNombre(lista, $3.place), getNombre(lista, $1.place));
+            printf(":=,%s, NULL, %s\n", getNombreSimbolo(getSimboloPorId(lista, $3.place)), 
+                                        getNombreSimbolo(getSimboloPorId(lista, $1.place)));
         }
         fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");
     }
@@ -513,12 +520,7 @@ int main (int argc, char *argv[]) {
         exit(1);
     }
 
-	lista = crearListaLigada();
-    //inicializar la lista metiendo tipos basicos
-    for(int i=0; i < sizeof(tiposBase) / sizeof(tiposBase[0]); i++){
-        nodo* nodoTipo = crearNodo((char *)tiposBase[i], TIPO);
-        insertNodo(lista, nodoTipo);
-    }
+	lista = crearTablaDeSimbolos();
 
 	yyparse();
 	printSimbolosNoUsados(lista);
