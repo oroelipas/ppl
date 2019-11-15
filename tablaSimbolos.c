@@ -5,7 +5,7 @@
 #include "defines.h"
 
 #include <string.h>
-#include "lista.h"
+#include "tablaSimbolos.h"
 
 
 #define TAM_MAX_NOMBRE 50		// Número de caracteres máximo que podrá tener el nombre del objeto almacenado
@@ -17,31 +17,31 @@
 lista_ligada* crearListaLigada();
 lista_ligada* crearTablaDeSimbolos();
 
-nodo *insertarVariable(lista_ligada *header, char *nombre, int tipo);
-nodo* getSimboloPorNombre (lista_ligada *header, char* nombre);
-int  existeNodo (lista_ligada *header, char* nombre);
-info_nodo crearInfoVariable (int tipo_var);
-info_nodo crearInfoTipo (char *tipo_tipo);
-info_nodo crearInfoFunc (char *ent, char *sal);
-void marcarComoUsado (nodo *minodo);
-void addInfoNodo (nodo* minodo, info_nodo info);
-int  addInfoNodoEnLista (lista_ligada *header, char* nombre, info_nodo info);
-info_nodo getInfoNodo (nodo* minodo);
-info_nodo getInfoNodoEnLista (lista_ligada *header, char* nombre);
-int   getTipo (nodo* minodo);
-char *getNombreSimbolo (nodo* minodo);
+simbolo *insertarVariable(lista_ligada *header, char *nombre, int tipo);
+simbolo* getSimboloPorNombre (lista_ligada *header, char* nombre);
+int  existesimbolo (lista_ligada *header, char* nombre);
+info_simbolo crearInfoVariable (int tipo_var);
+info_simbolo crearInfoTipo (char *tipo_tipo);
+info_simbolo crearInfoFunc (char *ent, char *sal);
+void marcarComoUsado (simbolo *misimbolo);
+void addInfosimbolo (simbolo* misimbolo, info_simbolo info);
+int  addInfosimboloEnLista (lista_ligada *header, char* nombre, info_simbolo info);
+info_simbolo getInfosimbolo (simbolo* misimbolo);
+info_simbolo getInfosimboloEnLista (lista_ligada *header, char* nombre);
+int   getTipo (simbolo* misimbolo);
+char *getNombreSimbolo (simbolo* misimbolo);
 void vaciarLista (lista_ligada *header);
-int deleteNodo (lista_ligada *header, char *nombre);
-static void liberarNodo (nodo* minodo);
+int deletesimbolo (lista_ligada *header, char *nombre);
+static void liberarsimbolo (simbolo* misimbolo);
 int esTipoBase(int tipo);
 void printListaLigada (lista_ligada *header);
 void printSimbolosNoUsados (lista_ligada *header);
-void printInfoNodo (nodo *nodo);
-int simboloEsUnaVariable(nodo* minodo);
-void modificaTipoVar(nodo* var, int tipo_var);
-void insertarSimbolo(lista_ligada *header, nodo* minodo);
-int existeNombreNodo (lista_ligada *header, char* nombre);
-nodo* crearSimbolo(char *nombre, int tipo);
+void printInfosimbolo (simbolo *simbolo);
+int simboloEsUnaVariable(simbolo* misimbolo);
+void modificaTipoVar(simbolo* var, int tipo_var);
+void insertarSimbolo(lista_ligada *header, simbolo* misimbolo);
+int existeNombresimbolo (lista_ligada *header, char* nombre);
+simbolo* crearSimbolo(char *nombre, int tipo);
 
 //si queremos printear todas las operaciones de la lista poner DEBUG_MODE A 1, sino a 0
 #define DEBUG_MODE 1
@@ -76,7 +76,7 @@ lista_ligada* crearTablaDeSimbolos() {
     nombres_tipos_base[CADENA-1] = "cadena";
 
     for(int i=0; i < sizeof(nombres_tipos_base) / sizeof(nombres_tipos_base[0]); i++){
-        nodo *nuevoTipo = crearSimbolo(nombres_tipos_base[i], SIM_TIPO);
+        simbolo *nuevoTipo = crearSimbolo(nombres_tipos_base[i], SIM_TIPO);
         insertarSimbolo(lista, nuevoTipo);
     }
     return lista;
@@ -84,15 +84,15 @@ lista_ligada* crearTablaDeSimbolos() {
 
 
 /**
- * Crea un nodo y lo devuelve
- * @param nombre: nombre del nodo
- * @param tipo: tipo del nodo (Ej: variable, tipo, funcion...). Se usan las macros de define.h
+ * Crea un simbolo y lo devuelve
+ * @param nombre: nombre del simbolo
+ * @param tipo: tipo del simbolo (Ej: variable, tipo, funcion...). Se usan las macros de define.h
  * Lo marcamos inicialmente como no usado
  */
 
-nodo* crearSimbolo(char *nombre, int tipo){
+simbolo* crearSimbolo(char *nombre, int tipo){
     // Nota para el futuro: tendremos un sistema de números de bloque, que nos indicarán la visibilidad
-    nodo *nuevo = (nodo *)malloc(sizeof(nodo));
+    simbolo *nuevo = (simbolo *)malloc(sizeof(simbolo));
     nuevo -> usado = 0;
     nuevo -> nombre = (char *)malloc(sizeof(char) * TAM_MAX_NOMBRE);
     if (strlen(nombre) <= TAM_MAX_NOMBRE) {
@@ -101,7 +101,7 @@ nodo* crearSimbolo(char *nombre, int tipo){
         nuevo -> next = NULL;
         //No reservamos memoria para la info de momento
     } else {
-        fprintf(debugFile, "Creacion de nodo incorrecta: Nombre muy largo %s\n", nombre);
+        fprintf(debugFile, "Creacion de simbolo incorrecta: Nombre muy largo %s\n", nombre);
         return NULL;
     }
     return nuevo;
@@ -109,38 +109,38 @@ nodo* crearSimbolo(char *nombre, int tipo){
 
 
 //PRIVATE
-void insertarSimbolo(lista_ligada *header, nodo* minodo){
-    if (existeNombreNodo(header, minodo->nombre)){
-        fprintf(debugFile, "EL OBJETO '%s' ya estaba en la lista\n", minodo->nombre);
+void insertarSimbolo(lista_ligada *header, simbolo* misimbolo){
+    if (existeNombresimbolo(header, misimbolo->nombre)){
+        fprintf(debugFile, "EL OBJETO '%s' ya estaba en la lista\n", misimbolo->nombre);
         return;
     }
-    minodo -> next = header ->first;
-    minodo -> id = header -> contador;
+    misimbolo -> next = header ->first;
+    misimbolo -> id = header -> contador;
     header -> contador ++;
-    header -> first = minodo;
+    header -> first = misimbolo;
 }
 
 /**
  * Crea un simbolo variable sin tipo  con nombre Tx, siendo x su id
  *  
  */
-nodo* newTemp(lista_ligada *header){
+simbolo* newTemp(lista_ligada *header){
     int id = header->contador;
     char nombre[5];//5 sera suficiente
     sprintf(nombre,"T%i", id);
-    nodo* T =  insertarVariable(header, nombre, SIM_SIN_TIPO);
+    simbolo* T =  insertarVariable(header, nombre, SIM_SIN_TIPO);
     marcarComoUsado(T);
     return T;
 }
 
 /**
- * Inserta un nodo en la lista
+ * Inserta un simbolo en la lista
  * Return:
- *   -1 si ya existe un nodo con ese nombre
+ *   -1 si ya existe un simbolo con ese nombre
  *   id del simbolo si es correcto
  */
-nodo* insertarVariable(lista_ligada *header, char *nombre, int tipo){
-    nodo *nuevaVar = crearSimbolo(nombre, SIM_VARIABLE);
+simbolo* insertarVariable(lista_ligada *header, char *nombre, int tipo){
+    simbolo *nuevaVar = crearSimbolo(nombre, SIM_VARIABLE);
     nuevaVar->info.t1.tipo_variable = tipo;
     insertarSimbolo(header, nuevaVar);
     fprintf(debugFile, "Inserción CORRECTA del objeto de nombre : %s\n", nombre);
@@ -155,19 +155,19 @@ nodo* insertarVariable(lista_ligada *header, char *nombre, int tipo){
  * Return
  *   -NULL si el simbolo no ha sido encontrado
  *   -Puntero al simbolo encontrado si exito. 
- *    No es una copia, es un puntero. No se saca el nodo de la lista
+ *    No es una copia, es un puntero. No se saca el simbolo de la lista
  */
-nodo* getSimboloPorNombre (lista_ligada *header, char* nombre) {
+simbolo* getSimboloPorNombre (lista_ligada *header, char* nombre) {
     if(header -> first == NULL) {
         return NULL;
     }
-    nodo *minodo;
-    minodo = header -> first;//busqueda del nodo
-    while ((minodo -> next != NULL) && (strcmp(nombre, minodo -> nombre) != 0)) {
-        minodo = minodo -> next;
+    simbolo *misimbolo;
+    misimbolo = header -> first;//busqueda del simbolo
+    while ((misimbolo -> next != NULL) && (strcmp(nombre, misimbolo -> nombre) != 0)) {
+        misimbolo = misimbolo -> next;
     }
-    if (strcmp(nombre, minodo -> nombre) == 0) {
-        return minodo;
+    if (strcmp(nombre, misimbolo -> nombre) == 0) {
+        return misimbolo;
     }else{
         return NULL;
     }
@@ -179,19 +179,19 @@ nodo* getSimboloPorNombre (lista_ligada *header, char* nombre) {
  * Return
  *   -NULL si el simbolo no ha sido encontrado
  *   -Puntero al simbolo encontrado si exito. 
- *    No es una copia, es un puntero. No se saca el nodo de la lista
+ *    No es una copia, es un puntero. No se saca el simbolo de la lista
  */
-nodo* getSimboloPorId (lista_ligada *header, int id) {
+simbolo* getSimboloPorId (lista_ligada *header, int id) {
     if(header -> first == NULL) {
         return NULL;
     }
-    nodo *minodo;
-    minodo = header -> first;//busqueda del nodo
-    while ((minodo -> next != NULL) && minodo -> id != id) {
-        minodo = minodo -> next;
+    simbolo *misimbolo;
+    misimbolo = header -> first;//busqueda del simbolo
+    while ((misimbolo -> next != NULL) && misimbolo -> id != id) {
+        misimbolo = misimbolo -> next;
     }
-    if (minodo -> id == id) {
-        return minodo;
+    if (misimbolo -> id == id) {
+        return misimbolo;
     }else{
         return NULL;
     }
@@ -201,24 +201,24 @@ nodo* getSimboloPorId (lista_ligada *header, int id) {
  * return tipo del simbolo (Ej: variable, tipo, funcion...)
  * Esta funcion es corta y parece estupida pero es mejor tener una buena interfaz 
  */
-int getTipoSimbolo(nodo* minodo){
-    return minodo -> tipo;
+int getTipoSimbolo(simbolo* misimbolo){
+    return misimbolo -> tipo;
 }
 
 /**
  * Get nombre del tipo
  * Esta funcion es corta y parece estupida pero es mejor tener una buena interfaz 
  */
-char *getNombreSimbolo(nodo* minodo){
-    return minodo -> nombre;
+char *getNombreSimbolo(simbolo* misimbolo){
+    return misimbolo -> nombre;
 }
 
 /**
  * Return
- *   1 si existe un nodo con ese nombre en la lista
+ *   1 si existe un simbolo con ese nombre en la lista
  *   0 si no exite
  */
-int existeNombreNodo (lista_ligada *header, char* nombre) {
+int existeNombresimbolo (lista_ligada *header, char* nombre) {
     if (getSimboloPorNombre(header, nombre) != NULL) {
         fprintf(debugFile, "El objeto de nombre [%s] se encuentra en la lista\n", nombre);
         return 1;
@@ -231,39 +231,39 @@ int existeNombreNodo (lista_ligada *header, char* nombre) {
 /**
  * Modifica el tipo de la variable var 
  */
-void modificaTipoVar(nodo* var, int tipo_var){
+void modificaTipoVar(simbolo* var, int tipo_var){
     if(getTipoSimbolo(var) == SIM_VARIABLE){
         var->info.t1.tipo_variable = tipo_var;
     }else{
         printf("ERROR: Esta intentando cambiar el tipo de variable de un simbolo que no es una variable\n");
     }
 }
-int getTipoVar (nodo* minodo){
-    if(simboloEsUnaVariable(minodo)){
-        return minodo->info.t1.tipo_variable;
+int getTipoVar (simbolo* misimbolo){
+    if(simboloEsUnaVariable(misimbolo)){
+        return misimbolo->info.t1.tipo_variable;
     }
 }
 
 
 /**
- * Devuelve un info_nodo cuyo campo t1 apunta a una struct de infoVar
+ * Devuelve un info_simbolo cuyo campo t1 apunta a una struct de infoVar
  * @param char *tipo_var: el tipo a asignar a la variable 
  *
-info_nodo crearInfoVariable(int tipo_var){
+info_simbolo crearInfoVariable(int tipo_var){
     //Habra que haber comprobado antes que el tipo_var es un tipo valido
-    info_nodo info;
+    info_simbolo info;
     info.t1.tipo_variable = tipo_var;
     return info;
 }
 
 
 /**
- * Devuelve un info_nodo cuyo campo t2 apunta a una struct de infoTipo
+ * Devuelve un info_simbolo cuyo campo t2 apunta a una struct de infoTipo
  * Esto es solo una prueba. Para almacenar tipos obviamente no usaremos un string.
- * Es un ejemplo para poder probar a meter diferentes tipos de nodos
+ * Es un ejemplo para poder probar a meter diferentes tipos de simbolos
  *
-info_nodo crearInfoTipo(char *tipo_tipo){
-    info_nodo info;
+info_simbolo crearInfoTipo(char *tipo_tipo){
+    info_simbolo info;
     info.t2.tipo_tipo = (char *)malloc(sizeof(tipo_tipo));
     strcpy(info.t2.tipo_tipo, tipo_tipo);
     return info;
@@ -271,12 +271,12 @@ info_nodo crearInfoTipo(char *tipo_tipo){
 
 
 /**
- * Devuelve un info_nodo cuyo campo t3 apunta a una struct de infoFunc
+ * Devuelve un info_simbolo cuyo campo t3 apunta a una struct de infoFunc
  * Esto es solo una prueba. Para almacenar funciones obviamente no usaremos dos string.
- * Es un ejemplo para poder probar a meter diferentes tipos de nodos
+ * Es un ejemplo para poder probar a meter diferentes tipos de simbolos
  *
-info_nodo crearInfoFunc(char *ent, char *sal){
-    info_nodo info;
+info_simbolo crearInfoFunc(char *ent, char *sal){
+    info_simbolo info;
     info.t3.ent = (char *)malloc(sizeof(ent));
     info.t3.sal = (char *)malloc(sizeof(sal));
     strcpy(info.t3.ent, ent);
@@ -288,22 +288,22 @@ info_nodo crearInfoFunc(char *ent, char *sal){
 
 
 /**
- * Añade info a un nodo
- * info_nodo info es un puntero a una struct tipo infoVar, infoTipo o infoFunc...
- * Esta funcion sirve para todo los tipos de nodos
+ * Añade info a un simbolo
+ * info_simbolo info es un puntero a una struct tipo infoVar, infoTipo o infoFunc...
+ * Esta funcion sirve para todo los tipos de simbolos
  
-void addInfoNodo (nodo* minodo, info_nodo info){
-    minodo -> info = info;
+void addInfosimbolo (simbolo* misimbolo, info_simbolo info){
+    misimbolo -> info = info;
 }*/
 
 
 /**
- * Busca un nodo en la lista y le añade la info
+ * Busca un simbolo en la lista y le añade la info
  *
-int addInfoNodoEnLista (lista_ligada *header, char* nombre, info_nodo info) {
-    nodo *minodo = getSimboloPorNombre(header, nombre);
-    if (minodo != NULL) {
-        addInfoNodo(minodo, info);
+int addInfosimboloEnLista (lista_ligada *header, char* nombre, info_simbolo info) {
+    simbolo *misimbolo = getSimboloPorNombre(header, nombre);
+    if (misimbolo != NULL) {
+        addInfosimbolo(misimbolo, info);
         fprintf(debugFile, "Información añadida en el objeto correspondiente\n");
         return 1;
     }
@@ -314,25 +314,25 @@ int addInfoNodoEnLista (lista_ligada *header, char* nombre, info_nodo info) {
 
 
 /**
- * Busca un nodo y devulve su info
+ * Busca un simbolo y devulve su info
  *
-info_nodo getInfoNodoEnLista (lista_ligada *header, char* nombre) {
-    nodo *minodo = getSimboloPorNombre(header, nombre);
-    if (minodo != NULL) {
-        return minodo -> info;
+info_simbolo getInfosimboloEnLista (lista_ligada *header, char* nombre) {
+    simbolo *misimbolo = getSimboloPorNombre(header, nombre);
+    if (misimbolo != NULL) {
+        return misimbolo -> info;
     }
     fprintf(debugFile, "El objeto de nombre [%s] no se encuentra en la lista, no se puede obtener su información\n", nombre);
-    //return NULL;aqui da error porque no podemos devulver NULL porque no es un info_nodo
+    //return NULL;aqui da error porque no podemos devulver NULL porque no es un info_simbolo
 }*/
 
 
 
 /**
- * Marca que el nodo ha sido utilizado en el codigo
- * Esa funcion es util para despues poder imprimir que nodos han sido declarados y nunca usados
+ * Marca que el simbolo ha sido utilizado en el codigo
+ * Esa funcion es util para despues poder imprimir que simbolos han sido declarados y nunca usados
  */
-void marcarComoUsado(nodo *minodo){
-    minodo -> usado = 1;
+void marcarComoUsado(simbolo *misimbolo){
+    misimbolo -> usado = 1;
 }
 /**
  * Vacia la lista, haciendo que su first apunte a NULL
@@ -342,14 +342,14 @@ void vaciarLista (lista_ligada *header) {
     if (header -> first == NULL) {
         fprintf(debugFile, "Vaciar lista: La lista YA estaba vacía\n");
     } else {
-        nodo *auxant = NULL;
-        nodo *aux = header -> first;
+        simbolo *auxant = NULL;
+        simbolo *aux = header -> first;
         while (aux -> next != NULL) {
             auxant = aux;
             aux = aux -> next;
-            liberarNodo(auxant);
+            liberarsimbolo(auxant);
         }
-        liberarNodo(aux);
+        liberarsimbolo(aux);
         header -> first = NULL;
         fprintf(debugFile, "La lista se ha vaciado\n");
     }
@@ -357,31 +357,31 @@ void vaciarLista (lista_ligada *header) {
 
 
 /**
-* Busca y elimina un nodo, liberando todo su espacio
+* Busca y elimina un simbolo, liberando todo su espacio
 * Seria muuuuucho mas facil si fues una lista doblemnte ligada. Asi solo (casi) habria que hacer get y liberar
 **/
-int deleteNodo(lista_ligada *header, char *nombre){
+int deletesimbolo(lista_ligada *header, char *nombre){
     if (header -> first == NULL) {
-        fprintf(debugFile, "deleteNodo: La lista está vacía\n");
+        fprintf(debugFile, "deletesimbolo: La lista está vacía\n");
     } else {
         if(strcmp(nombre, header->first->nombre)  == 0){
             //si es el primer simbolo
-            nodo *aux = header->first;
+            simbolo *aux = header->first;
             header->first = header->first->next;
-            liberarNodo(aux);
+            liberarsimbolo(aux);
         }else{
-            nodo *auxant = NULL;
-            nodo *aux = header -> first;
+            simbolo *auxant = NULL;
+            simbolo *aux = header -> first;
             while (aux -> next != NULL &&  strcmp(nombre, aux -> nombre) != 0) {
                 auxant = aux;
                 aux = aux -> next;
             }
             if(strcmp(nombre, aux -> nombre) == 0){
-                printInfoNodo(aux);
+                printInfosimbolo(aux);
                 auxant -> next = aux -> next;
-                liberarNodo(aux);
+                liberarsimbolo(aux);
             }else{
-                fprintf(debugFile, "deleteNodo: Nodo no encontrado\n");
+                fprintf(debugFile, "deletesimbolo: simbolo no encontrado\n");
             }
         }
     }
@@ -389,55 +389,55 @@ int deleteNodo(lista_ligada *header, char *nombre){
 
 
 /**
-* Elimina el nodo
-* Libera todo el espacio que el nodo y su info ocupan
+* Elimina el simbolo
+* Libera todo el espacio que el simbolo y su info ocupan
 */
-void liberarNodo(nodo* minodo){
-    switch(minodo -> tipo){
+void liberarsimbolo(simbolo* misimbolo){
+    switch(misimbolo -> tipo){
         case SIM_VARIABLE:
             break;
         case SIM_TIPO:
-            free(minodo->info.t2.tipo_tipo);
+            free(misimbolo->info.t2.tipo_tipo);
             break;
         case SIM_FUNCION:
-            free(minodo->info.t3.ent);
-            free(minodo->info.t3.sal);
+            free(misimbolo->info.t3.ent);
+            free(misimbolo->info.t3.sal);
             break;
     }
-    free(minodo);
-    //minodo = NULL; no estamos pasando el puntero a nodo minodo por referencia
+    free(misimbolo);
+    //misimbolo = NULL; no estamos pasando el puntero a simbolo misimbolo por referencia
     //lo mejor despues de liberarlo seria ponerlo a NULL par que no esté apuntando a una celda 
-    //que puede que ya no almacene los valores del nodo.
-    //si por ejemplo declaras un nodo, despues lo liberas y despues no insertas TODO ESO ES POSIBLE!!!
+    //que puede que ya no almacene los valores del simbolo.
+    //si por ejemplo declaras un simbolo, despues lo liberas y despues no insertas TODO ESO ES POSIBLE!!!
     //porque en C no hay forma de saber si has liberado un puntero o no :(
 }
 
 /**
- * Devuelve el primer nodo de la lista y lo quita de la lista
+ * Devuelve el primer simbolo de la lista y lo quita de la lista
  * Util cuando quieres sacar todos los elementos de una lista uno a uno
  */
-nodo* pop(lista_ligada *header){
+simbolo* pop(lista_ligada *header){
     if(header->first != NULL){
-        nodo* minodo = header->first;
+        simbolo* misimbolo = header->first;
         header->first = header->first->next;
-        minodo->next = NULL;
-        return minodo;
+        misimbolo->next = NULL;
+        return misimbolo;
     }else{
         return NULL;
     }
 }
 
 /**
-* Imprime el contenido de la lista y llama a metodos que imprimen la info de los nodos
+* Imprime el contenido de la lista y llama a metodos que imprimen la info de los simbolos
 */
 void printListaLigada (lista_ligada *header) {
     printf("---------------------------------------------------------\n");
     printf("CONTADOR DE LA LISTA:%i\n",header->contador);
     printf("Contenido Lista Ligada:\n");
-    nodo *minodo = header -> first;
-    while (minodo != NULL) {
-        printInfoNodo(minodo);
-        minodo = minodo -> next;
+    simbolo *misimbolo = header -> first;
+    while (misimbolo != NULL) {
+        printInfosimbolo(misimbolo);
+        misimbolo = misimbolo -> next;
     }
 }
 
@@ -453,23 +453,23 @@ int esTipoBase(int id){
  * Para notificar que simbolos fueron declarados y nunca usados
  */
 void printSimbolosNoUsados(lista_ligada *header) {
-    nodo *minodo = header -> first;
-    while (minodo  != NULL) {
-        if(minodo->usado == 0){
-            switch(minodo->tipo){
+    simbolo *misimbolo = header -> first;
+    while (misimbolo  != NULL) {
+        if(misimbolo->usado == 0){
+            switch(misimbolo->tipo){
                 case SIM_VARIABLE:
-                    printf("Variable %i %s declarada y nunca usada\n",minodo->info.t1.tipo_variable, minodo->nombre);
+                    printf("Variable %i %s declarada y nunca usada\n",misimbolo->info.t1.tipo_variable, misimbolo->nombre);
                     break;
                 case SIM_TIPO:
-                    if(!esTipoBase(minodo->id))
-                        printf("Tipo %s declarado y nunca usado\n",minodo->nombre);
+                    if(!esTipoBase(misimbolo->id))
+                        printf("Tipo %s declarado y nunca usado\n",misimbolo->nombre);
                     break;
                 case SIM_FUNCION:
-                    printf("Funcion %s declarada y nunca usada\n",minodo->nombre);
+                    printf("Funcion %s declarada y nunca usada\n",misimbolo->nombre);
                     break;
             }
         }
-        minodo = minodo -> next;
+        misimbolo = misimbolo -> next;
     }
 }
 
@@ -478,37 +478,37 @@ void printSimbolosNoUsados(lista_ligada *header) {
 /**
  * Imprime toda la info de una variable
  */
-void printInfoNodo (nodo *minodo) {
-    printf("Nombre del objeto: %s\n", minodo -> nombre);
-    switch(minodo->tipo){
+void printInfosimbolo (simbolo *misimbolo) {
+    printf("Nombre del objeto: %s\n", misimbolo -> nombre);
+    switch(misimbolo->tipo){
         case SIM_VARIABLE:
             printf("    El objeto es una variable\n");
-            printf("    El tipo de la variable es : %i\n\n", minodo -> info.t1.tipo_variable);
+            printf("    El tipo de la variable es : %i\n\n", misimbolo -> info.t1.tipo_variable);
             break;
         case SIM_TIPO:
             printf("    El objeto es un tipo\n");
-            /*if( minodo -> info.t2 != NULL){
-                printf("    El tipo del tipo es: %s\n\n", minodo -> info.t2.tipo_tipo);
+            /*if( misimbolo -> info.t2 != NULL){
+                printf("    El tipo del tipo es: %s\n\n", misimbolo -> info.t2.tipo_tipo);
             }*/
             break;
         case SIM_FUNCION:
             printf("    El objeto es una funcion\n");
-            /*if( minodo -> info.t3 != NULL){
-                printf("    Los parametros de entrada son: %s\n", minodo -> info.t3 -> ent);
-                printf("    Los parametros de salida son: %s\n\n", minodo -> info.t3 -> sal);
+            /*if( misimbolo -> info.t3 != NULL){
+                printf("    Los parametros de entrada son: %s\n", misimbolo -> info.t3 -> ent);
+                printf("    Los parametros de salida son: %s\n\n", misimbolo -> info.t3 -> sal);
             }*/                  
             break;
     }
 }
 
-int simboloEsUnTipo(nodo* minodo){
-    return minodo->tipo == SIM_TIPO;
+int simboloEsUnTipo(simbolo* misimbolo){
+    return misimbolo->tipo == SIM_TIPO;
 }
-int simboloEsUnaVariable(nodo* minodo){
-    return minodo->tipo == SIM_VARIABLE;
+int simboloEsUnaVariable(simbolo* misimbolo){
+    return misimbolo->tipo == SIM_VARIABLE;
 }   
-int getIdSimbolo(nodo* minodo){
-    return minodo->id;
+int getIdSimbolo(simbolo* misimbolo){
+    return misimbolo->id;
 }
 
 /*
@@ -520,12 +520,12 @@ int main (int argc, char** argv) {
     printListaLigada(listaId);
 
     lista_ligada* listaSimbolos =  crearTablaDeSimbolos();
-    nodo* nodoTipo = getSimboloPorId(listaSimbolos, ENTERO);
-    printf("%i\n", simboloEsUnTipo(nodoTipo));
-    marcarComoUsado(nodoTipo);
-    nodo* idNodo;
-    while((idNodo = pop(listaId))){//para cada id de la lista ty_lista_id
-        insertarVariable(listaSimbolos, getNombreSimbolo(idNodo), getIdSimbolo(nodoTipo));
+    simbolo* simboloTipo = getSimboloPorId(listaSimbolos, ENTERO);
+    printf("%i\n", simboloEsUnTipo(simboloTipo));
+    marcarComoUsado(simboloTipo);
+    simbolo* idsimbolo;
+    while((idsimbolo = pop(listaId))){//para cada id de la lista ty_lista_id
+        insertarVariable(listaSimbolos, getNombreSimbolo(idsimbolo), getIdSimbolo(simboloTipo));
     }
         printListaLigada(listaSimbolos
 

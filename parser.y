@@ -3,7 +3,9 @@
 #include <stdlib.h> //para hacer exit()
 #include "defines.h"
 #include <string.h>
-#include "lista.h"
+#include "tablaSimbolos.h"
+#include "tablaCuadruplas.h"
+#include "listaIndicesQuad.h"
 #include <stdarg.h>//esto es para poder usar va_list y va_start() para tener funciones con nº de arg indefinidos: yyerror
 
 extern int yycolumn;
@@ -14,7 +16,8 @@ extern char* yytext;
 void yyerror(const char *s, ...);
 FILE *fSaR;//fichero ShiftAndReduces.txt
 FILE *fTS; //fichero tablaSimbolos.txt
-lista_ligada *lista;//tabla de simbolos. igual habria que cambiar el nombre
+lista_ligada *tablaSimbolos; //tabla de simbolos. igual habria que cambiar el nombre
+t_tabla_quad *tablaCuadriplas;
 char* programName;
 int hayErrores;
 
@@ -29,7 +32,7 @@ int hayErrores;
   char caracter;
   double doble;
   int entero;
-  lista_ligada* lista;  //de momento las listas de id son listas_ligadas
+ lista_ligada* tablaSimbolos;  //de momento las listas de id son listas_ligadas
   struct infoExpr{
     int type;   //entero, real, ...(tipos basicos o definidos)
     int place;  //index del simbolo de la tabla de simbolos 
@@ -129,7 +132,7 @@ int hayErrores;
 %type <entero> ty_tipo_base
 %type <str> ty_lista_d_cte
 %type <str> ty_lista_d_var
-%type <lista> ty_lista_id
+%type <tablaSimbolos> ty_lista_id
 %type <str> ty_decl_ent_sal
 %type <str> ty_decl_ent
 %type <str> ty_decl_sal
@@ -254,22 +257,22 @@ ty_lista_d_cte:/*En el enunciado pone "literal" pero se referira a ty_tipo_base*
 ty_lista_d_var:
     ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var {
             //Primero chequear si el tipo esta en la tabla de simbolos
-            nodo* nodoTipo = getSimboloPorId(lista, $3);
-            if(nodoTipo != NULL){
-                if(simboloEsUnTipo(nodoTipo)){// si el tipo existe
+            simbolo* simboloTipo = getSimboloPorId(tablaSimbolos, $3);
+            if(simboloTipo != NULL){
+                if(simboloEsUnTipo(simboloTipo)){// si el tipo existe
                     //marcar que el tipo ha sido usado
-                    marcarComoUsado(nodoTipo);
-                    nodo* idNodo;
-                    while((idNodo = pop($1))){//para cada id de la lista ty_lista_id
-                        //creamos un info_nodo que apunta a un infoVar. infoVar contendra el tipo de la variable ($3)
-                        //info_nodo idInfo = crearInfoVariable($3);
-                        //addInfoNodo (idNodo, idInfo);
-                        //insertNodo(lista, idNodo);//lo metemos en la Tabla de simbolos
+                    marcarComoUsado(simboloTipo);
+                    simbolo* idsimbolo;
+                    while((idsimbolo = pop($1))){//para cada id de la lista ty_lista_id
+                        //creamos un info_simbolo que apunta a un infoVar. infoVar contendra el tipo de la variable ($3)
+                        //info_simbolo idInfo = crearInfoVariable($3);
+                        //addInfosimbolo (idsimbolo, idInfo);
+                        //insertsimbolo(lista, idsimbolo);//lo metemos en la Tabla de simbolos
 
-                        insertarVariable(lista, getNombreSimbolo(idNodo), getIdSimbolo(nodoTipo));
+                        insertarVariable(tablaSimbolos, getNombreSimbolo(idsimbolo), getIdSimbolo(simboloTipo));
 
                         //Escribimos tipo y nombre de la variable en el fichero tablaSimbolos.txt
-                        fprintf(fTS,"Insertada Variable %i '%s' en tabla de simbolos\n", $3, getNombreSimbolo(idNodo));
+                        fprintf(fTS,"Insertada Variable %i '%s' en tabla de simbolos\n", $3, getNombreSimbolo(idsimbolo));
                     }
                 }else{
                     yyerror("%s no es un tipo. Es otra cosa", $3);
@@ -286,7 +289,7 @@ ty_lista_id:
     TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id {
   				fprintf(fSaR,"REDUCE ty_lista_id: TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id\n");
                 //introducimos el nuevo identificador a la lista de identificadores
-                //nodo* var = crearNodo($1, VARIABLE);
+                //simbolo* var = crearsimbolo($1, VARIABLE);
                 //TODO: no pueden aparecer 2 veces la misma variable
                 //PERO si en entrada y en salida
                 insertarVariable($3, $1, SIM_SIN_TIPO);//es un buen nombre??????
@@ -296,8 +299,8 @@ ty_lista_id:
 
     | TK_IDENTIFICADOR {
 				fprintf(fSaR,"REDUCE ty_lista_id: TK_IDENTIFICADOR\n");
-                //creamos una lista con un solo nodo cuyo nombre es el id
-				//nodo* var = crearNodo($1, VARIABLE);
+                //creamos una lista con un solo simbolo cuyo nombre es el id
+				//simbolo* var = crearsimbolo($1, VARIABLE);
                 $$ = crearListaLigada();
                 insertarVariable($$, $1, SIM_SIN_TIPO);
 			}
@@ -319,14 +322,15 @@ ty_decl_sal:
 
 ty_exp_a:
       ty_exp_a TK_MAS ty_exp_a {
-        nodo* T = newTemp(lista);//new temp crea un nodo y nos devuelve su id
+        simbolo* T = newTemp(tablaSimbolos);//new temp crea un simbolo y nos devuelve su id
         $$.place = getIdSimbolo(T);
         //if(getTipoExp($1) == getTipoExp($3)){
         if($1.type == $3.type){
             modificaTipoVar(T, ENTERO);
-            printf("+,%s,%s,%s\n", getNombreSimbolo(getSimboloPorId(lista, $1.place)),
-                                getNombreSimbolo(getSimboloPorId(lista, $3.place)), 
-                                getNombreSimbolo(getSimboloPorId(lista, $$.place)));
+            gen(tablaCuadriplas, 1, 2, 3, 4);
+            printf("+,%s,%s,%s\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.place)),
+                                getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.place)), 
+                                getNombreSimbolo(getSimboloPorId(tablaSimbolos, $$.place)));
             $$.type = ENTERO;
         }
         fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MAS ty_exp_a\n");
@@ -382,7 +386,7 @@ ty_operando:
     /*AQUI EN EL CONFLICTO SUPONGO QUE HABRA QUE HACER UN SHIFT POR PURA ASOCIATIVIDAD, PARA REDUCIR LA PILA.
     ADEMAS ES EL MODO DE ACCEDER A LAS VARIABLES: SI TIENES variable1.variable2[variable3] PRIMERO HABRA QUE IR DE FUERA HACIA ADENTRO Y REDUCIR variable1.variable2 A UNA SOLA VARIABLE (variable12) PARA LUEGO ACCEDER A ESA VARIABLE variable12[variable3]*/
     TK_IDENTIFICADOR {
-        nodo* var = getSimboloPorNombre(lista, $1);
+        simbolo* var = getSimboloPorNombre(tablaSimbolos, $1);
         if(var == NULL){
             yyerror("variable %s usada pero no delarada", $1);
         }else{
@@ -419,8 +423,9 @@ ty_asignacion:
     /*Hemos puesto ty_expresion_t en veZ de ty_expresion para poder hacer a = 'a'*/
      ty_operando TK_ASIGNACION ty_expresion_t {
         if($1.type == $3.type){
-            printf(":=,%s, NULL, %s\n", getNombreSimbolo(getSimboloPorId(lista, $3.place)), 
-                                        getNombreSimbolo(getSimboloPorId(lista, $1.place)));
+            gen(tablaCuadriplas, 1, 2, 3, 4);
+            printf(":=,%s, NULL, %s\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.place)), 
+                                        getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.place)));
         }
         fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");
     }
@@ -507,26 +512,29 @@ int main (int argc, char *argv[]) {
     }
     
     //Abrir el fichero con con SHIFT y los REDUCE
-    fSaR = fopen("ShiftsAndReduces.txt", "w");
+    fSaR = fopen("out.ShiftsAndReduces", "w");
     if (fSaR == NULL){
-        printf("Error opening file ShiftsAndReduces.txt\n");
+        printf("Error abriendo out.ShiftsAndReduces\n");
         exit(1);
     }
     
     //Abrir el fichero con con la tabla de simbolos
-    fTS = fopen("tablaSimbolos.txt", "w");
+    fTS = fopen("out.TablaSimbolos", "w");
     if (fTS == NULL){
-        printf("Error opening file tablaSimbolos.txt\n");
+        printf("Error abriendo out.tablaSimbolos\n");
         exit(1);
     }
 
-	lista = crearTablaDeSimbolos();
+	tablaSimbolos = crearTablaDeSimbolos();
+    tablaCuadriplas =  crearTablaQuad();
 
 	yyparse();
-	printSimbolosNoUsados(lista);
+
+    printTablaQuad(tablaCuadriplas);
+	printSimbolosNoUsados(tablaSimbolos);
 
     if(hayErrores){
-	   printf("Revise ShiftsAndReduces.txt\n");
+	   printf("Revise out.ShiftsAndReduces\n");
 	}
 
 }

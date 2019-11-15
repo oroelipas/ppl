@@ -3,7 +3,8 @@ lex.yy.c
 lex.yy.o
 y.tab.c
 y.tab.h
-ShiftsAndReduces.txt
-tablaSimbolos.txt
+out.ShiftsAndReduces
+out.TablaSimbolos
+out.TablaCuadruplas
 *gch
 

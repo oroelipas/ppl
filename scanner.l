@@ -4,7 +4,7 @@
 #include <string.h>
 //el orden importa y lista.h tiene que ir antes de y.tab.h
 //ME PARECE QUE ES IMPORTANTE BASICAMENTE PORQUE ESTAN MAL HEMOS LOS .h!!!!!!!!!!!!!!!!!!!!!!
-#include "lista.h"
+#include "tablaSimbolos.h"
 #include "y.tab.h"
 #include "defines.h"
 
