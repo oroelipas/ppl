@@ -14,8 +14,9 @@ extern char* yytext;
 //extern int yylineno; ya no se usa desde que usamos YY_USER_ACTION para calcular linea y columna
 
 void yyerror(const char *s, ...);
-FILE *fSaR;//fichero ShiftAndReduces.txt
-FILE *fTS; //fichero tablaSimbolos.txt
+FILE *fSaR;//fichero out.ShiftAndReduces
+FILE *fTS; //fichero out.TablaSimbolos
+FILE *fTC;//fichero out.TablaCuadruplas
 lista_ligada *tablaSimbolos; //tabla de simbolos. igual habria que cambiar el nombre
 t_tabla_quad *tablaCuadriplas;
 char* programName;
@@ -321,17 +322,28 @@ ty_decl_sal:
     ;
 
 ty_exp_a:
+//ESTUDIAR SI SERIA MEJOR JUNTAR LAS OPERACIONES ARITMETICAS TODAS EN UNA PRODUCCION
       ty_exp_a TK_MAS ty_exp_a {
         simbolo* T = newTemp(tablaSimbolos);//new temp crea un simbolo y nos devuelve su id
         $$.place = getIdSimbolo(T);
-        //if(getTipoExp($1) == getTipoExp($3)){
-        if($1.type == $3.type){
+        if($1.type == $3.type == ENTERO){
             modificaTipoVar(T, ENTERO);
-            gen(tablaCuadriplas, 1, 2, 3, 4);
-            printf("+,%s,%s,%s\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.place)),
-                                getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.place)), 
-                                getNombreSimbolo(getSimboloPorId(tablaSimbolos, $$.place)));
             $$.type = ENTERO;
+            gen(tablaCuadriplas, SUMA_INT, $1.place,  $3.place,  $$.place);
+        }else if($1.type == $3.type == REAL){
+            modificaTipoVar(T, REAL);
+            $$.type = REAL;
+            gen(tablaCuadriplas, SUMA_REAL,  $1.place,  $3.place,  $$.place);
+        }else if($1.type == REAL && $3.type == ENTERO){
+            modificaTipoVar(T, REAL);
+            $$.type = REAL;
+            gen(tablaCuadriplas, INT_TO_REAL, $3.place, -1,  $$.place);
+            gen(tablaCuadriplas, SUMA_REAL,  $$.place,  $1.place,  $$.place);
+        }else if($1.type == ENTERO && $3.type == REAL){
+            modificaTipoVar(T, REAL);
+            $$.type = REAL;
+            gen(tablaCuadriplas, INT_TO_REAL, $1.place, -1,  $$.place);
+            gen(tablaCuadriplas, SUMA_REAL,  $$.place,  $3.place,  $$.place);
         }
         fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MAS ty_exp_a\n");
     }
@@ -423,9 +435,7 @@ ty_asignacion:
     /*Hemos puesto ty_expresion_t en veZ de ty_expresion para poder hacer a = 'a'*/
      ty_operando TK_ASIGNACION ty_expresion_t {
         if($1.type == $3.type){
-            gen(tablaCuadriplas, 1, 2, 3, 4);
-            printf(":=,%s, NULL, %s\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.place)), 
-                                        getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.place)));
+            gen(tablaCuadriplas, ASIGNACION, $3.place, -1, $1.place);
         }
         fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");
     }
@@ -517,11 +527,16 @@ int main (int argc, char *argv[]) {
         printf("Error abriendo out.ShiftsAndReduces\n");
         exit(1);
     }
-    
     //Abrir el fichero con con la tabla de simbolos
     fTS = fopen("out.TablaSimbolos", "w");
     if (fTS == NULL){
-        printf("Error abriendo out.tablaSimbolos\n");
+        printf("Error abriendo out.TablaSimbolos\n");
+        exit(1);
+    }
+    //Abrir el fichero con con la tabla de cuadruplas
+    fTC = fopen("out.TablaCuadruplas", "w");
+    if (fTS == NULL){
+        printf("Error abriendo out.TablaCuadruplas\n");
         exit(1);
     }
 
@@ -532,10 +547,14 @@ int main (int argc, char *argv[]) {
 
     printTablaQuad(tablaCuadriplas);
 	printSimbolosNoUsados(tablaSimbolos);
+    escribirTablaCuadruplas(tablaSimbolos, tablaCuadriplas, fTC);
 
     if(hayErrores){
 	   printf("Revise out.ShiftsAndReduces\n");
 	}
+    fclose(fTS);
+    fclose(fTC);
+    fclose(fSaR);
 
 }
 

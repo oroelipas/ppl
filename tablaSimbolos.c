@@ -7,10 +7,6 @@
 #include <string.h>
 #include "tablaSimbolos.h"
 
-
-#define TAM_MAX_NOMBRE 50		// Número de caracteres máximo que podrá tener el nombre del objeto almacenado
-#define TAM_MAX_TIPO_VAR 100 	// Número de caracteres máximo que podrá tener el nombre de un tipo de variable (tanto básico como definido por el usuario. Ej: entero, booleano, miTipo...)
-
 //#define LENGTH(x)  (sizeof(x) / sizeof((x)[0]))igual esto es guay para la longitud de los arrays https://stackoverflow.com/questions/37538/how-do-i-determine-the-size-of-my-array-in-c
 
 /*PONER "static" vendria a significar private. La funcion no sale de este fichero*/
@@ -94,8 +90,8 @@ simbolo* crearSimbolo(char *nombre, int tipo){
     // Nota para el futuro: tendremos un sistema de números de bloque, que nos indicarán la visibilidad
     simbolo *nuevo = (simbolo *)malloc(sizeof(simbolo));
     nuevo -> usado = 0;
-    nuevo -> nombre = (char *)malloc(sizeof(char) * TAM_MAX_NOMBRE);
-    if (strlen(nombre) <= TAM_MAX_NOMBRE) {
+    nuevo -> nombre = (char *)malloc(sizeof(char) * TAM_MAX_NOMBRE_SIMBOLO);
+    if (strlen(nombre) <= TAM_MAX_NOMBRE_SIMBOLO) {
         strcpy(nuevo -> nombre, nombre);
         nuevo -> tipo = tipo;
         nuevo -> next = NULL;

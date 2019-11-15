@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include "tablaCuadruplas.h"
+#include "defines.h"
+#include <string.h>
 
 /* DECLARACION DE FUNCIONES ESTATICAS */
 static int getCampo1(t_tabla_quad* header, int indice);
@@ -99,6 +101,69 @@ void printTablaQuad(t_tabla_quad* header) {
     int i = 0;
     while(i < getNextquad(header)) {
         printQuad(header, i);
+        i++;
+    }
+}
+
+
+char* codOp2OpName(char* opearion, int codOp){
+    switch(codOp){
+        case ASIGNACION:
+            strcpy(opearion,":=");
+            break;
+        case SUMA_INT:
+            strcpy(opearion,"+int");
+            break;
+        case SUMA_REAL:
+            strcpy(opearion,"+real");
+            break;
+        case RESTA_INT:
+            strcpy(opearion,"-int");
+            break;
+        case RESTA_REAL:
+            strcpy(opearion,"-real");
+            break;
+        case MULT_INT:
+            strcpy(opearion,"*int");
+            break;
+        case MULT_REAL:
+            strcpy(opearion,"*rel");
+            break;
+        case INT_TO_REAL:
+            strcpy(opearion,"int->real");
+            break;
+    }  
+    printf("opeacion copiada\n");
+}
+
+
+void index2Name(char *name, lista_ligada *tablaSimbolos, int index){
+    printf("index%i\n",index );
+    if(index == -1){
+        strcpy(name, "NULL");
+    }else{
+        strcpy(name, getNombreSimbolo(getSimboloPorId(tablaSimbolos, index)));
+    }
+    printf("operando copiada\n");
+
+}
+
+
+
+void escribirTablaCuadruplas(lista_ligada *tablaSimbolos, t_tabla_quad *tablaCuadruplas, FILE *file){
+    char opearion[TAM_MAX_NOMBRE_SIMBOLO];
+    char operando1[TAM_MAX_NOMBRE_SIMBOLO];
+    char operando2[TAM_MAX_NOMBRE_SIMBOLO];
+    char destino[TAM_MAX_NOMBRE_SIMBOLO];
+    int i = 0;
+    while(i < getNextquad(tablaCuadruplas)) {
+
+        codOp2OpName(opearion, getCampo1(tablaCuadruplas,i));
+        index2Name(operando1, tablaSimbolos, getCampo2(tablaCuadruplas,i));
+        index2Name(operando2, tablaSimbolos, getCampo3(tablaCuadruplas,i));
+        index2Name(destino, tablaSimbolos, getCampo4(tablaCuadruplas,i));
+
+        fprintf(file, "(%s,  %s,  %s,  %s)\n", opearion, operando1, operando2, destino);
         i++;
     }
 }

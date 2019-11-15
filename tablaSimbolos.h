@@ -1,13 +1,6 @@
-/*
-HAY QUE HACER LO .H BIEN PARA QUE NO SOBREESCRIBA NINGUNA FUCNION AL INCLUIRLO
-CON #ifndef
-*/
-/*	CABECERA DEL MÓDULO QUE IMPLEMENTA UNA LISTA LIGADA */
+#ifndef CM_OI_TABLA_SIMBOLOS_H
+#define CM_OI_TABLA_SIMBOLOS_H
 
-/*
- DECISION DE COMO ESTAN HECHOS LOS STRUCT Y EL UNION:
- https://stackoverflow.com/questions/28107867/different-structs-in-the-same-node-linked-lists-c
- */
 typedef struct lista_ligada {
     struct simbolo *first;    // Referencia al primer simbolo almacenado
     int contador;          //de index de simbolos
@@ -51,3 +44,5 @@ extern char *getNombreSimbolo(simbolo* misimbolo);
 extern void modificaTipoVar(simbolo* var, int tipo_var);
 extern int getIdSimbolo(simbolo* misimbolo);
 extern int getTipoVar (simbolo* misimbolo);
+
+#endif

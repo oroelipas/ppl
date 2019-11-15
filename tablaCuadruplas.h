@@ -1,4 +1,4 @@
-
+#include "tablaSimbolos.h"
 /* CABECERA DEL MODULO tabla_quad */
 
 #ifndef CM_OI_TABLA_CUADRUPLAS_H
@@ -23,5 +23,5 @@ extern void gen(t_tabla_quad* header, int operando, int elem1, int elem2, int re
 extern int addDestinoGoto(t_tabla_quad* header, int indice, int destino);
 extern int getNextquad(t_tabla_quad* header);
 extern void printTablaQuad(t_tabla_quad* header);
-
+extern void escribirTablaCuadruplas(lista_ligada* tablaSimbolos, t_tabla_quad* tablaCuadruplas, FILE *file);
 #endif
