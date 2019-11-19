@@ -26,7 +26,7 @@ info_simbolo getInfosimbolo (simbolo* misimbolo);
 info_simbolo getInfosimboloEnLista (lista_ligada *header, char* nombre);
 int   getTipo (simbolo* misimbolo);
 char *getNombreSimbolo (simbolo* misimbolo);
-void vaciarLista (lista_ligada *header);
+void vaciarTablaSimbolos (lista_ligada *header);
 int deletesimbolo (lista_ligada *header, char *nombre);
 static void liberarsimbolo (simbolo* misimbolo);
 int esTipoBase(int tipo);
@@ -334,7 +334,7 @@ void marcarComoUsado(simbolo *misimbolo){
  * Vacia la lista, haciendo que su first apunte a NULL
  * Libera todo el espacio que ocupaban los elementos de la lista
  */
-void vaciarLista (lista_ligada *header) {
+void vaciarTablaSimbolos (lista_ligada *header) {
     if (header -> first == NULL) {
         fprintf(debugFile, "Vaciar lista: La lista YA estaba vacía\n");
     } else {

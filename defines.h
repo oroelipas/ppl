@@ -30,6 +30,8 @@
 #define MULT_INT 206
 #define MULT_REAL 207
 #define INT_TO_REAL 208
+#define GOTO_OP_REL_IGUALDAD 209
+#define GOTO 210
 
 #define TAM_MAX_NOMBRE_SIMBOLO 100 	// Número de caracteres máximo que podrá tener el nombre de un tipo, variable, funcion...
 

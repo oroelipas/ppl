@@ -11,7 +11,7 @@ typedef struct quad {
     int campo3;
     int campo4;
 } quad;
-
+//quitar struct????
 typedef struct t_tabla_quad {
     struct quad t_quad [NUM_QUADS];
     int nextquad;

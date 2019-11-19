@@ -18,7 +18,7 @@ FILE *fSaR;//fichero out.ShiftAndReduces
 FILE *fTS; //fichero out.TablaSimbolos
 FILE *fTC;//fichero out.TablaCuadruplas
 lista_ligada *tablaSimbolos; //tabla de simbolos. igual habria que cambiar el nombre
-t_tabla_quad *tablaCuadriplas;
+t_tabla_quad *tablaCuadruplas;
 char* programName;
 int hayErrores;
 
@@ -34,10 +34,15 @@ int hayErrores;
   double doble;
   int entero;
  lista_ligada* tablaSimbolos;  //de momento las listas de id son listas_ligadas
-  struct infoExpr{
+  struct info{
     int type;   //entero, real, ...(tipos basicos o definidos)
     int place;  //index del simbolo de la tabla de simbolos 
-  } info;
+    t_lista_ligada_int* True;   //entero, real, ...(tipos basicos o definidos)
+    t_lista_ligada_int* False;  //index del simbolo de la tabla de simbolos 
+  } infoExp;
+  struct infoQuad{
+    int quad;   //entero, real, ...(tipos basicos o definidos)
+  } infoQ;
 }
 %locations 
 %start ty_desc_algoritmo
@@ -128,7 +133,7 @@ int hayErrores;
 %type <str> ty_decl_var
 %type <str> ty_lista_d_tipo
 %type <entero> ty_d_tipo
-%type <info> ty_expresion_t
+%type <infoExp> ty_expresion_t
 %type <str> ty_lista_campos
 %type <entero> ty_tipo_base
 %type <str> ty_lista_d_cte
@@ -137,10 +142,10 @@ int hayErrores;
 %type <str> ty_decl_ent_sal
 %type <str> ty_decl_ent
 %type <str> ty_decl_sal
-%type <info> ty_expresion
-%type <info> ty_exp_a
-%type <str> ty_exp_b
-%type <info> ty_operando
+%type <infoExp> ty_expresion
+%type <infoExp> ty_exp_a
+%type <infoExp> ty_exp_b
+%type <infoExp> ty_operando
 %type <str> ty_instrucciones
 %type <str> ty_instruccion
 %type <str> ty_asignacion
@@ -158,7 +163,7 @@ int hayErrores;
 %type <str> ty_accion_ll
 %type <str> ty_funcion_ll
 %type <str> ty_l_ll
-
+%type <infoQ> ty_M
 
 %%
 
@@ -329,21 +334,21 @@ ty_exp_a:
         if($1.type == $3.type == ENTERO){
             modificaTipoVar(T, ENTERO);
             $$.type = ENTERO;
-            gen(tablaCuadriplas, SUMA_INT, $1.place,  $3.place,  $$.place);
+            gen(tablaCuadruplas, SUMA_INT, $1.place,  $3.place,  $$.place);
         }else if($1.type == $3.type == REAL){
             modificaTipoVar(T, REAL);
             $$.type = REAL;
-            gen(tablaCuadriplas, SUMA_REAL,  $1.place,  $3.place,  $$.place);
+            gen(tablaCuadruplas, SUMA_REAL,  $1.place,  $3.place,  $$.place);
         }else if($1.type == REAL && $3.type == ENTERO){
             modificaTipoVar(T, REAL);
             $$.type = REAL;
-            gen(tablaCuadriplas, INT_TO_REAL, $3.place, -1,  $$.place);
-            gen(tablaCuadriplas, SUMA_REAL,  $$.place,  $1.place,  $$.place);
+            gen(tablaCuadruplas, INT_TO_REAL, $3.place, -1,  $$.place);
+            gen(tablaCuadruplas, SUMA_REAL,  $$.place,  $1.place,  $$.place);
         }else if($1.type == ENTERO && $3.type == REAL){
             modificaTipoVar(T, REAL);
             $$.type = REAL;
-            gen(tablaCuadriplas, INT_TO_REAL, $1.place, -1,  $$.place);
-            gen(tablaCuadriplas, SUMA_REAL,  $$.place,  $3.place,  $$.place);
+            gen(tablaCuadruplas, INT_TO_REAL, $1.place, -1,  $$.place);
+            gen(tablaCuadruplas, SUMA_REAL,  $$.place,  $3.place,  $$.place);
         }
         fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MAS ty_exp_a\n");
     }
@@ -356,11 +361,20 @@ ty_exp_a:
     | ty_operando {
         $$.place = $1.place;
         $$.type = $1.type;
+        $$.True = $1.True;
+        $$.False = $1.False;
+        //hacemos estas asignaciones de info booleana porque si hay (a=verdadero) entonces a es operando->exp_a->expresion y luego exp_b
         fprintf(fSaR,"REDUCE ty_exp_a: ty_operando\n");
     }
-    | TK_ENTERO {fprintf(fSaR,"REDUCE ty_exp_a: TK_ENTERO\n");}
-    | TK_REAL {fprintf(fSaR,"REDUCE ty_exp_a: TK_REAL\n");}
-    | TK_MENOS ty_exp_a %prec TK_MENOS_U {fprintf(fSaR,"REDUCE ty_exp_a: TK_MENOS ty_exp_a\n");}
+    | TK_ENTERO {
+        //Nuestro compilador de momento no maneja constantes ni literales
+        fprintf(fSaR,"REDUCE ty_exp_a: TK_ENTERO\n");}
+    | TK_REAL {
+        //Nuestro compilador de momento no maneja constantes ni literales
+        fprintf(fSaR,"REDUCE ty_exp_a: TK_REAL\n");}
+    | TK_MENOS ty_exp_a %prec TK_MENOS_U {
+        //Nuestro compilador de momento no maneja constantes ni literales
+        fprintf(fSaR,"REDUCE ty_exp_a: TK_MENOS ty_exp_a\n");}
     ;
 
 /*
@@ -374,20 +388,58 @@ ty_op_relacional:
 */
     
 ty_exp_b:
-      ty_exp_b TK_PR_Y ty_exp_b {fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_Y ty_exp_b\n");}/*AQUI IGUAL SE PUEDEN DEFINIR OP_LOGICO: CUYOS VALORES SEAN Y,O*/
-    | ty_exp_b TK_PR_O ty_exp_b {fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_O ty_exp_b\n");}
-    | TK_PR_NO ty_exp_b /*%prec TK_MUY_PRIORITARIO ESTO NO NOS ESTA QUITANDO R/R*/{fprintf(fSaR,"REDUCE ty_exp_b: TK_PR_NO ty_exp_b\n");}
-    | TK_BOOLEANO {fprintf(fSaR,"REDUCE ty_exp_b: TK_BOOLEANO\n");}
-    | ty_expresion TK_OP_RELACIONAL ty_expresion {fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_OP_RELACIONAL ty_expresion\n");}
+      ty_exp_b TK_PR_Y ty_M ty_exp_b {
+        backpatch(tablaCuadruplas, $1.True, $3.quad);
+        $$.False = merge($1.False, $4.False);
+        $$.True = $4.True;
+        fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_Y ty_exp_b\n");
+      }/*AQUI IGUAL SE PUEDEN DEFINIR OP_LOGICO: CUYOS VALORES SEAN Y,O*/
+    | ty_exp_b TK_PR_O ty_M ty_exp_b {
+        backpatch(tablaCuadruplas, $1.False, $3.quad);
+        $$.True = merge($1.True, $4.True);
+        $$.False = $4.False;
+        fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_O ty_exp_b\n");
+    }
+    | TK_PR_NO ty_exp_b /*%prec TK_MUY_PRIORITARIO ESTO NO NOS ESTA QUITANDO R/R*/{
+        $$.True = $2.False;
+        $$.False = $2.True;
+        fprintf(fSaR,"REDUCE ty_exp_b: TK_PR_NO ty_exp_b\n");
+    }
+    | TK_BOOLEANO {
+        //Nuestro compilador de momento no maneja constantes ni literales
+        fprintf(fSaR,"REDUCE ty_exp_b: TK_BOOLEANO\n");
+    }
+    | ty_expresion TK_OP_RELACIONAL ty_expresion {
+        if($1.type != BOOLEANO && $3.type != BOOLEANO){
+
+        }else if($1.type == BOOLEANO && $3.type == BOOLEANO){
+
+        }else{
+            yyerror("comparación entre tipos no compatibles (booleano y no booleano)");
+        }
+
+        fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_OP_RELACIONAL ty_expresion\n");
+    }
     | ty_expresion TK_IGUAL ty_expresion {fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_IGUAL ty_expresion\n");}
-    | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL {fprintf(fSaR,"REDUCE ty_exp_b: TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL\n");}
+    | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL {
+        $$.True = $2.True;
+        $$.False = $2.False;
+        fprintf(fSaR,"REDUCE ty_exp_b: TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL\n");
+    }
     ;
+
+ty_M: 
+    /*vacio*/{
+    $$.quad = getNextquad(tablaCuadruplas);
+};
 
 ty_expresion:
       ty_exp_a {
         fprintf(fSaR,"REDUCE ty_expresion: ty_exp_a\n");
         $$.place = $1.place;
         $$.type = $1.type;
+        $$.True = $1.True;
+        $$.False = $1.False;
     }
     | ty_exp_b %prec TK_NADA_PRIORITARIO{fprintf(fSaR,"REDUCE ty_expresion: ty_exp_b\n");} /*ESTO NO TIENE QUE FUNCIONAR ASI!!!!!*/
     | ty_funcion_ll {fprintf(fSaR,"REDUCE ty_expresion: ty_funcion_ll\n");}
@@ -406,6 +458,12 @@ ty_operando:
                 marcarComoUsado(var);
                 $$.place = getIdSimbolo(var);
                 $$.type = getTipoVar(var);
+                if(getTipoVar(var) == BOOLEANO){
+                    $$.True = makeList(getNextquad(tablaCuadruplas));
+                    $$.False = makeList(getNextquad(tablaCuadruplas) + 1);
+                    //  gen(tablaCuadruplas, GOTO_OP_REL_IGUALDAD, $1.place, ¿true?, -1);
+                    gen(tablaCuadruplas, GOTO, -1, -1, -1);
+                }
             }else{
                 yyerror("%s no es una variable", $1);
             }
@@ -435,7 +493,7 @@ ty_asignacion:
     /*Hemos puesto ty_expresion_t en veZ de ty_expresion para poder hacer a = 'a'*/
      ty_operando TK_ASIGNACION ty_expresion_t {
         if($1.type == $3.type){
-            gen(tablaCuadriplas, ASIGNACION, $3.place, -1, $1.place);
+            gen(tablaCuadruplas, ASIGNACION, $3.place, -1, $1.place);
         }
         fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");
     }
@@ -443,7 +501,7 @@ ty_asignacion:
     ;
 
 ty_alternativa:
-    TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI {fprintf(fSaR,"REDUCE ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI\n");}
+    TK_PR_SI ty_exp_b TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI {fprintf(fSaR,"REDUCE ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI\n");}
     ;
 
 ty_lista_opciones:
@@ -541,13 +599,13 @@ int main (int argc, char *argv[]) {
     }
 
 	tablaSimbolos = crearTablaDeSimbolos();
-    tablaCuadriplas =  crearTablaQuad();
+    tablaCuadruplas =  crearTablaQuad();
 
 	yyparse();
 
-    printTablaQuad(tablaCuadriplas);
+    printTablaQuad(tablaCuadruplas);
 	printSimbolosNoUsados(tablaSimbolos);
-    escribirTablaCuadruplas(tablaSimbolos, tablaCuadriplas, fTC);
+    escribirTablaCuadruplas(tablaSimbolos, tablaCuadruplas, fTC);
 
     if(hayErrores){
 	   printf("Revise out.ShiftsAndReduces\n");
