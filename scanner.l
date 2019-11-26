@@ -147,32 +147,33 @@ dr_entrada_a_omitir [\n\t\r ]
 
 {dr_op_rel_mayor_que} {
     fprintf(fSaR,"SHIFT  op_relacional (>)\n");
-    yylval.str = strdup(yytext);
+    yylval.entero = MAYOR;
     return TK_OP_RELACIONAL;
 }
 {dr_op_rel_menor_que} {
     fprintf(fSaR,"SHIFT  op_relacional (<)\n");
-    yylval.str = strdup(yytext);
+    yylval.entero = MENOR;
     return TK_OP_RELACIONAL;
 }
 {dr_op_rel_mayor_igual_que} {
     fprintf(fSaR,"SHIFT  op_relacional (>=)\n");
-    yylval.str = strdup(yytext);
+    yylval.entero = MAYOR_O_IGUAL;
     return TK_OP_RELACIONAL;
 }
 {dr_op_rel_menor_igual_que} {
     fprintf(fSaR,"SHIFT  op_relacional (<=)\n");
-    yylval.str = strdup(yytext);
+    yylval.entero = MENOR_O_IGUAL;
     return TK_OP_RELACIONAL;
 }
 {dr_op_rel_desigual} {
     fprintf(fSaR,"SHIFT  op_relacional (<>)\n");
-    yylval.str = strdup(yytext);
+    yylval.entero = DESIGUAL;
     return TK_OP_RELACIONAL;
 }
 
 {dr_simbolo_igual} {
     fprintf(fSaR,"SHIFT  simbolo_igual: =\n");
+    yylval.entero = IGUAL;
     return TK_IGUAL;
 }
 

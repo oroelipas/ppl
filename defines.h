@@ -1,14 +1,9 @@
 #ifndef CM_OI_DEFINES_H
 #define CM_OI_DEFINES_H
 	
-#ifndef RED
-    #define RED "\033[0;31m"
-#endif
-
-#ifndef RESET
-    #define RESET "\033[0m"
-#endif
-
+#define RED "\033[0;31m"
+#define RESET "\033[0m"
+#define MAGENTA "\033[1;35m"
 //definiciones de tipos de nodos
 #define SIM_VARIABLE 101
 #define SIM_TIPO 102
@@ -30,8 +25,23 @@
 #define MULT_INT 206
 #define MULT_REAL 207
 #define INT_TO_REAL 208
-#define GOTO_OP_REL_IGUALDAD 209
-#define GOTO 210
+#define GOTO 209
+#define GOTO_IF_OP_REL_IGUAL 210
+#define GOTO_IF_OP_REL_DESIGUAL 211
+#define GOTO_IF_OP_REL_MENOR 212
+#define GOTO_IF_OP_REL_MENOR_IGUAL 213
+#define GOTO_IF_OP_REL_MAYOR 214
+#define GOTO_IF_OP_REL_MAYOR_IGUAL 215
+#define GOTO_IF_VERDADERO 216
+#define ASIGNAR_VALOR_VERDADERO 217
+#define ASIGNAR_VALOR_FALSO 218
+
+#define MAYOR 300
+#define MENOR 301
+#define MAYOR_O_IGUAL 302
+#define MENOR_O_IGUAL 303
+#define IGUAL 304
+#define DESIGUAL 305
 
 #define TAM_MAX_NOMBRE_SIMBOLO 100 	// Número de caracteres máximo que podrá tener el nombre de un tipo, variable, funcion...
 

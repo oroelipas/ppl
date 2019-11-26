@@ -8,7 +8,7 @@ var
 fvar;
 
 a:=b+c;
-b:=0
+b:=0;
 
 {Post: n =N AND suma = SUMATORIO(i=1..N)(M sobre i)}
 falgoritmo

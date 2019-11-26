@@ -13,6 +13,7 @@ extern int yylex();
 extern char* yytext;
 //extern int yylineno; ya no se usa desde que usamos YY_USER_ACTION para calcular linea y columna
 
+void warning(const char *warningText, ...);
 void yyerror(const char *s, ...);
 FILE *fSaR;//fichero out.ShiftAndReduces
 FILE *fTS; //fichero out.TablaSimbolos
@@ -108,8 +109,8 @@ int hayErrores;
 %left TK_PR_O
 %left TK_PR_Y
 /*%nonassoc para no permitir 3<4<5*/
-%nonassoc TK_IGUAL
-%nonassoc <str> TK_OP_RELACIONAL 
+%nonassoc <entero> TK_IGUAL
+%nonassoc <entero> TK_OP_RELACIONAL 
 %nonassoc TK_PR_NO
 %left TK_MAS TK_MENOS
 %left TK_MULT TK_DIV TK_DIV_ENT TK_MOD
@@ -164,6 +165,7 @@ int hayErrores;
 %type <str> ty_funcion_ll
 %type <str> ty_l_ll
 %type <infoQ> ty_M
+%type <entero> ty_op_relacional
 
 %%
 
@@ -367,34 +369,27 @@ ty_exp_a:
         fprintf(fSaR,"REDUCE ty_exp_a: ty_operando\n");
     }
     | TK_ENTERO {
-        //Nuestro compilador de momento no maneja constantes ni literales
+        warning("este compilador aún no maneja asignacion de literales");
         fprintf(fSaR,"REDUCE ty_exp_a: TK_ENTERO\n");}
     | TK_REAL {
-        //Nuestro compilador de momento no maneja constantes ni literales
+        warning("este compilador aún no maneja asignacion de literales");
         fprintf(fSaR,"REDUCE ty_exp_a: TK_REAL\n");}
     | TK_MENOS ty_exp_a %prec TK_MENOS_U {
-        //Nuestro compilador de momento no maneja constantes ni literales
         fprintf(fSaR,"REDUCE ty_exp_a: TK_MENOS ty_exp_a\n");}
     ;
-
-/*
-ESTO ES PARA ELIMINAR LOS S/R
-(TAMBIEN MOLARIA QUE MAS, MENOS, MULT, DIV.... ESTUVIESEN JUNTOS COMO ESTOS)
-NO SABEMOS LA FORMA DE QUE AL HACER ESTO ty_op_relacional TAMBIEN SEA NONASOC
-ty_op_relacional:
-      TK_OP_RELACIONAL {}
-    | TK_IGUAL {}
-    ;
-*/
     
 ty_exp_b:
-      ty_exp_b TK_PR_Y ty_M ty_exp_b {
+      ty_expresion TK_PR_Y ty_M ty_expresion {
+        //ESTO ESTABA MAL. ERA ty_exp_b TK_PR_Y ty_exp_b Y ENTONCES DABA FALLO HACIENDO: a = b Y c
+        ///TODO: COMPROBAR QUE SON BOOLEANOS!!!!!!!!!!!!!!!!!!!
         backpatch(tablaCuadruplas, $1.True, $3.quad);
         $$.False = merge($1.False, $4.False);
         $$.True = $4.True;
         fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_Y ty_exp_b\n");
       }/*AQUI IGUAL SE PUEDEN DEFINIR OP_LOGICO: CUYOS VALORES SEAN Y,O*/
-    | ty_exp_b TK_PR_O ty_M ty_exp_b {
+    | ty_expresion TK_PR_O ty_M ty_expresion {
+        //ESTO ESTABA MAL. ERA ty_exp_b TK_PR_O ty_exp_b Y ENTONCES DABA FALLO HACIENDO: a = b O c
+        ///TODO: COMPROBAR QUE SON BOOLEANOS!!!!!!!!!!!!!!!!!!!
         backpatch(tablaCuadruplas, $1.False, $3.quad);
         $$.True = merge($1.True, $4.True);
         $$.False = $4.False;
@@ -406,26 +401,58 @@ ty_exp_b:
         fprintf(fSaR,"REDUCE ty_exp_b: TK_PR_NO ty_exp_b\n");
     }
     | TK_BOOLEANO {
-        //Nuestro compilador de momento no maneja constantes ni literales
+        /*TODO: MAL: PUEDE QUE NO SEA UNA ASIGNACION (if a=verdadero ->)       */
+        warning("este compilador aún no maneja asignacion de literales");
         fprintf(fSaR,"REDUCE ty_exp_b: TK_BOOLEANO\n");
     }
-    | ty_expresion TK_OP_RELACIONAL ty_expresion {
+    | ty_expresion ty_op_relacional ty_expresion {
+        //TODO: CUALES TIENEN QUE SER LOS TIPOS COMPARABLES?? ENTEROS, REALES, ¿CARACTERES? . BOOLEANOS NO
+        //TODO: HAY QUE COMPROBAR QUE SON DEL MISMO TIPO Y QUE ESE TIPO SEA COMPARABLE
         if($1.type != BOOLEANO && $3.type != BOOLEANO){
-
-        }else if($1.type == BOOLEANO && $3.type == BOOLEANO){
-
+            $$.True = makeList(getNextquad(tablaCuadruplas));
+            $$.False = makeList(getNextquad(tablaCuadruplas)+1);
+            // generacion del salto condicional
+            printf("aaaaaaaaaaaaaaaaaaaaaa%i\n", $2);
+            switch($2){
+                case MAYOR:
+                    gen(tablaCuadruplas, GOTO_IF_OP_REL_MAYOR, $1.place, $3.place, -1);
+                    break;
+                case MENOR:
+                    gen(tablaCuadruplas, GOTO_IF_OP_REL_MENOR, $1.place, $3.place, -1);
+                    break;
+                case MAYOR_O_IGUAL:
+                    gen(tablaCuadruplas, GOTO_IF_OP_REL_MAYOR_IGUAL, $1.place, $3.place, -1);
+                    break;
+                case MENOR_O_IGUAL:
+                    gen(tablaCuadruplas, GOTO_IF_OP_REL_MENOR_IGUAL, $1.place, $3.place, -1);
+                    break;
+                case IGUAL:
+                    gen(tablaCuadruplas, GOTO_IF_OP_REL_IGUAL, $1.place, $3.place, -1);
+                    break;
+                case DESIGUAL:
+                    gen(tablaCuadruplas, GOTO_IF_OP_REL_DESIGUAL, $1.place, $3.place, -1);
+                    break;
+            }
+            //generacion del salto no condicional
+            gen(tablaCuadruplas, GOTO, -1, -1, -1);
+            $$.type = BOOLEANO;
         }else{
-            yyerror("comparación entre tipos no compatibles (booleano y no booleano)");
+            yyerror("comparación no posible con los tipos %i y %i para el comparador %i", $1.type, $3.type, $2);
         }
 
         fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_OP_RELACIONAL ty_expresion\n");
     }
-    | ty_expresion TK_IGUAL ty_expresion {fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_IGUAL ty_expresion\n");}
     | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL {
         $$.True = $2.True;
         $$.False = $2.False;
         fprintf(fSaR,"REDUCE ty_exp_b: TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL\n");
     }
+    ;
+
+//ESTO ME ESTA DANDO R/R. POR EL MOMENTO LA PRODUCCION DE  | ty_expresion TK_IGUAL ty_expresion NO ESTA!!!!!!!!!
+ty_op_relacional:
+    TK_OP_RELACIONAL {$$ = $1;}
+    | TK_IGUAL {$$ = $1;}
     ;
 
 ty_M: 
@@ -461,8 +488,10 @@ ty_operando:
                 if(getTipoVar(var) == BOOLEANO){
                     $$.True = makeList(getNextquad(tablaCuadruplas));
                     $$.False = makeList(getNextquad(tablaCuadruplas) + 1);
-                    //  gen(tablaCuadruplas, GOTO_OP_REL_IGUALDAD, $1.place, ¿true?, -1);
+                    gen(tablaCuadruplas, GOTO_IF_VERDADERO, $$.place, -1, -1);
                     gen(tablaCuadruplas, GOTO, -1, -1, -1);
+                //TODO: AQUI CUANDO SE VE, POR EJEMPLO, EL IDENTIFICADOR a Y ESTAMOS HACIENDO a = b Y c NO SE DEBERIAN GENERAR ESOS GEN. ME PARECE
+                // ESTA ES UNA DUDA PARA FITXI!!!!!!!! 
                 }
             }else{
                 yyerror("%s no es una variable", $1);
@@ -477,8 +506,8 @@ ty_operando:
 
 ty_instrucciones:
       ty_instruccion TK_PUNTOYCOMA ty_instrucciones {fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion TK_PUNTOYCOMA ty_instrucciones\n");}
-    | ty_instruccion {fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion\n");}
-    ;//la ultima instruccion no lleva PUNTOYCOMA 
+    | ty_instruccion TK_PUNTOYCOMA {fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion\n");}
+    ;
 
 
 ty_instruccion:
@@ -493,7 +522,16 @@ ty_asignacion:
     /*Hemos puesto ty_expresion_t en veZ de ty_expresion para poder hacer a = 'a'*/
      ty_operando TK_ASIGNACION ty_expresion_t {
         if($1.type == $3.type){
-            gen(tablaCuadruplas, ASIGNACION, $3.place, -1, $1.place);
+            if($1.type == BOOLEANO){
+                backpatch(tablaCuadruplas, $3.True, getNextquad(tablaCuadruplas));
+                gen(tablaCuadruplas, ASIGNAR_VALOR_VERDADERO, -1, -1, $1.place);
+                gen(tablaCuadruplas, GOTO, -1, -1, getNextquad(tablaCuadruplas) + 2);//EN LOS APUNTES PONE +1 Y NO +2 PERO CREO QUE ESTA MAL
+                backpatch(tablaCuadruplas, $3.False,  getNextquad(tablaCuadruplas));
+                gen(tablaCuadruplas, ASIGNAR_VALOR_FALSO, -1, -1, $1.place);
+                /////S.next := makelist(); TODO: ESTO ESTA EN LOS APUNTES. TEMA 6 PAG 80. PERO 
+            }else{
+                gen(tablaCuadruplas, ASIGNACION, $3.place, -1, $1.place);
+            }
         }
         fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");
     }
@@ -566,6 +604,7 @@ ty_l_ll:
 %%
 
 int main (int argc, char *argv[]) {
+
     //checkear numero de parametros
     if(argc != 2){
         printf("Uso del compilador: ./a.out <NombreDelPprogama>\n");
@@ -603,7 +642,6 @@ int main (int argc, char *argv[]) {
 
 	yyparse();
 
-    printTablaQuad(tablaCuadruplas);
 	printSimbolosNoUsados(tablaSimbolos);
     escribirTablaCuadruplas(tablaSimbolos, tablaCuadruplas, fTC);
 
@@ -626,12 +664,20 @@ void yyerror(const char *errorText, ...) {
     va_list args;  
     va_start(args, errorText);
     
-    printf("%s:%d:%d: "RED, programName, yylloc.first_line, yylloc.first_column);  
+    printf(RED"%s:%d:%d: Error "RESET, programName, yylloc.first_line, yylloc.first_column);  
     vprintf(errorText, args);
-    printf(RESET"\n    Antes de '%s'\n", yytext);
+    printf("\n    Antes de '%s'\n", yytext);
+    // esto de antes de no es muy util porque cuando se esta reduciendo una expresion larga y el fallo esta al principio de dice que, por ejemplo, el fallo esta antes de ";"
     hayErrores = 1;
 }
 
+void warning(const char *warningText, ...){
+    va_list args;
+    va_start(args, warningText);
+    printf(MAGENTA"%s:%d:%d: Warning "RESET, programName, yylloc.first_line, yylloc.first_column);  
+    vprintf(warningText, args);
+    printf("\n    Antes de '%s'\n", yytext);
+}
 
 
 

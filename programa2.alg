@@ -1,21 +1,24 @@
 algoritmo orden3;
-ent a, b, c: entero; sal max, min, med: entero;
+ent a, b, c: entero; 
+sal max, min, med: entero;
 {Prec: a = A AND b = B AND c = C}
 si a >= b y a >= c ->
     max := a;
-    si b >= c ->med := b; min := c
-    [] b <c ->med := c; min := b
-    fsi
+    si b >= c ->med := b; min := c;
+    [] b <c ->med := c; min := b;
+    fsi;
 [] b >= a y b >= c ->
     max := b;
-    si a >= c ->med := a; min := c
-    [] a <c ->med := c; min := a
-    fsi
+    si a >= c ->med := a; min := c;
+    [] a <c ->med := c; min := a;
+    fsi;
 [] c >= b y c >= a ->
     max := c;
-    si b >= a ->med := b; min := a
-    [] b <a ->med := a; min := b
-    fsi
-fsi
+    si b >= a ->med := b; min := a;
+    [] b <=a ->med := a; min := b; 
+    fsi;
+fsi;
+{en un if entra en el primer que e cierto}
+{el programa 2 da violacion de segmento}
 {Post: a=A AND b = B AND c= C ...}
 falgoritmo

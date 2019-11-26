@@ -132,23 +132,55 @@ char* codOp2OpName(char* opearion, int codOp){
         case INT_TO_REAL:
             strcpy(opearion,"int->real");
             break;
-    }  
-    printf("opeacion copiada\n");
+         case GOTO:
+            strcpy(opearion,"GOTO");
+            break;
+        case GOTO_IF_OP_REL_IGUAL:
+            strcpy(opearion,"GOTO_IF_OP_REL_IGUAL");
+            break;
+        case GOTO_IF_OP_REL_DESIGUAL:
+            strcpy(opearion,"GOTO_IF_OP_REL_DESIGUAL");
+            break;
+        case GOTO_IF_OP_REL_MENOR:
+            strcpy(opearion,"GOTO_IF_OP_REL_MENOR");
+            break;
+        case GOTO_IF_OP_REL_MENOR_IGUAL:
+            strcpy(opearion,"GOTO_IF_OP_REL_MENOR_IGUAL");
+            break;
+        case GOTO_IF_OP_REL_MAYOR:
+            strcpy(opearion,"GOTO_IF_OP_REL_MAYOR");
+            break;
+        case GOTO_IF_OP_REL_MAYOR_IGUAL:
+            strcpy(opearion,"GOTO_IF_OP_REL_MAYOR_IGUAL");
+            break;
+        case GOTO_IF_VERDADERO:
+            strcpy(opearion,"GOTO_IF_VERDADERO");
+            break;
+        case ASIGNAR_VALOR_VERDADERO:
+            strcpy(opearion,"ASIGNAR_VALOR_VERDADERO");
+            break;
+        case ASIGNAR_VALOR_FALSO:
+            strcpy(opearion,"ASIGNAR_VALOR_FALSO");
+            break;
+        default:
+            strcpy(opearion,"OP_NO_DEFINIA");
+            break;
+    }
 }
 
 
 void index2Name(char *name, lista_ligada *tablaSimbolos, int index){
-    printf("index%i\n",index );
     if(index == -1){
         strcpy(name, "NULL");
     }else{
         strcpy(name, getNombreSimbolo(getSimboloPorId(tablaSimbolos, index)));
     }
-    printf("operando copiada\n");
-
 }
 
-
+int op_es_goto(const char *pre)
+{
+    return strncmp(pre, "GOTO", strlen("GOTO")) == 0;
+}
 
 void escribirTablaCuadruplas(lista_ligada *tablaSimbolos, t_tabla_quad *tablaCuadruplas, FILE *file){
     char opearion[TAM_MAX_NOMBRE_SIMBOLO];
@@ -161,9 +193,12 @@ void escribirTablaCuadruplas(lista_ligada *tablaSimbolos, t_tabla_quad *tablaCua
         codOp2OpName(opearion, getCampo1(tablaCuadruplas,i));
         index2Name(operando1, tablaSimbolos, getCampo2(tablaCuadruplas,i));
         index2Name(operando2, tablaSimbolos, getCampo3(tablaCuadruplas,i));
-        index2Name(destino, tablaSimbolos, getCampo4(tablaCuadruplas,i));
-
-        fprintf(file, "(%s,  %s,  %s,  %s)\n", opearion, operando1, operando2, destino);
+        if(op_es_goto(opearion)){
+            sprintf(destino, "%i", getCampo4(tablaCuadruplas,i));
+        }else{
+            index2Name(destino, tablaSimbolos, getCampo4(tablaCuadruplas,i));
+        }
+        fprintf(file, "%i: (%s,  %s,  %s,  %s)\n", i, opearion, operando1, operando2, destino);
         i++;
     }
 }

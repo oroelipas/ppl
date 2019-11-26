@@ -5,13 +5,13 @@ algoritmo intercambio;
     {Prec: a= A AND b = B}
     
     var
-        aux: entero;
+        aux, c: entero;
     fvar;
 
     aux:= a;
     a:= b;
     b:= aux;
-    c:= a+(b / 5)
+    c:= a+(b / 5);
     {Post: b=A AND a = B}
     
 falgoritmo
