@@ -45,6 +45,8 @@
 
 #define TAM_MAX_NOMBRE_SIMBOLO 100 	// Número de caracteres máximo que podrá tener el nombre de un tipo, variable, funcion...
 
+extern char* getName(int cod);
+
 #endif
 
 

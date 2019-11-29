@@ -34,7 +34,7 @@ int hayErrores;
   char caracter;
   double doble;
   int entero;
- lista_ligada* tablaSimbolos;  //de momento las listas de id son listas_ligadas
+ lista_ligada* tablaSimbolos;  //as listas de identificadores también son listas_ligadas (para las declaraciones de variables)
   struct info{
     int type;   //entero, real, ...(tipos basicos o definidos)
     int place;  //index del simbolo de la tabla de simbolos 
@@ -272,15 +272,11 @@ ty_lista_d_var:
                     marcarComoUsado(simboloTipo);
                     simbolo* idsimbolo;
                     while((idsimbolo = pop($1))){//para cada id de la lista ty_lista_id
-                        //creamos un info_simbolo que apunta a un infoVar. infoVar contendra el tipo de la variable ($3)
-                        //info_simbolo idInfo = crearInfoVariable($3);
-                        //addInfosimbolo (idsimbolo, idInfo);
-                        //insertsimbolo(lista, idsimbolo);//lo metemos en la Tabla de simbolos
-
+                        // TODO: NO ESTAMOS COMPROBANDO SI LA VARIABLE YA HA SIDO INSERTADA EN LA TABLA DE SIMBOLOS
                         insertarVariable(tablaSimbolos, getNombreSimbolo(idsimbolo), getIdSimbolo(simboloTipo));
 
                         //Escribimos tipo y nombre de la variable en el fichero tablaSimbolos.txt
-                        fprintf(fTS,"Insertada Variable %i '%s' en tabla de simbolos\n", $3, getNombreSimbolo(idsimbolo));
+                        fprintf(fTS,"Insertada %s '%s'\n", getName($3), getNombreSimbolo(idsimbolo));
                     }
                 }else{
                     yyerror("%s no es un tipo. Es otra cosa", $3);
@@ -297,10 +293,9 @@ ty_lista_id:
     TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id {
   				fprintf(fSaR,"REDUCE ty_lista_id: TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id\n");
                 //introducimos el nuevo identificador a la lista de identificadores
-                //simbolo* var = crearsimbolo($1, VARIABLE);
                 //TODO: no pueden aparecer 2 veces la misma variable
                 //PERO si en entrada y en salida
-                insertarVariable($3, $1, SIM_SIN_TIPO);//es un buen nombre??????
+                insertarVariable($3, $1, SIM_SIN_TIPO);
                 $$ = $3;
 
 			}
@@ -381,38 +376,52 @@ ty_exp_a:
 ty_exp_b:
       ty_expresion TK_PR_Y ty_M ty_expresion {
         //ESTO ESTABA MAL. ERA ty_exp_b TK_PR_Y ty_exp_b Y ENTONCES DABA FALLO HACIENDO: a = b Y c
-        ///TODO: COMPROBAR QUE SON BOOLEANOS!!!!!!!!!!!!!!!!!!!
-        backpatch(tablaCuadruplas, $1.True, $3.quad);
-        $$.False = merge($1.False, $4.False);
-        $$.True = $4.True;
-        fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_Y ty_exp_b\n");
+        if($1.type == BOOLEANO && $4.type == BOOLEANO){
+            backpatch(tablaCuadruplas, $1.True, $3.quad);
+            $$.False = merge($1.False, $4.False);
+            $$.True = $4.True;
+            $$.type = BOOLEANO;
+            fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_Y ty_exp_b\n");
+        }else{
+            yyerror("Operacion logica 'Y' imposible para tipo %s y tipo %s", getName($1.type), getName($4.type));
+        }
       }/*AQUI IGUAL SE PUEDEN DEFINIR OP_LOGICO: CUYOS VALORES SEAN Y,O*/
     | ty_expresion TK_PR_O ty_M ty_expresion {
         //ESTO ESTABA MAL. ERA ty_exp_b TK_PR_O ty_exp_b Y ENTONCES DABA FALLO HACIENDO: a = b O c
-        ///TODO: COMPROBAR QUE SON BOOLEANOS!!!!!!!!!!!!!!!!!!!
-        backpatch(tablaCuadruplas, $1.False, $3.quad);
-        $$.True = merge($1.True, $4.True);
-        $$.False = $4.False;
-        fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_O ty_exp_b\n");
+        if($1.type == BOOLEANO && $4.type == BOOLEANO){
+            backpatch(tablaCuadruplas, $1.False, $3.quad);
+            $$.True = merge($1.True, $4.True);
+            $$.False = $4.False;
+            $$.type = BOOLEANO;
+            fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_O ty_exp_b\n");
+        }else{
+            yyerror("Operacion logica 'O' imposible para tipo %s y tipo %s", getName($1.type), getName($4.type));
+        }
     }
     | TK_PR_NO ty_exp_b /*%prec TK_MUY_PRIORITARIO ESTO NO NOS ESTA QUITANDO R/R*/{
         $$.True = $2.False;
         $$.False = $2.True;
+        $$.type = BOOLEANO;
         fprintf(fSaR,"REDUCE ty_exp_b: TK_PR_NO ty_exp_b\n");
     }
     | TK_BOOLEANO {
-        /*TODO: MAL: PUEDE QUE NO SEA UNA ASIGNACION (if a=verdadero ->)       */
+        /*TODO: MAL: PUEDE QUE NO SEA UNA ASIGNACION (if a=verdadero ->)
+         *Si se quiere enseñar el mensaje de error entonces tencdremos que comprobar 
+         *en la rutina semantica de la asignacion a ver si el temino de la derecha del 
+         *igual es un literal. ¿entoces como hay que hacer para ver sie es un literal?   */
+        $$.type = BOOLEANO;
         warning("este compilador aún no maneja asignacion de literales");
         fprintf(fSaR,"REDUCE ty_exp_b: TK_BOOLEANO\n");
     }
     | ty_expresion ty_op_relacional ty_expresion {
         //TODO: CUALES TIENEN QUE SER LOS TIPOS COMPARABLES?? ENTEROS, REALES, ¿CARACTERES? . BOOLEANOS NO
         //TODO: HAY QUE COMPROBAR QUE SON DEL MISMO TIPO Y QUE ESE TIPO SEA COMPARABLE
-        if($1.type != BOOLEANO && $3.type != BOOLEANO){
+        // en un compidor real las operacoines de comparacion de reales, de enteros, de caracteres son operacion es diferentes por supuesto
+        if($1.type != BOOLEANO && $3.type != BOOLEANO && $1.type == $3.type){
             $$.True = makeList(getNextquad(tablaCuadruplas));
             $$.False = makeList(getNextquad(tablaCuadruplas)+1);
+            $$.type = BOOLEANO;
             // generacion del salto condicional
-            printf("aaaaaaaaaaaaaaaaaaaaaa%i\n", $2);
             switch($2){
                 case MAYOR:
                     gen(tablaCuadruplas, GOTO_IF_OP_REL_MAYOR, $1.place, $3.place, -1);
@@ -435,9 +444,12 @@ ty_exp_b:
             }
             //generacion del salto no condicional
             gen(tablaCuadruplas, GOTO, -1, -1, -1);
-            $$.type = BOOLEANO;
         }else{
-            yyerror("comparación no posible con los tipos %i y %i para el comparador %i", $1.type, $3.type, $2);
+            if($1.type == $3.type){
+                yyerror("comparación %s no posible para el tipo %s", getName($2), getName($1.type));
+            }else{
+                yyerror("comparacion %s tipos diferentes: tipo %s y tipo %s", getName($2), getName($1.type), getName($3.type));
+            }
         }
 
         fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_OP_RELACIONAL ty_expresion\n");
@@ -445,6 +457,7 @@ ty_exp_b:
     | TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL {
         $$.True = $2.True;
         $$.False = $2.False;
+        $$.type = BOOLEANO;
         fprintf(fSaR,"REDUCE ty_exp_b: TK_PARENTESIS_INICIAL ty_exp_b TK_PARENTESIS_FINAL\n");
     }
     ;
@@ -465,10 +478,14 @@ ty_expresion:
         fprintf(fSaR,"REDUCE ty_expresion: ty_exp_a\n");
         $$.place = $1.place;
         $$.type = $1.type;
-        $$.True = $1.True;
+        $$.True = $1.True; // LOL ESTO SUPONGO QUE HABRA QUE QUITARLO, LOS EXP_A NO TIENEN .TRUE Y .FALSE
         $$.False = $1.False;
     }
-    | ty_exp_b %prec TK_NADA_PRIORITARIO{fprintf(fSaR,"REDUCE ty_expresion: ty_exp_b\n");} /*ESTO NO TIENE QUE FUNCIONAR ASI!!!!!*/
+    | ty_exp_b %prec TK_NADA_PRIORITARIO{
+        $$.True = $1.True;
+        $$.False = $1.False;
+        $$.type = $1.type;
+        fprintf(fSaR,"REDUCE ty_expresion: ty_exp_b\n");} /*ESTO NO TIENE QUE FUNCIONAR ASI!!!!!*/
     | ty_funcion_ll {fprintf(fSaR,"REDUCE ty_expresion: ty_funcion_ll\n");}
     ;
 
@@ -658,7 +675,6 @@ int main (int argc, char *argv[]) {
  * funcion yyerror de http://web.iitd.ac.in/~sumeet/flex__bison.pdf  pag.220
  * puede ser llamada como se llama a la funcion printf (nº indeterminado de argumentos)
  * errorText es la string con los %s y %i...
- * 
  */
 void yyerror(const char *errorText, ...) {
     va_list args;  

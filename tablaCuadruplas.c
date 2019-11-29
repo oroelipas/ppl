@@ -106,69 +106,6 @@ void printTablaQuad(t_tabla_quad* header) {
 }
 
 
-char* codOp2OpName(char* opearion, int codOp){
-    switch(codOp){
-        case ASIGNACION:
-            strcpy(opearion,":=");
-            break;
-        case SUMA_INT:
-            strcpy(opearion,"+int");
-            break;
-        case SUMA_REAL:
-            strcpy(opearion,"+real");
-            break;
-        case RESTA_INT:
-            strcpy(opearion,"-int");
-            break;
-        case RESTA_REAL:
-            strcpy(opearion,"-real");
-            break;
-        case MULT_INT:
-            strcpy(opearion,"*int");
-            break;
-        case MULT_REAL:
-            strcpy(opearion,"*rel");
-            break;
-        case INT_TO_REAL:
-            strcpy(opearion,"int->real");
-            break;
-         case GOTO:
-            strcpy(opearion,"GOTO");
-            break;
-        case GOTO_IF_OP_REL_IGUAL:
-            strcpy(opearion,"GOTO_IF_OP_REL_IGUAL");
-            break;
-        case GOTO_IF_OP_REL_DESIGUAL:
-            strcpy(opearion,"GOTO_IF_OP_REL_DESIGUAL");
-            break;
-        case GOTO_IF_OP_REL_MENOR:
-            strcpy(opearion,"GOTO_IF_OP_REL_MENOR");
-            break;
-        case GOTO_IF_OP_REL_MENOR_IGUAL:
-            strcpy(opearion,"GOTO_IF_OP_REL_MENOR_IGUAL");
-            break;
-        case GOTO_IF_OP_REL_MAYOR:
-            strcpy(opearion,"GOTO_IF_OP_REL_MAYOR");
-            break;
-        case GOTO_IF_OP_REL_MAYOR_IGUAL:
-            strcpy(opearion,"GOTO_IF_OP_REL_MAYOR_IGUAL");
-            break;
-        case GOTO_IF_VERDADERO:
-            strcpy(opearion,"GOTO_IF_VERDADERO");
-            break;
-        case ASIGNAR_VALOR_VERDADERO:
-            strcpy(opearion,"ASIGNAR_VALOR_VERDADERO");
-            break;
-        case ASIGNAR_VALOR_FALSO:
-            strcpy(opearion,"ASIGNAR_VALOR_FALSO");
-            break;
-        default:
-            strcpy(opearion,"OP_NO_DEFINIA");
-            break;
-    }
-}
-
-
 void index2Name(char *name, lista_ligada *tablaSimbolos, int index){
     if(index == -1){
         strcpy(name, "NULL");
@@ -183,14 +120,14 @@ int op_es_goto(const char *pre)
 }
 
 void escribirTablaCuadruplas(lista_ligada *tablaSimbolos, t_tabla_quad *tablaCuadruplas, FILE *file){
-    char opearion[TAM_MAX_NOMBRE_SIMBOLO];
+    char *opearion;
     char operando1[TAM_MAX_NOMBRE_SIMBOLO];
     char operando2[TAM_MAX_NOMBRE_SIMBOLO];
     char destino[TAM_MAX_NOMBRE_SIMBOLO];
     int i = 0;
     while(i < getNextquad(tablaCuadruplas)) {
 
-        codOp2OpName(opearion, getCampo1(tablaCuadruplas,i));
+        opearion = getName(getCampo1(tablaCuadruplas,i));
         index2Name(operando1, tablaSimbolos, getCampo2(tablaCuadruplas,i));
         index2Name(operando2, tablaSimbolos, getCampo3(tablaCuadruplas,i));
         if(op_es_goto(opearion)){

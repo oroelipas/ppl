@@ -454,7 +454,7 @@ void printSimbolosNoUsados(lista_ligada *header) {
         if(misimbolo->usado == 0){
             switch(misimbolo->tipo){
                 case SIM_VARIABLE:
-                    printf("Variable %i %s declarada y nunca usada\n",misimbolo->info.t1.tipo_variable, misimbolo->nombre);
+                    printf("Variable %s %s declarada y nunca usada\n", getName(misimbolo->info.t1.tipo_variable), misimbolo->nombre);
                     break;
                 case SIM_TIPO:
                     if(!esTipoBase(misimbolo->id))
