@@ -35,15 +35,18 @@ int hayErrores;
   double doble;
   int entero;
  lista_ligada* tablaSimbolos;  //as listas de identificadores también son listas_ligadas (para las declaraciones de variables)
-  struct info{
+  struct {
     int type;   //entero, real, ...(tipos basicos o definidos)
     int place;  //index del simbolo de la tabla de simbolos 
     t_lista_ligada_int* True;   //entero, real, ...(tipos basicos o definidos)
     t_lista_ligada_int* False;  //index del simbolo de la tabla de simbolos 
   } infoExp;
-  struct infoQuad{
-    int quad;   //entero, real, ...(tipos basicos o definidos)
-  } infoQ;
+  struct {
+    int quad;
+  } infoM;
+  struct {
+    t_lista_ligada_int* next;
+  } infoIns;
 }
 %locations 
 %start ty_desc_algoritmo
@@ -147,7 +150,7 @@ int hayErrores;
 %type <infoExp> ty_exp_a
 %type <infoExp> ty_exp_b
 %type <infoExp> ty_operando
-%type <str> ty_instrucciones
+%type <infoIns> ty_instrucciones
 %type <str> ty_instruccion
 %type <str> ty_asignacion
 %type <str> ty_alternativa
@@ -164,7 +167,7 @@ int hayErrores;
 %type <str> ty_accion_ll
 %type <str> ty_funcion_ll
 %type <str> ty_l_ll
-%type <infoQ> ty_M
+%type <infoM> ty_M
 %type <entero> ty_op_relacional
 
 %%
@@ -556,11 +559,12 @@ ty_asignacion:
     ;
 
 ty_alternativa:
-    TK_PR_SI ty_exp_b TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI {fprintf(fSaR,"REDUCE ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI\n");}
+    TK_PR_SI ty_exp_b TK_ENTONCES ty_M ty_instrucciones ty_lista_opciones TK_PR_FSI {
+        fprintf(fSaR,"REDUCE ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI\n");}
     ;
 
 ty_lista_opciones:
-     TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones {fprintf(fSaR,"REDUCE TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones\n");}
+     TK_SINOSI ty_expresion TK_ENTONCES ty_M ty_instrucciones ty_lista_opciones {fprintf(fSaR,"REDUCE TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones\n");}
     | /*vacio*/{fprintf(fSaR,"REDUCE ty_lista_opciones: vacio\n");}
     ;
 
@@ -570,7 +574,17 @@ ty_iteracion:
     ;
 
 ty_it_cota_exp:
-    TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS {fprintf(fSaR,"REDUCE ty_it_cota_exp:  TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS\n");}
+    TK_PR_MIENTRAS ty_M ty_exp_b TK_PR_HACER ty_M ty_instrucciones TK_PR_FMIENTRAS {
+        backpatch(tablaCuadruplas, $2.True, $5.quad);
+        if(esListaVacia($6.next)){
+            //TODO: SEGUIR POR AQUI!!!!!!
+            // EL IF NO LO HE HECHO PORQUE ME PARECE MAS FACIL EMPREZAR POR EL WHILE 
+            $$.next = merge($3.False, )
+        }else{
+
+        }
+        fprintf(fSaR,"REDUCE ty_it_cota_exp:  TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS\n");
+    }
     ;
 
 ty_it_cota_fija:

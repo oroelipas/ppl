@@ -81,6 +81,8 @@ t_lista_ligada_int* makeList(int valor) {
 	return NULL;	// Error inicializando la lista
 }
 
+// TODO: esta funcion tenemos que hacer que sirva para 3 listas
+// o, idealmente, un numero indetermiando de listas, como la funcion yyerror
 t_lista_ligada_int* merge(t_lista_ligada_int* header1, t_lista_ligada_int* header2) {
 	if(!esListaVacia(header1)&&(!esListaVacia(header2))) {
 		header1 -> last -> next = header2 -> first;
