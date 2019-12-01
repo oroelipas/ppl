@@ -120,22 +120,40 @@ int op_es_goto(const char *pre)
 }
 
 void escribirTablaCuadruplas(lista_ligada *tablaSimbolos, t_tabla_quad *tablaCuadruplas, FILE *file){
-    char *opearion;
+    char *operacion;
     char operando1[TAM_MAX_NOMBRE_SIMBOLO];
     char operando2[TAM_MAX_NOMBRE_SIMBOLO];
     char destino[TAM_MAX_NOMBRE_SIMBOLO];
     int i = 0;
     while(i < getNextquad(tablaCuadruplas)) {
 
-        opearion = getName(getCampo1(tablaCuadruplas,i));
+        operacion = getName(getCampo1(tablaCuadruplas,i));
         index2Name(operando1, tablaSimbolos, getCampo2(tablaCuadruplas,i));
         index2Name(operando2, tablaSimbolos, getCampo3(tablaCuadruplas,i));
-        if(op_es_goto(opearion)){
+        if(op_es_goto(operacion)){
             sprintf(destino, "%i", getCampo4(tablaCuadruplas,i));
         }else{
             index2Name(destino, tablaSimbolos, getCampo4(tablaCuadruplas,i));
         }
-        fprintf(file, "%i: (%s,  %s,  %s,  %s)\n", i, opearion, operando1, operando2, destino);
+        fprintf(file, "%i: (%s,  %s,  %s,  %s)\n", i, operacion, operando1, operando2, destino);
         i++;
+    }
+}
+
+void insertarInputEnTablaCuadruplas(t_tabla_quad* tablaCuadruplas, lista_ligada* header) {
+    simbolo *misimbolo = header -> first;
+    while (misimbolo != NULL) {
+        printf("INPUT: %s\n", misimbolo -> nombre);
+        gen(tablaCuadruplas, INPUT, -1, -1, misimbolo -> id);
+        misimbolo = misimbolo -> next;
+    }
+}
+
+void insertarOutputEnTablaCuadruplas(t_tabla_quad* tablaCuadruplas, lista_ligada* header) {
+    simbolo *misimbolo = header -> first;
+    while (misimbolo != NULL) {
+        printf("OUTPUT: %s\n", misimbolo -> nombre);
+        gen(tablaCuadruplas, OUTPUT, -1, -1, misimbolo -> id);
+        misimbolo = misimbolo -> next;
     }
 }

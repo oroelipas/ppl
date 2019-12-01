@@ -24,4 +24,6 @@ extern int addDestinoGoto(t_tabla_quad* header, int indice, int destino);
 extern int getNextquad(t_tabla_quad* header);
 extern void printTablaQuad(t_tabla_quad* header);
 extern void escribirTablaCuadruplas(lista_ligada* tablaSimbolos, t_tabla_quad* tablaCuadruplas, FILE *file);
+extern void insertarInputEnTablaCuadruplas(t_tabla_quad* tablaCuadruplas, lista_ligada* tablaSimbolos);
+extern void insertarOutputEnTablaCuadruplas(t_tabla_quad* tablaCuadruplas, lista_ligada* tablaSimbolos);
 #endif
