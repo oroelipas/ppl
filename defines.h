@@ -43,6 +43,9 @@
 #define IGUAL 304
 #define DESIGUAL 305
 
+#define INPUT 400
+#define OUTPUT 500
+
 #define TAM_MAX_NOMBRE_SIMBOLO 100 	// Número de caracteres máximo que podrá tener el nombre de un tipo, variable, funcion...
 
 extern char* getName(int cod);

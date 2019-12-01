@@ -104,8 +104,14 @@ char* getName(int cod){
         case DESIGUAL:
             strcpy(nombre,"<>");
             break;
+        case INPUT:
+            strcpy(nombre,"INPUT");
+            break;
+        case OUTPUT:
+            strcpy(nombre,"OUTPUT");
+            break;
         default:
-            strcpy(nombre,"OP_NO_DEFINIA");
+            strcpy(nombre,"OP_NO_DEFINIDA");
             break;
     }
     return nombre;
