@@ -10,10 +10,12 @@
 //#define LENGTH(x)  (sizeof(x) / sizeof((x)[0]))igual esto es guay para la longitud de los arrays https://stackoverflow.com/questions/37538/how-do-i-determine-the-size-of-my-array-in-c
 
 /*PONER "static" vendria a significar private. La funcion no sale de este fichero*/
+/* ESTO HAY QUE DEJARLO MAS LIMPIO, ADEMAS, ESTA INCOMPLETO */
 lista_ligada* crearListaLigada();
 lista_ligada* crearTablaDeSimbolos();
 
-simbolo *insertarVariable(lista_ligada *header, char *nombre, int tipo);
+simbolo* insertarVariable (lista_ligada *header, char *nombre, int tipo);
+simbolo* insertarVariableConID (lista_ligada *header, int id, char *nombre, int tipo);
 simbolo* getSimboloPorNombre (lista_ligada *header, char* nombre);
 int  existesimbolo (lista_ligada *header, char* nombre);
 info_simbolo crearInfoVariable (int tipo_var);
@@ -24,8 +26,9 @@ void addInfosimbolo (simbolo* misimbolo, info_simbolo info);
 int  addInfosimboloEnLista (lista_ligada *header, char* nombre, info_simbolo info);
 info_simbolo getInfosimbolo (simbolo* misimbolo);
 info_simbolo getInfosimboloEnLista (lista_ligada *header, char* nombre);
-int   getTipo (simbolo* misimbolo);
+int getTipoSimbolo (simbolo* misimbolo);
 char *getNombreSimbolo (simbolo* misimbolo);
+void vaciarListaLigada (lista_ligada *header);
 void vaciarTablaSimbolos (lista_ligada *header);
 int deletesimbolo (lista_ligada *header, char *nombre);
 static void liberarsimbolo (simbolo* misimbolo);
@@ -34,13 +37,14 @@ void printListaLigada (lista_ligada *header);
 void printSimbolosNoUsados (lista_ligada *header);
 void printInfosimbolo (simbolo *simbolo);
 int simboloEsUnaVariable(simbolo* misimbolo);
-void modificaTipoVar(simbolo* var, int tipo_var);
-void insertarSimbolo(lista_ligada *header, simbolo* misimbolo);
+void modificaTipoVar (simbolo* var, int tipo_var);
+void insertarSimbolo (lista_ligada *header, simbolo* misimbolo);
+void insertarSimboloConID (lista_ligada *header, int id, simbolo* misimbolo);
 int existeNombresimbolo (lista_ligada *header, char* nombre);
-simbolo* crearSimbolo(char *nombre, int tipo);
+simbolo* crearSimbolo (char *nombre, int tipo);
 
 //si queremos printear todas las operaciones de la lista poner DEBUG_MODE A 1, sino a 0
-#define DEBUG_MODE 1
+#define DEBUG_MODE 0
 #if DEBUG_MODE
     #define debugFile stdout
 #else
@@ -55,7 +59,7 @@ simbolo* crearSimbolo(char *nombre, int tipo);
 lista_ligada* crearListaLigada() {
     lista_ligada *lista = (lista_ligada *)malloc(sizeof(lista_ligada));
     lista -> first = NULL;
-    lista -> contador = 1;
+    lista -> contador = 0;
     return lista;
 }
 
@@ -114,6 +118,17 @@ void insertarSimbolo(lista_ligada *header, simbolo* misimbolo){
     misimbolo -> id = header -> contador;
     header -> contador ++;
     header -> first = misimbolo;
+    fprintf(debugFile, "Inserción CORRECTA del objeto de nombre : %s\n", misimbolo->nombre);
+}
+
+void insertarSimboloConID (lista_ligada *header, int id, simbolo* misimbolo) {
+    if (existeNombresimbolo(header, misimbolo->nombre)){
+        return;
+    }
+    misimbolo -> next = header ->first;
+    misimbolo -> id = id;
+    header -> contador ++;
+    header -> first = misimbolo;
 }
 
 /**
@@ -139,10 +154,21 @@ simbolo* insertarVariable(lista_ligada *header, char *nombre, int tipo){
     simbolo *nuevaVar = crearSimbolo(nombre, SIM_VARIABLE);
     nuevaVar->info.t1.tipo_variable = tipo;
     insertarSimbolo(header, nuevaVar);
-    fprintf(debugFile, "Inserción CORRECTA del objeto de nombre : %s\n", nombre);
-    return nuevaVar;
+    return getSimboloPorNombre(header, nombre);
 }
 
+/**
+ * Inserta un simbolo en la lista pero con un id prefijado
+ * Return:
+ *   -1 si ya existe un simbolo con ese nombre
+ *   id del simbolo si es correcto
+ */
+simbolo* insertarVariableConID(lista_ligada *header, int id, char *nombre, int tipo){
+    simbolo *nuevaVar = crearSimbolo(nombre, SIM_VARIABLE);
+    nuevaVar->info.t1.tipo_variable = tipo;
+    insertarSimboloConID(header, id, nuevaVar);
+    return nuevaVar;
+}
 
 
 /**
@@ -234,6 +260,7 @@ void modificaTipoVar(simbolo* var, int tipo_var){
         printf("ERROR: Esta intentando cambiar el tipo de variable de un simbolo que no es una variable\n");
     }
 }
+
 int getTipoVar (simbolo* misimbolo){
     if(simboloEsUnaVariable(misimbolo)){
         return misimbolo->info.t1.tipo_variable;
@@ -330,13 +357,14 @@ info_simbolo getInfosimboloEnLista (lista_ligada *header, char* nombre) {
 void marcarComoUsado(simbolo *misimbolo){
     misimbolo -> usado = 1;
 }
+
 /**
  * Vacia la lista, haciendo que su first apunte a NULL
  * Libera todo el espacio que ocupaban los elementos de la lista
  */
-void vaciarTablaSimbolos (lista_ligada *header) {
+void vaciarListaLigada (lista_ligada *header) {
     if (header -> first == NULL) {
-        fprintf(debugFile, "Vaciar lista: La lista YA estaba vacía\n");
+        fprintf(debugFile, "VaciarListaLigada: La lista YA estaba vacía\n");
     } else {
         simbolo *auxant = NULL;
         simbolo *aux = header -> first;
@@ -347,8 +375,12 @@ void vaciarTablaSimbolos (lista_ligada *header) {
         }
         liberarsimbolo(aux);
         header -> first = NULL;
-        fprintf(debugFile, "La lista se ha vaciado\n");
     }
+}
+
+
+void vaciarTablaSimbolos (lista_ligada *header) {
+    vaciarListaLigada(header);
 }
 
 

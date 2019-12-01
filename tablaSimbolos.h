@@ -14,7 +14,7 @@ typedef struct { char *ent; char *sal; } infoFunc;
 
 typedef union {
     infoVar  t1;
-    infoTipo t2;	
+    infoTipo t2;
     infoFunc t3;
 } info_simbolo;
 
@@ -37,6 +37,7 @@ extern void printSimbolosNoUsados(lista_ligada *header);
 extern simbolo* newTemp(lista_ligada *header);
 extern void printListaLigada (lista_ligada *header);
 extern simbolo* insertarVariable(lista_ligada *header, char *nombre, int tipo);
+extern simbolo* insertarVariableConID (lista_ligada *header, int id, char *nombre, int tipo);
 extern int simboloEsUnTipo(simbolo* misimbolo);
 extern void marcarComoUsado (simbolo *misimbolo);
 extern simbolo* getSimboloPorId (lista_ligada *header, int id);
@@ -44,5 +45,7 @@ extern char *getNombreSimbolo(simbolo* misimbolo);
 extern void modificaTipoVar(simbolo* var, int tipo_var);
 extern int getIdSimbolo(simbolo* misimbolo);
 extern int getTipoVar (simbolo* misimbolo);
-
+extern int getTipoSimbolo (simbolo* misimbolo);
+extern void vaciarListaLigada (lista_ligada *header);
+extern void vaciarTablaSimbolos (lista_ligada *header);
 #endif
