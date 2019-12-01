@@ -19,6 +19,7 @@ FILE *fSaR;//fichero out.ShiftAndReduces
 FILE *fTS; //fichero out.TablaSimbolos
 FILE *fTC;//fichero out.TablaCuadruplas
 lista_ligada *tablaSimbolos; //tabla de simbolos. igual habria que cambiar el nombre
+lista_ligada *output;
 t_tabla_quad *tablaCuadruplas;
 char* programName;
 int hayErrores;
@@ -39,7 +40,8 @@ int hayErrores;
     int type;   //entero, real, ...(tipos basicos o definidos)
     int place;  //index del simbolo de la tabla de simbolos 
     t_lista_ligada_int* True;   //entero, real, ...(tipos basicos o definidos)
-    t_lista_ligada_int* False;  //index del simbolo de la tabla de simbolos 
+    t_lista_ligada_int* False;  //index del simbolo de la tabla de simbolos
+    t_lista_ligada_int* next;
   } infoExp;
   struct {
     int quad;
@@ -141,7 +143,7 @@ int hayErrores;
 %type <str> ty_lista_campos
 %type <entero> ty_tipo_base
 %type <str> ty_lista_d_cte
-%type <str> ty_lista_d_var
+%type <tablaSimbolos> ty_lista_d_var
 %type <tablaSimbolos> ty_lista_id
 %type <str> ty_decl_ent_sal
 %type <str> ty_decl_ent
@@ -151,13 +153,13 @@ int hayErrores;
 %type <infoExp> ty_exp_b
 %type <infoExp> ty_operando
 %type <infoIns> ty_instrucciones
-%type <str> ty_instruccion
-%type <str> ty_asignacion
-%type <str> ty_alternativa
-%type <str> ty_lista_opciones
-%type <str> ty_iteracion
-%type <str> ty_it_cota_exp
-%type <str> ty_it_cota_fija
+%type <infoIns> ty_instruccion
+%type <infoIns> ty_asignacion
+%type <infoIns> ty_alternativa
+%type <infoIns> ty_lista_opciones
+%type <infoIns> ty_iteracion
+%type <infoIns> ty_it_cota_exp
+%type <infoIns> ty_it_cota_fija
 %type <str> ty_accion_d
 %type <str> ty_funcion_d
 %type <str> ty_a_cabecera
@@ -168,6 +170,7 @@ int hayErrores;
 %type <str> ty_funcion_ll
 %type <str> ty_l_ll
 %type <infoM> ty_M
+%type <infoIns> ty_N
 %type <entero> ty_op_relacional
 
 %%
@@ -217,7 +220,9 @@ ty_decl_cte:
     ;
 
 ty_decl_var:
-    TK_PR_VAR ty_lista_d_var TK_PR_FVAR TK_PUNTOYCOMA {fprintf(fSaR,"REDUCE ty_decl_var: TK_PR_VAR ty_lista_d_var TK_PR_FVAR TK_PUNTOYCOMA\n");}//los programas de fitxi no tienen ;
+    TK_PR_VAR ty_lista_d_var TK_PR_FVAR TK_PUNTOYCOMA {
+    vaciarListaLigada($2);
+    fprintf(fSaR,"REDUCE ty_decl_var: TK_PR_VAR ty_lista_d_var TK_PR_FVAR TK_PUNTOYCOMA\n");} // los programas de prueba de fitxi no tienen ;
     ;
 
 ty_lista_d_tipo:
@@ -252,35 +257,41 @@ ty_lista_campos:
 ty_tipo_base:
     /*BOOLEANO NO ESTABA ORIGINALMENTE EN LA DOCUMENTACION*/
     // ES NECESARIO RELLENAR $$ PARA DESPUES VER QUE TIPO ES ty_tipo_base CUANDO SE ASIGNEN TIPOS
-     TK_PR_BOOLEANO {$$=BOOLEANO; fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_BOOLEANO\n");}
-    |TK_PR_ENTERO   {$$=ENTERO;   fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_ENTERO\n");}
-    |TK_PR_CARACTER {$$=CARACTER; fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_CARACTER\n");}
-    |TK_PR_REAL     {$$=REAL;     fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_REAL\n");}
-    |TK_PR_CADENA   {$$=CADENA;   fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_CADENA\n");}
+      TK_PR_BOOLEANO {$$=BOOLEANO; fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_BOOLEANO\n");}
+    | TK_PR_ENTERO   {$$=ENTERO;   fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_ENTERO\n");}
+    | TK_PR_CARACTER {$$=CARACTER; fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_CARACTER\n");}
+    | TK_PR_REAL     {$$=REAL;     fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_REAL\n");}
+    | TK_PR_CADENA   {$$=CADENA;   fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_CADENA\n");}
     ;
 
 ty_lista_d_cte:/*En el enunciado pone "literal" pero se referira a ty_tipo_base*/
-    //las cte solo pueden ser de tipobase???????????????????????????????
+    // las cte solo pueden ser de tipobase???????????????????????????????
     TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte{fprintf(fSaR,"REDUCE ty_lista_d_cte: TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte\n");}
     |/*vacio*/{fprintf(fSaR,"REDUCE ty_lista_d_cte: vacio\n");}
     ;
 
 ty_lista_d_var:
     ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var {
-            //Primero chequear si el tipo esta en la tabla de simbolos
-            simbolo* simboloTipo = getSimboloPorId(tablaSimbolos, $3);
-            if(simboloTipo != NULL){
-                if(simboloEsUnTipo(simboloTipo)){// si el tipo existe
+            // Primero chequear si el tipo esta en la tabla de simbolos
+            simbolo* var_simbolo1 = getSimboloPorId(tablaSimbolos, $3);
+            if(var_simbolo1 != NULL){
+                if(simboloEsUnTipo(var_simbolo1)){// si el tipo existe
                     //marcar que el tipo ha sido usado
-                    marcarComoUsado(simboloTipo);
-                    simbolo* idsimbolo;
-                    while((idsimbolo = pop($1))){//para cada id de la lista ty_lista_id
+                    marcarComoUsado(var_simbolo1);
+                    simbolo* simbolo_temp;
+                    simbolo* var_simbolo2;
+                    lista_ligada* lista = crearListaLigada();
+                    int id;
+                    while((simbolo_temp = pop($1))) {
                         // TODO: NO ESTAMOS COMPROBANDO SI LA VARIABLE YA HA SIDO INSERTADA EN LA TABLA DE SIMBOLOS
-                        insertarVariable(tablaSimbolos, getNombreSimbolo(idsimbolo), getIdSimbolo(simboloTipo));
-
+                        var_simbolo2 = insertarVariable(tablaSimbolos, getNombreSimbolo(simbolo_temp), getTipoSimbolo(var_simbolo1));
+                        // IMPORTANTE: nos interesa conservar el id verdadero del símbolo en la TS
+                        insertarVariableConID(lista, getIdSimbolo(var_simbolo2), getNombreSimbolo(var_simbolo2), getTipoSimbolo(var_simbolo1));
                         //Escribimos tipo y nombre de la variable en el fichero tablaSimbolos.txt
-                        fprintf(fTS,"Insertada %s '%s'\n", getName($3), getNombreSimbolo(idsimbolo));
+                        fprintf(fTS,"Insertada %s '%s'\n", getName($3), getNombreSimbolo(simbolo_temp));
+                        free(simbolo_temp);
                     }
+                    $$ = lista;
                 }else{
                     yyerror("%s no es un tipo. Es otra cosa", $3);
                 }
@@ -319,11 +330,23 @@ ty_decl_ent_sal:
     ;
 
 ty_decl_ent:
-    TK_PR_ENT ty_lista_d_var {fprintf(fSaR,"REDUCE ty_decl_ent: TK_PR_ENT ty_lista_d_var\n");}
+    TK_PR_ENT ty_lista_d_var {
+    // En $2 tenemos la lista de id que acabamos de leer (son las variables de entrada del algoritmo)
+    insertarInputEnTablaCuadruplas(tablaCuadruplas, $2);
+    vaciarListaLigada($2);
+    fprintf(fSaR,"REDUCE ty_decl_ent: TK_PR_ENT ty_lista_d_var\n");}
     ;
 
 ty_decl_sal:
-    TK_PR_SAL ty_lista_d_var {fprintf(fSaR,"REDUCE ty_decl_sal: TK_PR_SAL ty_lista_d_var\n");}
+    TK_PR_SAL ty_lista_d_var {
+    // En $2 tenemos la lista de id que acabamos de leer(son las variables de salida del algoritmo)
+    output = crearListaLigada();
+    simbolo* var_simbolo;
+    while((var_simbolo = pop($2))) {
+    	// Aqui hay algun tipo de problema
+    	insertarVariableConID(output, getIdSimbolo(var_simbolo), getNombreSimbolo(var_simbolo), getTipoSimbolo(var_simbolo));
+    }
+    fprintf(fSaR,"REDUCE ty_decl_sal: TK_PR_SAL ty_lista_d_var\n");}
     ;
 
 ty_exp_a:
@@ -384,7 +407,7 @@ ty_exp_b:
             $$.False = merge($1.False, $4.False);
             $$.True = $4.True;
             $$.type = BOOLEANO;
-            fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_Y ty_exp_b\n");
+            fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_PR_Y ty_expresion\n");
         }else{
             yyerror("Operacion logica 'Y' imposible para tipo %s y tipo %s", getName($1.type), getName($4.type));
         }
@@ -396,7 +419,7 @@ ty_exp_b:
             $$.True = merge($1.True, $4.True);
             $$.False = $4.False;
             $$.type = BOOLEANO;
-            fprintf(fSaR,"REDUCE ty_exp_b: ty_exp_b TK_PR_O ty_exp_b\n");
+            fprintf(fSaR,"REDUCE ty_exp_b: ty_expresion TK_PR_O ty_expresion_b\n");
         }else{
             yyerror("Operacion logica 'O' imposible para tipo %s y tipo %s", getName($1.type), getName($4.type));
         }
@@ -416,7 +439,7 @@ ty_exp_b:
         warning("este compilador aún no maneja asignacion de literales");
         fprintf(fSaR,"REDUCE ty_exp_b: TK_BOOLEANO\n");
     }
-    | ty_expresion ty_op_relacional ty_expresion {
+    | ty_expresion ty_op_relacional ty_expresion %prec TK_MUY_PRIORITARIO /* De esta manera solucionamos el conflicto S/R que surge al aplicar de verdad 1GII */{
         //TODO: CUALES TIENEN QUE SER LOS TIPOS COMPARABLES?? ENTEROS, REALES, ¿CARACTERES? . BOOLEANOS NO
         //TODO: HAY QUE COMPROBAR QUE SON DEL MISMO TIPO Y QUE ESE TIPO SEA COMPARABLE
         // en un compidor real las operacoines de comparacion de reales, de enteros, de caracteres son operacion es diferentes por supuesto
@@ -445,7 +468,7 @@ ty_exp_b:
                     gen(tablaCuadruplas, GOTO_IF_OP_REL_DESIGUAL, $1.place, $3.place, -1);
                     break;
             }
-            //generacion del salto no condicional
+            // generacion del salto no condicional
             gen(tablaCuadruplas, GOTO, -1, -1, -1);
         }else{
             if($1.type == $3.type){
@@ -473,8 +496,19 @@ ty_op_relacional:
 
 ty_M: 
     /*vacio*/{
-    $$.quad = getNextquad(tablaCuadruplas);
-};
+        $$.quad = getNextquad(tablaCuadruplas);
+        fprintf(fSaR,"REDUCE ty_M: vacío\n");
+    }
+    ;
+
+ty_N:
+    /*vacio*/{
+        $$.next = makeList(getNextquad(tablaCuadruplas));
+        // generacion del salto no condicional
+        // Este salto no condicional parece dar problemas
+        // gen(tablaCuadruplas, GOTO, -1, -1, -1);
+    }
+    ;
 
 ty_expresion:
       ty_exp_a {
@@ -492,7 +526,6 @@ ty_expresion:
     | ty_funcion_ll {fprintf(fSaR,"REDUCE ty_expresion: ty_funcion_ll\n");}
     ;
 
-
 ty_operando:
     /*AQUI EN EL CONFLICTO SUPONGO QUE HABRA QUE HACER UN SHIFT POR PURA ASOCIATIVIDAD, PARA REDUCIR LA PILA.
     ADEMAS ES EL MODO DE ACCEDER A LAS VARIABLES: SI TIENES variable1.variable2[variable3] PRIMERO HABRA QUE IR DE FUERA HACIA ADENTRO Y REDUCIR variable1.variable2 A UNA SOLA VARIABLE (variable12) PARA LUEGO ACCEDER A ESA VARIABLE variable12[variable3]*/
@@ -500,7 +533,7 @@ ty_operando:
         simbolo* var = getSimboloPorNombre(tablaSimbolos, $1);
         if(var == NULL){
             yyerror("variable %s usada pero no delarada", $1);
-        }else{
+        } else {
             if(simboloEsUnaVariable(var)){
                 marcarComoUsado(var);
                 $$.place = getIdSimbolo(var);
@@ -513,7 +546,7 @@ ty_operando:
                 //TODO: AQUI CUANDO SE VE, POR EJEMPLO, EL IDENTIFICADOR a Y ESTAMOS HACIENDO a = b Y c NO SE DEBERIAN GENERAR ESOS GEN. ME PARECE
                 // ESTA ES UNA DUDA PARA FITXI!!!!!!!! 
                 }
-            }else{
+            } else {
                 yyerror("%s no es una variable", $1);
             }
         }
@@ -525,22 +558,34 @@ ty_operando:
     ;
 
 ty_instrucciones:
-      ty_instruccion TK_PUNTOYCOMA ty_instrucciones {fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion TK_PUNTOYCOMA ty_instrucciones\n");}
-    | ty_instruccion TK_PUNTOYCOMA {fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion\n");}
+      ty_instruccion TK_PUNTOYCOMA ty_M ty_instrucciones {
+      	if(!esListaVacia($1.next)) {
+      		backpatch(tablaCuadruplas, $1.next, $3.quad);
+      	}
+      	$$.next = $4.next;
+      	fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion TK_PUNTOYCOMA ty_instrucciones\n");}
+    | ty_instruccion TK_PUNTOYCOMA {
+    	$$.next = $1.next;
+    	fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion\n");}
     ;
-
 
 ty_instruccion:
       TK_PR_CONTINUAR {fprintf(fSaR,"REDUCE ty_instruccion: TK_PR_CONTINUAR\n");}
-    | ty_asignacion {fprintf(fSaR,"REDUCE ty_instruccion: ty_asignacion\n");}
-    | ty_alternativa {fprintf(fSaR,"REDUCE ty_instruccion: ty_alternativa\n");}
-    | ty_iteracion {fprintf(fSaR,"REDUCE ty_instruccion: ty_iteracion\n");}
+    | ty_asignacion {
+    	/* El "problema oculto", lo solucionamos con un .next vacío */
+    	$$.next = makeEmptyList();
+    	fprintf(fSaR,"REDUCE ty_instruccion: ty_asignacion\n");}
+    | ty_alternativa {
+    	$$.next = $1.next;
+    	fprintf(fSaR,"REDUCE ty_instruccion: ty_alternativa\n");}
+    | ty_iteracion {
+    	$$.next = $1.next;
+    	fprintf(fSaR,"REDUCE ty_instruccion: ty_iteracion\n");}
     | ty_accion_ll {fprintf(fSaR,"REDUCE ty_instruccion: ty_accion_ll\n");}
     ;
 
 ty_asignacion:
-    /*Hemos puesto ty_expresion_t en veZ de ty_expresion para poder hacer a = 'a'*/
-     ty_operando TK_ASIGNACION ty_expresion_t {
+      ty_operando TK_ASIGNACION ty_expresion_t {
         if($1.type == $3.type){
             if($1.type == BOOLEANO){
                 backpatch(tablaCuadruplas, $3.True, getNextquad(tablaCuadruplas));
@@ -548,46 +593,78 @@ ty_asignacion:
                 gen(tablaCuadruplas, GOTO, -1, -1, getNextquad(tablaCuadruplas) + 2);//EN LOS APUNTES PONE +1 Y NO +2 PERO CREO QUE ESTA MAL
                 backpatch(tablaCuadruplas, $3.False,  getNextquad(tablaCuadruplas));
                 gen(tablaCuadruplas, ASIGNAR_VALOR_FALSO, -1, -1, $1.place);
-                /////S.next := makelist(); TODO: ESTO ESTA EN LOS APUNTES. TEMA 6 PAG 80. PERO 
-            }else{
+                $$.next = makeEmptyList();
+            } else {
                 gen(tablaCuadruplas, ASIGNACION, $3.place, -1, $1.place);
             }
         }
         fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");
     }
-    |ty_operando TK_ASIGNACION TK_CADENA {fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION TK_CADENA\n");}
+    | ty_operando TK_ASIGNACION TK_CADENA {fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION TK_CADENA\n");}
     ;
 
 ty_alternativa:
-    TK_PR_SI ty_exp_b TK_ENTONCES ty_M ty_instrucciones ty_lista_opciones TK_PR_FSI {
+    TK_PR_SI ty_exp_b TK_ENTONCES ty_M ty_instrucciones ty_N ty_M ty_lista_opciones TK_PR_FSI {
+        // Ver explicación en los apuntes, página 79 del tema 6, apuntes largos.
+        backpatch(tablaCuadruplas, $2.True, $4.quad);
+        backpatch(tablaCuadruplas, $2.False, $7.quad);
+        // Si ty_lista_opciones no se trata de asignaciones
+        if (!esListaVacia($8.next)) {
+            // Metemos ty_N.next por si se da el caso de que ty_instrucciones se trata de una asignación
+            $$.next = merge($6.next, merge($5.next, $8.next));
+        } else {
+            // estamos haciendo exactamente lo mismo que con ty_N
+            $$.next = merge($6.next, merge($5.next, makeList(getNextquad(tablaCuadruplas))));
+            // generacion del salto no condicional
+        	// Este salto no condicional parece dar problemas
+        	// gen(tablaCuadruplas, GOTO, -1, -1, -1);
+        }
         fprintf(fSaR,"REDUCE ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI\n");}
     ;
 
 ty_lista_opciones:
-     TK_SINOSI ty_expresion TK_ENTONCES ty_M ty_instrucciones ty_lista_opciones {fprintf(fSaR,"REDUCE TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones\n");}
-    | /*vacio*/{fprintf(fSaR,"REDUCE ty_lista_opciones: vacio\n");}
+      TK_SINOSI ty_expresion TK_ENTONCES ty_M ty_instrucciones ty_N ty_M ty_lista_opciones {
+        backpatch(tablaCuadruplas, $2.True, $4.quad);
+        backpatch(tablaCuadruplas, $2.False, $7.quad);
+        // Si ty_lista_opciones no se trata de asignaciones
+        if (!esListaVacia($8.next)) {
+            // Metemos ty_N.next por si se da el caso de que ty_instrucciones se trata de una asignación
+            $$.next = merge($6.next, merge($5.next, $8.next));
+        } else {
+            // estamos haciendo exactamente lo mismo que con ty_N
+            $$.next = merge($6.next, merge($5.next, makeList(getNextquad(tablaCuadruplas))));
+            // generacion del salto no condicional
+        	// Este salto no condicional parece dar problemas
+        	// gen(tablaCuadruplas, GOTO, -1, -1, -1);
+        }
+        fprintf(fSaR,"REDUCE TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones\n");}
+    | /*vacio*/{
+    	// Esto parece solucionar los problemas
+    	$$.next = makeEmptyList();
+    	fprintf(fSaR,"REDUCE ty_lista_opciones: vacio\n");}
     ;
 
 ty_iteracion:
       ty_it_cota_fija {fprintf(fSaR,"REDUCE ty_iteracion: ty_it_cota_fija\n");}
-    | ty_it_cota_exp {fprintf(fSaR,"REDUCE ty_iteracion: ty_it_cota_exp\n");}
+    | ty_it_cota_exp {
+    	$$.next = $1.next;
+    	fprintf(fSaR,"REDUCE ty_iteracion: ty_it_cota_exp\n");}
     ;
 
 ty_it_cota_exp:
     TK_PR_MIENTRAS ty_M ty_exp_b TK_PR_HACER ty_M ty_instrucciones TK_PR_FMIENTRAS {
-        backpatch(tablaCuadruplas, $2.True, $5.quad);
-        if(esListaVacia($6.next)){
-            //TODO: SEGUIR POR AQUI!!!!!!
-            // EL IF NO LO HE HECHO PORQUE ME PARECE MAS FACIL EMPREZAR POR EL WHILE 
-            $$.next = merge($3.False, )
-        }else{
-
+        backpatch(tablaCuadruplas, $3.True, $5.quad);
+        if(!esListaVacia($6.next)) {
+        	backpatch(tablaCuadruplas, $6.next, $2.quad);
+        } else {
+        	gen(tablaCuadruplas, GOTO, -1, -1, $2.quad);
         }
+        $$.next = $3.False;
         fprintf(fSaR,"REDUCE ty_it_cota_exp:  TK_PR_MIENTRAS ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FMIENTRAS\n");
     }
     ;
 
-ty_it_cota_fija:
+ty_it_cota_fija:/* Sin tocar todavia*/
     TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA {fprintf(fSaR,"REDUCE ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA\n");}
     ;
 
@@ -638,7 +715,7 @@ int main (int argc, char *argv[]) {
 
     //checkear numero de parametros
     if(argc != 2){
-        printf("Uso del compilador: ./a.out <NombreDelPprogama>\n");
+        printf("Uso del compilador: ./a.out <NombreDelPrograma>\n");
         exit(1);
     }
     programName = argv[1];
@@ -669,11 +746,12 @@ int main (int argc, char *argv[]) {
     }
 
 	tablaSimbolos = crearTablaDeSimbolos();
-    tablaCuadruplas =  crearTablaQuad();
+    tablaCuadruplas = crearTablaQuad();
 
 	yyparse();
 
 	printSimbolosNoUsados(tablaSimbolos);
+	insertarOutputEnTablaCuadruplas(tablaCuadruplas, output);
     escribirTablaCuadruplas(tablaSimbolos, tablaCuadruplas, fTC);
 
     if(hayErrores){
