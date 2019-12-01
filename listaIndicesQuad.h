@@ -16,7 +16,9 @@ typedef struct t_lista_ligada_int {
 } t_lista_ligada_int;
 
 /* DECLARACIÓN DE FUNCIONES GLOBALES */
+extern int esListaVacia(t_lista_ligada_int* header);
 extern t_lista_ligada_int* makeList(int valor);
+extern t_lista_ligada_int* makeEmptyList();
 extern t_lista_ligada_int* merge(t_lista_ligada_int* header1, t_lista_ligada_int* header2);
 extern int backpatch(t_tabla_quad* t, t_lista_ligada_int* header, int valor);
 

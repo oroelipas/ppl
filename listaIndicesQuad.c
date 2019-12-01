@@ -8,17 +8,12 @@
 #include "tablaCuadruplas.h"
 
 /* DECLARACIÓN DE FUNCIONES LOCALES */
-static int esListaVacia(t_lista_ligada_int* header);
 static int getContenidoNodo(nodo* n);
-static int esListaVacia(t_lista_ligada_int* header);
+static void vaciarLista (t_lista_ligada_int *header);
 static int insertNodo(t_lista_ligada_int* header, int valor);
-static void printInt(t_lista_ligada_int* header);
+static void printListaInt(t_lista_ligada_int* header);
 
 /* DEFINICIÓN DE FUNCIONES LOCALES */
-int esListaVacia(t_lista_ligada_int* header) {
-	return header -> first == NULL;
-}
-
 int getContenidoNodo(nodo* n) {
 	return n -> contenido;
 }
@@ -72,6 +67,10 @@ void printListaInt(t_lista_ligada_int* header) {
 }
 
 /* DEFINICIÓN DE FUNCIONES GLOBALES */
+int esListaVacia(t_lista_ligada_int* header) {
+	return header -> first == NULL;
+}
+
 t_lista_ligada_int* makeList(int valor) {
 	t_lista_ligada_int* l = (t_lista_ligada_int*)malloc(sizeof(t_lista_ligada_int));
 	l -> first = NULL;
@@ -81,17 +80,28 @@ t_lista_ligada_int* makeList(int valor) {
 	return NULL;	// Error inicializando la lista
 }
 
+t_lista_ligada_int* makeEmptyList() {
+	t_lista_ligada_int* l = (t_lista_ligada_int*)malloc(sizeof(t_lista_ligada_int));
+	l -> first = NULL;
+	l -> last = NULL;
+	return l;
+}
+
 // TODO: esta funcion tenemos que hacer que sirva para 3 listas
 // o, idealmente, un numero indetermiando de listas, como la funcion yyerror
 t_lista_ligada_int* merge(t_lista_ligada_int* header1, t_lista_ligada_int* header2) {
-	if(!esListaVacia(header1)&&(!esListaVacia(header2))) {
+	if(esListaVacia(header1) && (!esListaVacia(header2)))
+			return header2;
+	if((!esListaVacia(header2)) && esListaVacia(header2))
+			return header1;
+	if((!esListaVacia(header1)) && (!esListaVacia(header2))) {
 		header1 -> last -> next = header2 -> first;
 		header1 -> last = header2 -> last;
 		header2 -> first = NULL;
 		header2 -> last = NULL;
 		return header1;
 	}
-	// Error, la lista se encuentra vacía
+	// Ambas listas se encuentran vacías
 	return NULL;
 }
 
@@ -139,3 +149,17 @@ int main(int argc, char** argv) {
 	}
 	return 1;
 }*/
+
+/*
+int main(int argc, char** argv){
+	t_lista_ligada_int* l1 = makeList(1);
+	t_lista_ligada_int* l2 = makeList(2);
+	t_lista_ligada_int* l3;
+	l1 = merge(l1, l2);
+	printListaInt(l1);
+	l3 = makeList(3);
+	t_lista_ligada_int* l4 = makeList(4);
+	l1 = merge(l1, merge(l3, l4));
+	printListaInt(l1);
+}
+*/
