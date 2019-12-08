@@ -1,22 +1,22 @@
+
 #include "defines.h"
 #include <string.h>
 #include <stdlib.h>
 
 /**
- * Esto sirve para poder printear cada valor de los enum de defines.h
+ * Esta función sirve para poder printear cada valor de los enum de defines.h
  * Se usa para printear en out.TablaSimbolos, out.TablaCuadruplas 
- *    y tambien para dar errores de compilación por terminal.
+ * y tambien para dar errores de compilación por pantalla.
  * Aqui se reserva memoria y nuca se libera. 
- * Pero liberarla seria muy jodido porque a veces se usar para 
- *   la funcion yyerror, para la warning, para la escribirTablaCuadruplas
- *   y entonces habria que liberarlo una vez usado en esas funciones.
- * PERO los parametros de esasa funciones a veces son strings que no quieres liberar.
+ * Liberarla sería muy complicado porque a veces se usa para 
+ * la funcion yyerror, otras para la funcion warning y otras para la funcion
+ * escribirTablaCuadruplas, con lo cual habria que liberar memoria una vez se usara getName en esas funciones.
+ * Pero... los parametros de esas funciones a veces son strings que no quieres liberar.
  * Conclusion: nunca se liberaran y punto.
- * getName IGUAL NO ES UN NOMBRE MUY DESCRIPTIVO
  */
-char* getName(int cod){
+char* getNombreDeConstante (int cod) {
     char *nombre = malloc(TAM_MAX_NOMBRE_SIMBOLO * sizeof(char));
-    switch(cod){
+    switch(cod) {
         case ENTERO:
             strcpy(nombre,"entero");
             break;
@@ -51,7 +51,10 @@ char* getName(int cod){
             strcpy(nombre,"*int");
             break;
         case MULT_REAL:
-            strcpy(nombre,"*rel");
+            strcpy(nombre,"*real");
+            break;
+        case DIV:
+            strcpy(nombre,"/");
             break;
         case INT_TO_REAL:
             strcpy(nombre,"int->real");
@@ -86,6 +89,12 @@ char* getName(int cod){
         case ASIGNAR_VALOR_FALSO:
             strcpy(nombre,"ASIGNAR_VALOR_FALSO");
             break;
+        case DIV_ENT:
+            strcpy(nombre,"DIV_ENT");
+            break;
+        case MOD:
+            strcpy(nombre,"MOD");
+            break;
         case MAYOR:
             strcpy(nombre,">");
             break;
@@ -109,6 +118,15 @@ char* getName(int cod){
             break;
         case OUTPUT:
             strcpy(nombre,"OUTPUT");
+            break;
+        case MULT_ALTERADA:
+            strcpy(nombre,"MULT_ALTERADA");
+            break;
+        case ASIGNACION_A_POS_TABLA:
+            strcpy(nombre,"[]=");
+            break;
+        case ASIGNACION_DE_POS_TABLA:
+            strcpy(nombre,"=[]");
             break;
         default:
             strcpy(nombre,"OP_NO_DEFINIDA");

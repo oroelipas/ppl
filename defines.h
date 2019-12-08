@@ -1,22 +1,28 @@
+
+/*  CABECERA DEL MODULO defines
+	Autores: Oroel Ipas y Carlos Moyano */
+
 #ifndef CM_OI_DEFINES_H
 #define CM_OI_DEFINES_H
 	
 #define RED "\033[0;31m"
 #define RESET "\033[0m"
 #define MAGENTA "\033[1;35m"
-//definiciones de tipos de nodos
+
+// definiciones de tipos de simbolos
 #define SIM_VARIABLE 101
 #define SIM_TIPO 102
 #define SIM_FUNCION 103
 #define SIM_SIN_TIPO 104
 
-//definiciones de tipos de varibles
-#define ENTERO 1
-#define REAL 2
-#define BOOLEANO 3
-#define CARACTER 4
-#define CADENA 5
+// definiciones de tipos de varibles
+#define ENTERO 0
+#define REAL 1
+#define BOOLEANO 2
+#define CARACTER 3
+#define CADENA 4
 
+// definiciones de operaciones
 #define ASIGNACION 201
 #define SUMA_INT 202
 #define SUMA_REAL 203
@@ -24,17 +30,20 @@
 #define RESTA_REAL 205
 #define MULT_INT 206
 #define MULT_REAL 207
-#define INT_TO_REAL 208
-#define GOTO 209
-#define GOTO_IF_OP_REL_IGUAL 210
-#define GOTO_IF_OP_REL_DESIGUAL 211
-#define GOTO_IF_OP_REL_MENOR 212
-#define GOTO_IF_OP_REL_MENOR_IGUAL 213
-#define GOTO_IF_OP_REL_MAYOR 214
-#define GOTO_IF_OP_REL_MAYOR_IGUAL 215
-#define GOTO_IF_VERDADERO 216
-#define ASIGNAR_VALOR_VERDADERO 217
-#define ASIGNAR_VALOR_FALSO 218
+#define DIV 208
+#define INT_TO_REAL 209
+#define GOTO 210
+#define GOTO_IF_OP_REL_IGUAL 211
+#define GOTO_IF_OP_REL_DESIGUAL 212
+#define GOTO_IF_OP_REL_MENOR 213
+#define GOTO_IF_OP_REL_MENOR_IGUAL 214
+#define GOTO_IF_OP_REL_MAYOR 215
+#define GOTO_IF_OP_REL_MAYOR_IGUAL 216
+#define GOTO_IF_VERDADERO 217
+#define ASIGNAR_VALOR_VERDADERO 218
+#define ASIGNAR_VALOR_FALSO 219
+#define DIV_ENT 220
+#define MOD 221
 
 #define MAYOR 300
 #define MENOR 301
@@ -43,13 +52,26 @@
 #define IGUAL 304
 #define DESIGUAL 305
 
+// definiciones de entrada y salida
 #define INPUT 400
 #define OUTPUT 500
 
+// definiciones relacionadas con el manejo de accesos a tablas
+#define MULT_ALTERADA 700
+#define ASIGNACION_A_POS_TABLA 701
+#define ASIGNACION_DE_POS_TABLA 702
+#define OFFSET_NULO -1
+
+// definiciones de btw de los tipos básicos del lenguaje
+#define BTW_GENERICO 100
+#define BTW_VACIO -1
+
+// definiciones de tamaños
 #define TAM_MAX_NOMBRE_SIMBOLO 100 	// Número de caracteres máximo que podrá tener el nombre de un tipo, variable, funcion...
+#define TAM_NOMBRE_T 5				// Número de caracteres máximos que podrá tener el nombre de una variable temporal
 
-extern char* getName(int cod);
-
+// DECLARACIÓN DE FUNCIONES GLOBALES
+extern char* getNombreDeConstante (int cod);
 #endif
 
 
