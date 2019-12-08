@@ -11,7 +11,7 @@ algoritmo intercambio;
     aux:= a;
     a:= b;
     b:= aux;
-    c:= a+(b / 5);
+    c:= a + (b div b);
     {Post: b=A AND a = B}
     
 falgoritmo
