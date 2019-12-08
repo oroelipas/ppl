@@ -1,5 +1,6 @@
 
-/* DEFINICION DEL MODULO lista_ligada_int.h */
+/*  DEFINICION DEL MODULO lista_ligada_int.h
+	Autores: Oroel Ipas y Carlos Moyano */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,17 +8,24 @@
 #include "listaIndicesQuad.h"
 #include "tablaCuadruplas.h"
 
-/* DECLARACIÓN DE FUNCIONES LOCALES */
-static int getContenidoNodo(nodo* n);
+// DECLARACIÓN DE FUNCIONES LOCALES
+static int getContenidoNodo (nodo* n);
 static void vaciarLista (t_lista_ligada_int *header);
-static int insertNodo(t_lista_ligada_int* header, int valor);
-static void printListaInt(t_lista_ligada_int* header);
+static int insertNodo (t_lista_ligada_int* header, int valor);
+static void printListaInt (t_lista_ligada_int* header);
 
-/* DEFINICIÓN DE FUNCIONES LOCALES */
-int getContenidoNodo(nodo* n) {
+// DEFINICIÓN DE FUNCIONES LOCALES
+
+/* 
+ * Funcionalidad: Devuelve el contenido del nodo cuya referencia se pasa como parametro.
+ */
+int getContenidoNodo (nodo* n) {
 	return n -> contenido;
 }
 
+/* 
+ * Funcionalidad: Vacía la lista ligada de indices cuya referencia se pasa como parametro.
+ */
 void vaciarLista (t_lista_ligada_int *header) {
     if (header -> first == NULL) {
         printf("Vaciar lista: La lista YA estaba vacía\n");
@@ -35,7 +43,16 @@ void vaciarLista (t_lista_ligada_int *header) {
     }
 }
 
-int insertNodo(t_lista_ligada_int* header, int valor) {
+/**
+ * Funcionalidad: Inserta un elemento en una lista ligada de indices.
+ * Parámetros:
+ *	 t_lista_ligada_int* header -> referencia a la lista ligada de indices en la que queremos insertar el elemento
+ *	 int valor 					-> contenido que queremos que tenga el elemento a insertar
+ * Return:
+ *	 0  -> si la insercion no se realiza correctamente
+ *   1  -> si la insercion se realiza correctamente
+ */
+int insertNodo (t_lista_ligada_int* header, int valor) {
 	/* Creamos el nodo a insertar */
 	nodo* aux = (nodo*)malloc(sizeof(nodo));
 	aux -> contenido = valor;
@@ -51,7 +68,10 @@ int insertNodo(t_lista_ligada_int* header, int valor) {
     return 1;
 }
 
-void printListaInt(t_lista_ligada_int* header) {
+/**
+ * Funcionalidad: Muestra por pantalla el contenido de una lista ligadad de índices.
+ */
+void printListaInt (t_lista_ligada_int* header) {
 	printf("Contenido lista de enteros:\n");
 	if(esListaVacia(header)) {
 		printf("	La lista está vacía\n");
@@ -65,21 +85,40 @@ void printListaInt(t_lista_ligada_int* header) {
 	}
 	printf("\n");
 }
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
-/* DEFINICIÓN DE FUNCIONES GLOBALES */
-int esListaVacia(t_lista_ligada_int* header) {
+// DEFINICIÓN DE FUNCIONES GLOBALES
+
+/**
+ * Funcionalidad: Comprueba si una lista ligada de indices está vacía.
+ * Return:
+ *	 1  -> si la lista esta vacia
+ *   0  -> si la lista no esta vacia
+ */
+int esListaVacia (t_lista_ligada_int* header) {
 	return header -> first == NULL;
 }
 
-t_lista_ligada_int* makeList(int valor) {
+/**
+ * Funcionalidad: Crea una lista ligada de indices con 1 elemento cuyo contenido se pasa como parámetro y devuelve una referencia a la misma.
+ * Parámetros:
+ *	 int valor -> contenido que queremos que tenga el único elemento con el que se va a crear la nueva lista
+ * Return:
+ *	 NULL   	  -> si la insercion no se realiza correctamente
+ *   referencia   -> si la insercion se realiza correctamente
+ */
+t_lista_ligada_int* makeList (int valor) {
 	t_lista_ligada_int* l = (t_lista_ligada_int*)malloc(sizeof(t_lista_ligada_int));
 	l -> first = NULL;
 	l -> last = NULL;
-	if(insertNodo(l, valor))
+	if (insertNodo(l, valor))
 		return l;
 	return NULL;	// Error inicializando la lista
 }
 
+/**
+ * Funcionalidad: Crea una lista ligada de indices vacía y devuelve una referencia a la misma.
+ */
 t_lista_ligada_int* makeEmptyList() {
 	t_lista_ligada_int* l = (t_lista_ligada_int*)malloc(sizeof(t_lista_ligada_int));
 	l -> first = NULL;
@@ -87,9 +126,17 @@ t_lista_ligada_int* makeEmptyList() {
 	return l;
 }
 
-// TODO: esta funcion tenemos que hacer que sirva para 3 listas
-// o, idealmente, un numero indetermiando de listas, como la funcion yyerror
-t_lista_ligada_int* merge(t_lista_ligada_int* header1, t_lista_ligada_int* header2) {
+/**
+ * Funcionalidad: Concatena dos listas y devuelve la referencia a la lista resultado.
+ * Parámetros:
+ *   t_lista_ligada_int* header1 -> referencia a la lista ligada de indices numero 1
+ *   t_lista_ligada_int* header2 -> referencia a la lista ligada de indices numero 2
+ *
+ * Return:
+ *	 NULL   	  -> si ambas listas estan vacías
+ *   referencia   -> si la concatenación se realiza sin problemas
+ */
+t_lista_ligada_int* merge (t_lista_ligada_int* header1, t_lista_ligada_int* header2) {
 	if(esListaVacia(header1) && (!esListaVacia(header2)))
 			return header2;
 	if((!esListaVacia(header2)) && esListaVacia(header2))
@@ -105,7 +152,16 @@ t_lista_ligada_int* merge(t_lista_ligada_int* header1, t_lista_ligada_int* heade
 	return NULL;
 }
 
-int backpatch(t_tabla_quad* t, t_lista_ligada_int* header, int valor) {
+/**
+ * Funcionalidad: Rellena con un valor determinado el contenido de los indices de la lista cuya referencia se pasa como parámetro.
+ * Parámetros:
+ *   t_lista_ligada_int* header -> referencia a la lista ligada de indices
+ *
+ * Return:
+ *	 0   -> si la lista ligada esta vacía
+ *   1   -> si la lista ligada no está vacía
+ */
+int backpatch (t_tabla_quad* t, t_lista_ligada_int* header, int valor) {
 	if(!esListaVacia(header)){
         nodo *aux = header -> first;
         while(aux -> next != NULL) {
@@ -127,39 +183,22 @@ int backpatch(t_tabla_quad* t, t_lista_ligada_int* header, int valor) {
 	return 0;
 }
 
-/*
-int main(int argc, char** argv) {
-	// Creamos la tabla de cuadruplas 
-	t_tabla_quad* t;
-	t = crearTablaQuad(t);
-	///////////////////////////////////
-	printf("Nextquad: %d\n", getNextquad(t));
-	t_lista_ligada_int* l_true = makeList(getNextquad(t));
-	t_lista_ligada_int* l_false = makeList(getNextquad(t) + 1);
-	gen(t, 1, 1, 1, -1);
-	printf("Nextquad: %d\n", getNextquad(t));
-	gen(t, 2, 2, 2, -1);
-	printTablaQuad(t);
-	//Realizamos el merge de listas 
-	l_true = merge(l_true, l_false);
-	printListaInt(l_true);
-	printListaInt(l_false);
-	if(backpatch(t, l_true, getNextquad(t))) {
-		printTablaQuad(t);
+/**
+ * Funcionalidad: Devuelve el primer indice de la lista y lo elimina de la misma.
+ * Es especialmente útil cuando se quiere sacar todos los elementos de una lista uno a uno.
+ * Parámetros:
+ *   t_lista_ligada_int* header -> referencia a la lista ligada de indices
+ *
+ * Return:
+ *	 0   		-> si la lista ligada esta vacía
+ *   contenido  -> si la lista ligada no está vacía
+ */
+int popListaIndices (t_lista_ligada_int* header) {
+	if(!esListaVacia(header)) {
+		nodo *aux = header -> first;
+		header -> first = header -> first -> next;
+		return aux -> contenido;
 	}
-	return 1;
-}*/
-
-/*
-int main(int argc, char** argv){
-	t_lista_ligada_int* l1 = makeList(1);
-	t_lista_ligada_int* l2 = makeList(2);
-	t_lista_ligada_int* l3;
-	l1 = merge(l1, l2);
-	printListaInt(l1);
-	l3 = makeList(3);
-	t_lista_ligada_int* l4 = makeList(4);
-	l1 = merge(l1, merge(l3, l4));
-	printListaInt(l1);
+	// Error, la lista se encuentra vacía
+	return 0;
 }
-*/
