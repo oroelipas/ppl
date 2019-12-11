@@ -285,7 +285,9 @@ ty_expresion_t:
         $$.offset = $1.offset;
         fprintf(fSaR,"REDUCE ty_expresion_t: ty_expresion\n");
     }
-    | TK_CARACTER{fprintf(fSaR,"REDUCE ty_expresion_t: TK_CARACTER\n");}
+    | TK_CARACTER{fprintf(fSaR,"REDUCE ty_expresion_t: TK_CARACTER\n");
+      // como esto es uso de literales no lo manejamos de momento
+    }
     /*AQUI NO HAY CADENAS?????? ENTONCES NO SE PUEDE HACER a:= "hola"   */
     ;
 
@@ -637,8 +639,7 @@ ty_N:
     /*vacio*/{
         $$.next = makeList(getNextquad(tablaCuadruplas));
         // generacion del salto no condicional
-        // Este salto no condicional parece dar problemas
-        // gen(tablaCuadruplas, GOTO, -1, -1, -1);
+        gen(tablaCuadruplas, GOTO, -1, -1, -1);
     }
     ;
 
@@ -780,8 +781,7 @@ ty_alternativa:
             // estamos haciendo exactamente lo mismo que con ty_N
             $$.next = merge($6.next, merge($5.next, makeList(getNextquad(tablaCuadruplas))));
             // generacion del salto no condicional
-        	// Este salto no condicional parece dar problemas
-        	// gen(tablaCuadruplas, GOTO, -1, -1, -1);
+        	gen(tablaCuadruplas, GOTO, -1, -1, -1);
         }
         fprintf(fSaR,"REDUCE ty_alternativa: TK_PR_SI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones TK_PR_FSI\n");}
     ;

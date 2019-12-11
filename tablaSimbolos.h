@@ -12,9 +12,9 @@ typedef struct lista_ligada {
 
 typedef struct infoTipo {
     /* Solamente se ha utilizado pensando en la creación de tipos de tablas */
-    int quadLen;
-    int tipoContenido;
-    int btw;
+    int quadLen; // es el id de la variable temporal que almacena la longitud del array
+    int tipoContenido; // id del tipo que contiene nuestro array
+    int btw; // tamaño del tipo (Ej: Si tenemos un array de 7 enteros y cada entero ocupa 1 byte entonces este numero es 7)
 } infoTipo;
 
 typedef struct { int tipo_variable;} t_infoVar;
