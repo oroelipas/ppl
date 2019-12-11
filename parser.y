@@ -58,6 +58,10 @@ int hayErrores;
   	struct {
     	t_lista_ligada_int* next;
   	} infoIns;
+    struct {
+        t_lista_ligada_int* next;
+        int idVar; // esto guarda el id de la variable a la que acabamos de asignar un valor
+    } infoAsig;
 }
 %locations 
 %start ty_desc_algoritmo
@@ -163,7 +167,7 @@ int hayErrores;
 %type <infoExpOff> ty_operando
 %type <infoIns> ty_instrucciones
 %type <infoIns> ty_instruccion
-%type <infoIns> ty_asignacion
+%type <infoAsig> ty_asignacion
 %type <infoIns> ty_alternativa
 %type <infoIns> ty_lista_opciones
 %type <infoIns> ty_iteracion
@@ -763,6 +767,7 @@ ty_asignacion:
 	    		}
 	    	}
 	    }
+        $$.idVar = $1.place;
         fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION ty_expresion_t\n");
     }
     | ty_operando TK_ASIGNACION TK_CADENA {fprintf(fSaR,"REDUCE ty_asignacion:ty_operando TK_ASIGNACION TK_CADENA\n");}
@@ -798,8 +803,7 @@ ty_lista_opciones:
             // estamos haciendo exactamente lo mismo que con ty_N
             $$.next = merge($6.next, merge($5.next, makeList(getNextquad(tablaCuadruplas))));
             // generacion del salto no condicional
-        	// Este salto no condicional parece dar problemas
-        	// gen(tablaCuadruplas, GOTO, -1, -1, -1);
+        	gen(tablaCuadruplas, GOTO, -1, -1, -1);
         }
         fprintf(fSaR,"REDUCE TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones\n");}
     | /*vacio*/{
@@ -828,8 +832,29 @@ ty_it_cota_exp:
     }
     ;
 
-ty_it_cota_fija: /* Sin tocar todavia*/
-    TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA {fprintf(fSaR,"REDUCE ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA\n");}
+ty_it_cota_fija:
+    TK_PR_PARA ty_asignacion TK_PR_HASTA  ty_expresion TK_PR_HACER ty_M ty_instrucciones TK_PR_FPARA {
+        // La variable iteradora debe ser de tipo entero, y la expresión de la condición de parada también
+        simbolo* varIterable = getSimboloPorId(tablaSimbolos, $2.idVar);
+        if (getTipoVar(varIterable) == ENTERO && $4.type == ENTERO) {
+            // ORDEN DE GENERACIÓN
+            // 1º) la asignación de valor a la variable iteradora
+            // 2º) el cálculo de la expresión que define la condición de parada
+            // 3º) las cuadruplas de las intrucciones sobre las que se itera
+            if(!esListaVacia($7.next)) {
+                backpatch(tablaCuadruplas, $7.next, getNextquad(tablaCuadruplas));
+            }
+            // Queremos iterar mientras el valor de la variable sea menor que el valor de la condición de parada
+            gen(tablaCuadruplas, SUMA_1, getIdSimbolo(varIterable), -1, getIdSimbolo(varIterable));   // Aumentamos en 1 el valor de la variable iteradora
+            // Cuidado ya que la asignación no tiene goto
+            gen(tablaCuadruplas, GOTO_IF_OP_REL_MENOR, getIdSimbolo(varIterable), $4.place, $6.quad);   // Realizamos la comparación con la condición de parada
+            $$.next = makeList(getNextquad(tablaCuadruplas));
+            gen(tablaCuadruplas, GOTO, -1, -1, -1);
+        }else{
+            yyerror("El bucle para se ejecuta con valores enteros: encontrado tipos %s y %s", getNombreDeConstante(getTipoVar(varIterable)), getNombreDeConstante($4.type));
+        }
+        fprintf(fSaR,"REDUCE ty_it_cota_fija: TK_PR_PARA TK_IDENTIFICADOR TK_ASIGNACION ty_expresion TK_PR_HASTA ty_expresion TK_PR_HACER ty_instrucciones TK_PR_FPARA\n");
+    }
     ;
 
 /* DECLARACIONES DE ACCIONES Y FUNCIONES */

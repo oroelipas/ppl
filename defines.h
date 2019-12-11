@@ -44,6 +44,7 @@
 #define ASIGNAR_VALOR_FALSO 219
 #define DIV_ENT 220
 #define MOD 221
+#define SUMA_1 222
 
 #define MAYOR 300
 #define MENOR 301

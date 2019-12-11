@@ -128,6 +128,9 @@ char* getNombreDeConstante (int cod) {
         case ASIGNACION_DE_POS_TABLA:
             strcpy(nombre,"=[]");
             break;
+        case SUMA_1:
+            strcpy(nombre,"+1");
+            break;
         default:
             strcpy(nombre,"OP_NO_DEFINIDA");
             break;
