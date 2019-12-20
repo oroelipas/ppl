@@ -73,6 +73,9 @@
 
 // DECLARACIÓN DE FUNCIONES GLOBALES
 extern char* getNombreDeConstante (int cod);
+extern void warningSinLinea(const char *warningText, ...);
+extern char* programName;
+
 #endif
 
 

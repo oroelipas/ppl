@@ -2,6 +2,9 @@
 #include "defines.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>//esto es para poder usar va_list y va_start() para tener funciones con nº de arg indefinidos: yyerror y warning
+
 
 /**
  * Esta función sirve para poder printear cada valor de los enum de defines.h
@@ -136,4 +139,11 @@ char* getNombreDeConstante (int cod) {
             break;
     }
     return nombre;
+}
+
+void warningSinLinea(const char *warningText, ...){
+    va_list args;
+    va_start(args, warningText);
+    printf(MAGENTA"%s: Warning "RESET, programName);  
+    vprintf(warningText, args);
 }
