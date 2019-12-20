@@ -55,7 +55,7 @@ extern int getTipoSimbolo (simbolo* misimbolo);
 extern int getIdSimbolo (simbolo* misimbolo);
 extern int simboloEsUnaVariable (simbolo* misimbolo);
 extern simbolo* insertarVariable (lista_ligada *header, char *nombre, int tipo);
-extern simbolo* insertarVariableConID (lista_ligada *header, int id, char *nombre, int tipo);
+extern int insertarSimbolo (lista_ligada *header, simbolo* misimbolo);
 extern void modificaTipoVar (simbolo* var, int tipo_var);
 extern infoTipo* crearInfoTipoDeTabla (int tipoContenido, int cuadruplaQueCalculaSuLongitud);
 extern infoTipo* crearInfoTipoBasico (int btw);

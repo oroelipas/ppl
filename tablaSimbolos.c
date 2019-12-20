@@ -21,8 +21,6 @@
 static void liberarSimbolo (simbolo* misimbolo);
 static int esTipoBase (int tipo);
 static void printInfosimbolo (simbolo *simbolo);
-static int insertarSimbolo (lista_ligada *header, simbolo* misimbolo);
-static void insertarSimboloConId (lista_ligada *header, int id, simbolo* misimbolo);
 static int existeNombresimbolo (lista_ligada *header, char* nombre);
 static simbolo* crearSimbolo (char *nombre, int tipo);
 
@@ -69,7 +67,7 @@ int esTipoBase (int id) {
 * Return: void
 */
 void printInfosimbolo (simbolo *misimbolo) {
-    printf("Nombre del objeto: %s\n", misimbolo -> nombre);
+    printf("Id: %i, Nombre: %s\n", misimbolo->id, misimbolo -> nombre);
     switch(misimbolo->tipo) {
         case SIM_VARIABLE:
             printf("    El objeto es una variable\n");
@@ -111,25 +109,6 @@ int insertarSimbolo (lista_ligada *header, simbolo* misimbolo){
     header -> first = misimbolo;
     fprintf(debugFile, "Inserción CORRECTA del objeto de nombre : %s\n", misimbolo->nombre);
     return header -> contador - 1;
-}
-
-/**
-* Funcionalidad: Inserta un nuevo simbolo en la tabla de simbolos con un id determinado.
-* Parámetros: 
-*	lista_ligada* header -> referencia a la tabla de simbolos
-*	int id 				 -> id que queremos que tenga el nuevo simbolo a insertar
-*	simbolo* misimbolo 	 -> simbolo a insertar
-* Return: void
-*/
-void insertarSimboloConId (lista_ligada *header, int id, simbolo* misimbolo) {
-    if (existeNombresimbolo(header, misimbolo->nombre)) {
-        return;
-    }
-    misimbolo -> next = header ->first;
-    misimbolo -> id = id;
-    header -> contador ++;
-    header -> first = misimbolo;
-    fprintf(debugFile, "Inserción CORRECTA con ID del objeto de nombre : %s\n", misimbolo->nombre);
 }
 
 /**
@@ -193,7 +172,7 @@ extern int getTipoSimbolo (simbolo* misimbolo);
 extern int getIdSimbolo (simbolo* misimbolo);
 extern int simboloEsUnaVariable (simbolo* misimbolo);
 extern simbolo* insertarVariable (lista_ligada *header, char *nombre, int tipo);
-extern simbolo* insertarVariableConID (lista_ligada *header, int id, char *nombre, int tipo);
+extern int insertarSimbolo (lista_ligada *header, simbolo* misimbolo);
 extern void modificaTipoVar (simbolo* var, int tipo_var);
 extern infoTipo* crearInfoTipoDeTabla (int tipoContenido, int cuadruplaQueCalculaSuLongitud);
 extern infoTipo* crearInfoTipoBasico (int btw);
@@ -228,6 +207,7 @@ lista_ligada* crearListaLigada() {
  */
 lista_ligada* crearTablaDeSimbolos() {
     lista_ligada *lista = crearListaLigada();
+    //TODO: ESTO ES UNA CHAPUZAAAAAAAAA!!!!!!
     char* nombres_tipos_base[5];
     nombres_tipos_base[ENTERO] = "entero";
     nombres_tipos_base[REAL] = "real";
@@ -239,7 +219,7 @@ lista_ligada* crearTablaDeSimbolos() {
     for(int i=0; i < sizeof(nombres_tipos_base) / sizeof(nombres_tipos_base[0]); i++){
         simbolo *nuevoTipo = crearSimbolo(nombres_tipos_base[i], SIM_TIPO);
         id = insertarSimbolo(lista, nuevoTipo);
-        addInfoTipo(getSimboloPorId(lista, id), info);
+        addInfoTipo(nuevoTipo, info);
     }
     return lista;
 }
@@ -287,26 +267,6 @@ simbolo* insertarVariable(lista_ligada* header, char* nombre, int tipo){
     simbolo* nuevaVar = crearSimbolo(nombre, SIM_VARIABLE);
     nuevaVar -> info.t1.tipo_variable = tipo;
     insertarSimbolo(header, nuevaVar);
-    return getSimboloPorNombre(header, nombre);
-}
-
-/**
- * Funcionalidad: Inserta un nuevo simbolo de tipo 1 (SIM_VARIABLE) con un nombre determinado en la tabla de 
- * simbolos, si no existe uno con el mismo nombre. La diferencia con insertarVariable es que esta función
- * asigna un id determinado a la nueva variable a insertar.
- * Parámetros:
- *   lista_ligada* header -> referencia a la tabla de simbolos
- *	 int id 			  -> id de la variable
- *   char* nombre 		  -> nombre de la variable a insertar
- *	 int tipo 			  -> tipo de la variable a insertar (no confundir con tipo de simbolo, son cosas
- *							  totalmente distintas)
- *
- * Return:  referencia al simbolo cuyo nombre e id se han pasado como parametros
- */
-simbolo* insertarVariableConID(lista_ligada* header, int id, char* nombre, int tipo){
-    simbolo* nuevaVar = crearSimbolo(nombre, SIM_VARIABLE);
-    nuevaVar -> info.t1.tipo_variable = tipo;
-    insertarSimboloConId(header, id, nuevaVar);
     return nuevaVar;
 }
 

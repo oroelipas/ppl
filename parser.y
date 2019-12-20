@@ -6,20 +6,19 @@
 #include "tablaSimbolos.h"
 #include "tablaCuadruplas.h"
 #include "listaIndicesQuad.h"
-#include <stdarg.h>//esto es para poder usar va_list y va_start() para tener funciones con nº de arg indefinidos: yyerror
+#include <stdarg.h>//esto es para poder usar va_list y va_start() para tener funciones con nº de arg indefinidos: yyerror y warning
 
 extern int yycolumn;
 extern int yylex();
 extern char* yytext;
-//extern int yylineno; ya no se usa desde que usamos YY_USER_ACTION para calcular linea y columna
 
 void warning(const char *warningText, ...);
 void yyerror(const char *s, ...);
 FILE *fSaR;//fichero out.ShiftAndReduces
 FILE *fTS; //fichero out.TablaSimbolos
 FILE *fTC;//fichero out.TablaCuadruplas
-lista_ligada *tablaSimbolos; //tabla de simbolos. igual habria que cambiar el nombre
-lista_ligada *output;
+lista_ligada *tablaSimbolos; //tabla de simbolos
+t_lista_ligada_int *output;
 t_tabla_quad *tablaCuadruplas;
 char* programName;
 
@@ -31,8 +30,9 @@ char* programName;
   	char caracter;
   	double doble;
   	int entero;
- 	lista_ligada* tablaSimbolos;  // las listas de identificadores también son listas_ligadas (para las declaraciones de variables)
- 	t_lista_ligada_int* colaIndices;
+ 	lista_ligada* listaSimbolos;  // para las declaraciones de variable
+ 	t_lista_ligada_int* lista_int;
+    simbolo *sim;
   	struct {
     	int type;   // entero, real, ...(tipos basicos o definidos)
     	int place;  // index del simbolo de la tabla de simbolos 
@@ -152,8 +152,8 @@ char* programName;
 %type <str> ty_lista_campos
 %type <entero> ty_tipo_base
 %type <str> ty_lista_d_cte
-%type <tablaSimbolos> ty_lista_d_var
-%type <tablaSimbolos> ty_lista_id
+%type <listaSimbolos> ty_lista_d_var
+%type <listaSimbolos> ty_lista_id
 %type <str> ty_decl_ent_sal
 %type <str> ty_decl_ent
 %type <str> ty_decl_sal
@@ -177,7 +177,7 @@ char* programName;
 %type <str> ty_d_p_form
 %type <str> ty_accion_ll
 %type <str> ty_funcion_ll
-%type <colaIndices> ty_l_ll
+%type <lista_int> ty_l_ll
 %type <infoM> ty_M
 %type <infoIns> ty_N
 %type <entero> ty_op_relacional
@@ -231,9 +231,20 @@ ty_decl_cte:
 
 ty_decl_var:
     TK_PR_VAR ty_lista_d_var TK_PR_FVAR TK_PUNTOYCOMA {
-    vaciarListaLigada($2);
-    fprintf(fSaR,"REDUCE ty_decl_var: TK_PR_VAR ty_lista_d_var TK_PR_FVAR TK_PUNTOYCOMA\n");} // los programas de prueba de fitxi no tienen ;
-    ;
+        simbolo *var;
+        int idVar;
+        // insertar en la tabla de simbolos las variables
+        while((var = pop($2))){
+            idVar = insertarSimbolo(tablaSimbolos, var);
+            if(idVar == -1){
+                // si ha habido una doble declaracion solo nos quedamos con la primera, omitimos el resto y damos un error
+                yyerror("declaración múltiple de variable '%s'", getNombreSimbolo(var));
+            }else{
+                fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(var))), getNombreSimbolo(var));
+            }
+        }
+        fprintf(fSaR,"REDUCE ty_decl_var: TK_PR_VAR ty_lista_d_var TK_PR_FVAR TK_PUNTOYCOMA\n");
+    };
 
 ty_lista_d_tipo:
       TK_IDENTIFICADOR TK_IGUAL ty_d_tipo TK_PUNTOYCOMA ty_lista_d_tipo {
@@ -258,14 +269,28 @@ ty_d_tipo:
     		gen(tablaCuadruplas, RESTA_INT, $5.place, $3.place, T -> id);
     		infoTipo* info = crearInfoTipoDeTabla($8, indiceQuadConLongitud);
     		simbolo* tipoInsertado = insertarTipo(tablaSimbolos, info);
-    		$$ = tipoInsertado -> id;
+    		$$ = getIdSimbolo(tipoInsertado);
     	} else {
     		warning("los subrangos de las tablas deben ser enteros");
     	}
     	fprintf(fSaR,"REDUCE ty_d_tipo: TK_PR_TABLA TK_INICIO_ARRAY ty_expresion_t TK_SUBRANGO ty_expresion_t TK_FIN_ARRAY TK_PR_DE ty_d_tipo\n");
     }
     | TK_IDENTIFICADOR {
-    	$$ = getIdSimbolo(getSimboloPorNombre(tablaSimbolos, $1));
+        simbolo* tipo = getSimboloPorNombre(tablaSimbolos, $1);
+        if(tipo){
+            if(simboloEsUnTipo(tipo)){
+                $$ = getIdSimbolo(tipo);
+            }else{
+                yyerror("'%s' no es un tipo", $1);
+                exit(-1);
+                // TODO: QUE HACER AQUI?????
+            }
+        }else{
+            yyerror("tipo '%s' no declarado", $1);
+            // TODO: que hacer aqui?? exit?? si queremos seguir hay que darle un tipo
+            // podriamos darle SIM_SIN_TIPO para seguir la compilacion
+            exit(-1);
+        }
     	fprintf(fSaR,"REDUCE ty_d_tipo: TK_IDENTIFICADOR\n");
    	}
     | ty_expresion_t TK_SUBRANGO ty_expresion_t {fprintf(fSaR,"REDUCE ty_d_tipo: ty_expresion_t TK_SUBRANGO ty_expresion_t\n");}
@@ -314,36 +339,23 @@ ty_lista_d_cte:/*En el enunciado pone "literal" pero se referira a ty_tipo_base*
 
 ty_lista_d_var:
     ty_lista_id TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_d_var {
-        // Primero chequear si el tipo esta en la tabla de simbolos
-        simbolo* var_simbolo1 = getSimboloPorId(tablaSimbolos, $3);
-        if(var_simbolo1 != NULL) {
-            if(simboloEsUnTipo(var_simbolo1)){ // si el tipo existe
-                //marcar que el tipo ha sido usado
-                marcarComoUsado(var_simbolo1);
-                simbolo* simbolo_temp;
-                simbolo* var_simbolo2;
-                lista_ligada* lista = crearListaLigada();
-                int id;
-                while((simbolo_temp = pop($1))) {
-                    // TODO: NO ESTAMOS COMPROBANDO SI LA VARIABLE YA HA SIDO INSERTADA EN LA TABLA DE SIMBOLOS
-                    // Aquí estaba mal esta instrucción de insertarVariable, ya que le estábamos pasando un tipo erróneo en el 3er parámetro de la llamada
-                    var_simbolo2 = insertarVariable(tablaSimbolos, getNombreSimbolo(simbolo_temp), getIdSimbolo(getSimboloPorId(tablaSimbolos, $3)));
-                    // IMPORTANTE: nos interesa conservar el id verdadero del símbolo en la TS
-                    insertarVariableConID(lista, getIdSimbolo(var_simbolo2), getNombreSimbolo(var_simbolo2), getIdSimbolo(getSimboloPorId(tablaSimbolos, $3)));
-                    //Escribimos tipo y nombre de la variable en el fichero tablaSimbolos.txt
-                    fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3)), getNombreSimbolo(simbolo_temp));
-                    free(simbolo_temp);
-                }
-                $$ = lista;
-            }else{
-                yyerror("%s no es un tipo. Es otra cosa", $3);
+        //marcar que el tipo ha sido usado
+        marcarComoUsado(getSimboloPorId(tablaSimbolos, $3));
+        simbolo* var;
+        $$ = $5;
+        while((var = pop($1))){
+            // asignarle el tipo
+            modificaTipoVar(var, $3);
+            // insertarla en la lista de variables que estamos definiendo
+            if(insertarSimbolo($$, var) == -1){
+                yyerror("declaración múltiple de variable '%s'", getNombreSimbolo(var));
             }
-        }else{
-            // el tipo no existe
-            yyerror("El tipo %s no existe", $3);
         }
 	}
-    | /*vacio*/{fprintf(fSaR,"REDUCE ty_lista_d_var: vacio\n");}
+    | /*vacio*/{
+        $$ = crearListaLigada();
+        fprintf(fSaR,"REDUCE ty_lista_d_var: vacio\n");
+    }
     ;
 
 ty_lista_id:
@@ -373,23 +385,42 @@ ty_decl_ent_sal:
 
 ty_decl_ent:
     TK_PR_ENT ty_lista_d_var {
-    // En $2 tenemos la lista de id que acabamos de leer (son las variables de entrada del algoritmo)
-    insertarInputEnTablaCuadruplas(tablaCuadruplas, $2);
-    vaciarListaLigada($2);
-    fprintf(fSaR,"REDUCE ty_decl_ent: TK_PR_ENT ty_lista_d_var\n");}
-    ;
+        simbolo *var;
+        int idVar;
+        // insertar en la tabla de simbolos las variables
+        while(var = pop($2)){
+            idVar = insertarSimbolo(tablaSimbolos, var);
+            if(idVar == -1){
+                // si ha habido una doble declaracion solo nos quedamos con la primera, omitimos el resto y damos un error
+                yyerror("declaración múltiple de variable '%s'", getNombreSimbolo(var));
+            }else{
+                insertarInputEnTablaCuadruplas(tablaCuadruplas, var);
+                fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(var))), getNombreSimbolo(var));
+            }
+        }
+        fprintf(fSaR,"REDUCE ty_decl_ent: TK_PR_ENT ty_lista_d_var\n");
+    };
 
 ty_decl_sal:
     TK_PR_SAL ty_lista_d_var {
-    // En $2 tenemos la lista de id que acabamos de leer(son las variables de salida del algoritmo)
-    output = crearListaLigada();
-    simbolo* var_simbolo;
-    while((var_simbolo = pop($2))) {
-    	// Aqui hay algun tipo de problema
-    	insertarVariableConID(output, getIdSimbolo(var_simbolo), getNombreSimbolo(var_simbolo), getTipoSimbolo(var_simbolo));
-    }
-    fprintf(fSaR,"REDUCE ty_decl_sal: TK_PR_SAL ty_lista_d_var\n");}
-    ;
+        simbolo *var;
+        int idVar;
+        // insertar en la tabla de simbolos las variables
+        while(var = pop($2)){
+            idVar = insertarSimbolo(tablaSimbolos, var);
+            if(idVar == -1){
+                //si ya ha sido declarada comprobar que tenga el mismo tipo
+                if(getTipoVar(var) != getTipoVar(getSimboloPorNombre(tablaSimbolos, getNombreSimbolo(var)))){
+                    yyerror("declarando variable '%s' de salida con tipo diferente que de entrada", getNombreSimbolo(var));
+                    // decision: omitimos la incoherencia, metemos la variable en la lista output y continuamos compilando
+                }
+            }else{
+                fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(var))), getNombreSimbolo(var));
+            }
+            output = merge(output, makeList(getIdSimbolo(getSimboloPorNombre(tablaSimbolos, getNombreSimbolo(var)))));
+        }
+        fprintf(fSaR,"REDUCE ty_decl_sal: TK_PR_SAL ty_lista_d_var\n");
+    };
 
 ty_exp_a:
       ty_exp_a TK_MAS ty_exp_a {
@@ -665,7 +696,8 @@ ty_operando:
     TK_IDENTIFICADOR {
         simbolo* var = getSimboloPorNombre(tablaSimbolos, $1);
         if(var == NULL){
-            yyerror("variable %s usada pero no delarada", $1);
+            yyerror("variable '%s' usada pero no delarada", $1);
+            exit(-1);// TODO: QUE HACER AQUI?CREARLA Y METERLA EN LA TABLA DE SIMBOLOS??
         } else {
             if(simboloEsUnaVariable(var)){
                 marcarComoUsado(var);
@@ -744,7 +776,7 @@ ty_asignacion:
 	                gen(tablaCuadruplas, ASIGNACION, $3.place, -1, $1.place);
 	            }
 	        } else {
-	        	warning("error en la asignación, el valor asignado no es del tipo correcto: %s := %s", getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.type)), getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.type)));
+	        	yyerror("error en la asignación, el valor asignado no es del tipo correcto: %s := %s", getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.type)), getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.type)));
 	        }
 	    } else {
 	    	// Ahora hay que controlar lo del offset nulo
@@ -753,13 +785,13 @@ ty_asignacion:
 	    			// Esto no está bien, corregirlo
 	    			gen(tablaCuadruplas, ASIGNACION_DE_POS_TABLA, $3.place, $3.offset, $1.place);
 	    		} else {
-	    			warning("error en la asignación, el valor asignado no es del tipo correcto: %s := array de %s", getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.type)), getNombreTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $3.place)));
+	    			yyerror("error en la asignación, el valor asignado no es del tipo correcto: %s := array de %s", getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.type)), getNombreTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $3.place)));
 	    		}
 	    	} else {
 	    		if (getIdTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $1.place)) == $3.type) {
 	    			gen(tablaCuadruplas, ASIGNACION_A_POS_TABLA, $3.place, $1.offset, $1.place);
 	    		} else {
-	    			warning("error en la asignación, el valor asignado no es del tipo correcto: array de %s := %s", getNombreTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $1.place)), getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.type)));
+	    			yyerror("error en la asignación, el valor asignado no es del tipo correcto: array de %s := %s", getNombreTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $1.place)), getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.type)));
 	    		}
 	    	}
 	    }
@@ -974,11 +1006,12 @@ int main (int argc, char *argv[]) {
 
 	tablaSimbolos = crearTablaDeSimbolos();
     tablaCuadruplas = crearTablaQuad();
+    output = makeEmptyList();
 
 	yyparse();
 
 	printSimbolosNoUsados(tablaSimbolos);
-	insertarOutputEnTablaCuadruplas(tablaCuadruplas, output);
+	insertarOutputEnTablaCuadruplas(tablaCuadruplas, tablaSimbolos, output);
 	// Hay algún problema aquí
     escribirTablaCuadruplas(tablaSimbolos, tablaCuadruplas, fTC);
 

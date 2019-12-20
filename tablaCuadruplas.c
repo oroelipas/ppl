@@ -90,8 +90,8 @@ int addDestinoGoto (t_tabla_quad* header, int indice, int destino);
 int getNextquad (t_tabla_quad* header);
 void printTablaQuad (t_tabla_quad* header);
 void escribirTablaCuadruplas (lista_ligada* tablaSimbolos, t_tabla_quad* tablaCuadruplas, FILE *file);
-void insertarInputEnTablaCuadruplas (t_tabla_quad* tablaCuadruplas, lista_ligada* tablaSimbolos);
-void insertarOutputEnTablaCuadruplas (t_tabla_quad* tablaCuadruplas, lista_ligada* tablaSimbolos);
+void insertarOutputEnTablaCuadruplas (t_tabla_quad* tablaCuadruplas, lista_ligada* tablaSimbolos, t_lista_ligada_int* output);
+void insertarInputEnTablaCuadruplas (t_tabla_quad* tablaCuadruplas, simbolo *var);
 
 // DEFINICION DE FUNCIONES GLOBALES
 
@@ -221,27 +221,23 @@ void escribirTablaCuadruplas (lista_ligada *tablaSimbolos, t_tabla_quad *tablaCu
 }
 
 /*
- * Funcionalidad: Inserta las variables de entrada del algoritmo que estamos parseando como operaciones INPUT en la tabla de cuadruplas.
+ * Funcionalidad: Inserta una variables de entrada del algoritmo que estamos parseando como operaciones INPUT en la tabla de cuadruplas.
  * Estas cuadruplas con operaciones INPUT deben ser las primeras de la tabla de cuadruplas que se genere (esto lo controlamos desde el parser).
  */
-void insertarInputEnTablaCuadruplas (t_tabla_quad* tablaCuadruplas, lista_ligada* header) {
-    simbolo *misimbolo = header -> first;
-    while (misimbolo != NULL) {
-        printf("INPUT: %s\n", misimbolo -> nombre);
-        gen(tablaCuadruplas, INPUT, -1, -1, misimbolo -> id);
-        misimbolo = misimbolo -> next;
-    }
+void insertarInputEnTablaCuadruplas (t_tabla_quad* tablaCuadruplas, simbolo *var){
+    gen(tablaCuadruplas, INPUT, -1, -1, var -> id);
 }
 
 /*
  * Funcionalidad: Inserta las variables de salida del algoritmo que hemos parseado como operaciones OUTPUT en la tabla de cuadruplas.
  * Estas cuadruplas con operaciones OUTPUT deben ser las últimas de la tabla de cuadruplas que se genere (esto lo controlamos desde el parser).
  */
-void insertarOutputEnTablaCuadruplas (t_tabla_quad* tablaCuadruplas, lista_ligada* header) {
-    simbolo *misimbolo = header -> first;
-    while (misimbolo != NULL) {
+void insertarOutputEnTablaCuadruplas (t_tabla_quad* tablaCuadruplas, lista_ligada* tablaSimbolos, t_lista_ligada_int* output) {
+    simbolo *misimbolo;
+    int id;
+    while (id = popListaIndices(output)) {
+        misimbolo = getSimboloPorId(tablaSimbolos, id);
         printf("OUTPUT: %s\n", misimbolo -> nombre);
         gen(tablaCuadruplas, OUTPUT, -1, -1, misimbolo -> id);
-        misimbolo = misimbolo -> next;
     }
 }

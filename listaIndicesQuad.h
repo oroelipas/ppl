@@ -5,8 +5,6 @@
 #ifndef CM_OI_LISTA_LIGADA_INT_H
 #define CM_OI_LISTA_LIGADA_INT_H
 
-#include "tablaCuadruplas.h"
-
 typedef struct nodo {
 	int contenido;
 	struct nodo* next;
@@ -16,6 +14,8 @@ typedef struct t_lista_ligada_int {
 	struct nodo* first;
 	struct nodo* last;	// Nos facilita la concatenación de las listas con la función merge(header1, header2)
 } t_lista_ligada_int;
+
+#include "tablaCuadruplas.h"
 
 // DECLARACIÓN DE FUNCIONES GLOBALES
 extern int esListaVacia (t_lista_ligada_int* header);
