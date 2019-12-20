@@ -22,10 +22,6 @@ lista_ligada *tablaSimbolos; //tabla de simbolos. igual habria que cambiar el no
 lista_ligada *output;
 t_tabla_quad *tablaCuadruplas;
 char* programName;
-int hayErrores;
-
-
-
 
 %}
 
@@ -986,9 +982,6 @@ int main (int argc, char *argv[]) {
 	// Hay algún problema aquí
     escribirTablaCuadruplas(tablaSimbolos, tablaCuadruplas, fTC);
 
-    if(hayErrores){
-	   printf("Revise out.ShiftsAndReduces\n");
-	}
     fclose(fTS);
     fclose(fTC);
     fclose(fSaR);
@@ -1004,11 +997,13 @@ void yyerror(const char *errorText, ...) {
     va_list args;  
     va_start(args, errorText);
     
-    printf(RED"%s:%d:%d: Error "RESET, programName, yylloc.first_line, yylloc.first_column);  
-    vprintf(errorText, args);
+    printf(RED"%s:%d:%d: Error "RESET, programName, yylloc.first_line, yylloc.first_column);
+    vprintf(errorText, args);  
+    if(strcmp("syntax error", errorText) == 0){
+        printf(". Revise out.ShiftsAndReduces");
+    }
     printf("\n    Antes de '%s'\n", yytext);
     // esto de antes de no es muy util porque cuando se esta reduciendo una expresion larga y el fallo esta al principio de dice que, por ejemplo, el fallo esta antes de ";"
-    hayErrores = 1;
 }
 
 void warning(const char *warningText, ...){

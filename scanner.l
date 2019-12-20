@@ -11,7 +11,6 @@
 
 extern FILE *fSaR;//fichero para escribir los SHIFTs que hacemos
 extern char *programName;
-extern int hayErrores;
 extern void yyerror(const char *errorText, ...);
 
 
@@ -466,8 +465,7 @@ dr_entrada_a_omitir [\n\t\r ]
 }
 
 {dr_tk_inesperado} {
-    yyerror("token inesperado: %s", yytext);
-	hayErrores = 1; 
+    yyerror("token desconocido: %s", yytext);
 }
 
 {dr_entrada_a_omitir} {}
