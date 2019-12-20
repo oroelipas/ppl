@@ -237,7 +237,6 @@ void insertarOutputEnTablaCuadruplas (t_tabla_quad* tablaCuadruplas, lista_ligad
     int id;
     while (id = popListaIndices(output)) {
         misimbolo = getSimboloPorId(tablaSimbolos, id);
-        printf("OUTPUT: %s\n", misimbolo -> nombre);
         gen(tablaCuadruplas, OUTPUT, -1, -1, misimbolo -> id);
     }
 }

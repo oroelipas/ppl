@@ -364,7 +364,9 @@ ty_lista_id:
                 //introducimos el nuevo identificador a la lista de identificadores
                 //TODO: no pueden aparecer 2 veces la misma variable
                 //PERO si en entrada y en salida
-                insertarVariable($3, $1, SIM_SIN_TIPO);
+                if(insertarVariable($3, $1, SIM_SIN_TIPO) == NULL){
+                    warning("declaracion multiple de variable '%s'", $1);
+                }
                 $$ = $3;
 
 			}

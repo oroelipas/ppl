@@ -266,7 +266,9 @@ simbolo* newTemp(lista_ligada *header){
 simbolo* insertarVariable(lista_ligada* header, char* nombre, int tipo){
     simbolo* nuevaVar = crearSimbolo(nombre, SIM_VARIABLE);
     nuevaVar -> info.t1.tipo_variable = tipo;
-    insertarSimbolo(header, nuevaVar);
+    if(insertarSimbolo(header, nuevaVar) == -1){
+        return NULL;
+    }
     return nuevaVar;
 }
 
