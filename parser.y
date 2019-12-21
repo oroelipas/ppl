@@ -528,8 +528,13 @@ ty_exp_a:
     | ty_operando {
         $$.place = $1.place;
         $$.type = $1.type;
-        // hacemos estas asignaciones de info booleana porque si hay (a=verdadero) entonces a es operando->exp_a->expresion y luego exp_b
         $$.offset = $1.offset;
+        if($1.type == BOOLEANO){
+            $$.True = makeList(getNextquad(tablaCuadruplas));
+            $$.False = makeList(getNextquad(tablaCuadruplas) + 1);
+            gen(tablaCuadruplas, GOTO_IF_VERDADERO, $1.place, -1, -1);
+            gen(tablaCuadruplas, GOTO, -1, -1, -1);
+        }
         fprintf(fSaR,"REDUCE ty_exp_a: ty_operando\n");
     }
     | TK_ENTERO {
@@ -596,11 +601,11 @@ ty_exp_b:
         warning("este compilador aún no maneja asignacion de literales");
         fprintf(fSaR,"REDUCE ty_exp_b: TK_BOOLEANO\n");
     }
-    | ty_expresion ty_op_relacional ty_expresion %prec TK_MUY_PRIORITARIO /* De esta manera solucionamos el conflicto S/R que surge al aplicar de verdad 1GII */{
-        //TODO: CUALES TIENEN QUE SER LOS TIPOS COMPARABLES?? ENTEROS, REALES, ¿CARACTERES? . BOOLEANOS NO
-        //TODO: HAY QUE COMPROBAR QUE SON DEL MISMO TIPO Y QUE ESE TIPO SEA COMPARABLE
-        // en un compidor real las operacoines de comparacion de reales, de enteros, de caracteres son operacion es diferentes por supuesto
-        if($1.type != BOOLEANO && $3.type != BOOLEANO && $1.type == $3.type){
+    | ty_expresion ty_op_relacional ty_expresion %prec TK_MUY_PRIORITARIO {
+        if(($1.type == ENTERO || $1.type == REAL || $1.type == CARACTER) && 
+           ($3.type == ENTERO || $3.type == REAL || $3.type == CARACTER) &&
+            $1.type == $3.type)
+        {
             $$.True = makeList(getNextquad(tablaCuadruplas));
             $$.False = makeList(getNextquad(tablaCuadruplas)+1);
             $$.type = BOOLEANO;
@@ -692,15 +697,7 @@ ty_operando:
             if(simboloEsUnaVariable(var)){
                 marcarComoUsado(var);
                 $$.place = getIdSimbolo(var);
-                $$.type = getTipoVar(var);	// Aqui había un error gordo, provocado por SIM_TIPO
-                if(getTipoVar(var) == BOOLEANO){
-                    $$.True = makeList(getNextquad(tablaCuadruplas));
-                    $$.False = makeList(getNextquad(tablaCuadruplas) + 1);
-                    gen(tablaCuadruplas, GOTO_IF_VERDADERO, $$.place, -1, -1);
-                    gen(tablaCuadruplas, GOTO, -1, -1, -1);
-                // TODO: AQUI CUANDO SE VE, POR EJEMPLO, EL IDENTIFICADOR a Y ESTAMOS HACIENDO a = b Y c NO SE DEBERIAN GENERAR ESOS GEN. ME PARECE
-                // ESTA ES UNA DUDA PARA FITXI!!!!!!!! 
-                }
+                $$.type = getTipoVar(var);
             } else {
                 yyerror("%s no es una variable", $1);
             }
