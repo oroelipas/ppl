@@ -109,7 +109,6 @@ char* programName;
 %token TK_PR_VAR
 %token TK_COMENT_PREC
 %token TK_COMENT_POST
-/* TK_CADENA DE MOMENTO EN LA GRAMATICA NO SE USA*/
 %token <str> TK_CADENA
 %token <caracter> TK_CARACTER
 %token <str> TK_IDENTIFICADOR
@@ -185,8 +184,8 @@ char* programName;
 %%
 
 ty_desc_algoritmo:
-/* aqui en la gramatica de fitxi hay un punto despues de falgoritmo que hemos quitado porque en los ejemplos no esta*/
-    TK_PR_ALGORITMO TK_IDENTIFICADOR TK_PUNTOYCOMA ty_cabecera_alg ty_bloque_alg TK_PR_FALGORITMO {fprintf(fSaR,"REDUCE ty_desc_algoritmo: TK_PR_ALGORITMO TK_IDENTIFICADOR TK_PUNTOYCOMA ty_cabecera_alg ty_bloque_alg TK_PR_FALGORITMO\n");}
+    TK_PR_ALGORITMO TK_IDENTIFICADOR TK_PUNTOYCOMA ty_cabecera_alg ty_bloque_alg TK_PR_FALGORITMO {
+        fprintf(fSaR,"REDUCE ty_desc_algoritmo: TK_PR_ALGORITMO TK_IDENTIFICADOR TK_PUNTOYCOMA ty_cabecera_alg ty_bloque_alg TK_PR_FALGORITMO\n");}
     ;
 
 ty_cabecera_alg:
@@ -221,7 +220,6 @@ ty_declaraciones:
     ;
 
 ty_decl_tipo:
-	// Bloque de declaraciones de tipos, muy similar a como hacemos con las variables
     TK_PR_TIPO ty_lista_d_tipo TK_PR_FTIPO TK_PUNTOYCOMA {fprintf(fSaR,"REDUCE ty_decl_tipo: TK_PR_TIPO ty_lista_d_tipo TK_PR_FTIPO TK_PUNTOYCOMA\n");}
     ;
 
@@ -283,12 +281,9 @@ ty_d_tipo:
             }else{
                 yyerror("'%s' no es un tipo", $1);
                 exit(-1);
-                // TODO: QUE HACER AQUI?????
             }
         }else{
             yyerror("tipo '%s' no declarado", $1);
-            // TODO: que hacer aqui?? exit?? si queremos seguir hay que darle un tipo
-            // podriamos darle SIM_SIN_TIPO para seguir la compilacion
             exit(-1);
         }
     	fprintf(fSaR,"REDUCE ty_d_tipo: TK_IDENTIFICADOR\n");
@@ -311,19 +306,17 @@ ty_expresion_t:
         fprintf(fSaR,"REDUCE ty_expresion_t: ty_expresion\n");
     }
     | TK_CARACTER{fprintf(fSaR,"REDUCE ty_expresion_t: TK_CARACTER\n");
-      // como esto es uso de literales no lo manejamos de momento
     }
-    /*AQUI NO HAY CADENAS?????? ENTONCES NO SE PUEDE HACER a:= "hola"   */
     ;
 
 ty_lista_campos:
-    TK_IDENTIFICADOR TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_campos {fprintf(fSaR,"REDUCE ty_lista_campos: TK_IDENTIFICADOR TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_campos\n");}
+    TK_IDENTIFICADOR TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_campos {
+        fprintf(fSaR,"REDUCE ty_lista_campos: TK_IDENTIFICADOR TK_TIPO_VAR ty_d_tipo TK_PUNTOYCOMA ty_lista_campos\n");
+    }
     |/*vacio*/{{fprintf(fSaR,"REDUCE ty_lista_campos: vacio\n");}}
     ;
 
 ty_tipo_base:
-    /*BOOLEANO NO ESTABA ORIGINALMENTE EN LA DOCUMENTACION*/
-    // ES NECESARIO RELLENAR $$ PARA DESPUES VER QUE TIPO ES ty_tipo_base CUANDO SE ASIGNEN TIPOS
       TK_PR_BOOLEANO {$$=BOOLEANO; fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_BOOLEANO\n");}
     | TK_PR_ENTERO   {$$=ENTERO;   fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_ENTERO\n");}
     | TK_PR_CARACTER {$$=CARACTER; fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_CARACTER\n");}
@@ -331,9 +324,10 @@ ty_tipo_base:
     | TK_PR_CADENA   {$$=CADENA;   fprintf(fSaR,"REDUCE ty_tipo_base: TK_PR_CADENA\n");}
     ;
 
-ty_lista_d_cte:/*En el enunciado pone "literal" pero se referira a ty_tipo_base*/
-    // las cte solo pueden ser de tipobase???????????????????????????????
-    TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte{fprintf(fSaR,"REDUCE ty_lista_d_cte: TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte\n");}
+ty_lista_d_cte:
+    TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte{
+        fprintf(fSaR,"REDUCE ty_lista_d_cte: TK_IDENTIFICADOR TK_IGUAL ty_tipo_base TK_PUNTOYCOMA ty_lista_d_cte\n");
+    }
     |/*vacio*/{fprintf(fSaR,"REDUCE ty_lista_d_cte: vacio\n");}
     ;
 
@@ -362,8 +356,6 @@ ty_lista_id:
     TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id {
   				fprintf(fSaR,"REDUCE ty_lista_id: TK_IDENTIFICADOR TK_SEPARADOR ty_lista_id\n");
                 //introducimos el nuevo identificador a la lista de identificadores
-                //TODO: no pueden aparecer 2 veces la misma variable
-                //PERO si en entrada y en salida
                 if(insertarVariable($3, $1, SIM_SIN_TIPO) == NULL){
                     warning("declaracion multiple de variable '%s'", $1);
                 }
@@ -426,7 +418,7 @@ ty_decl_sal:
 
 ty_exp_a:
       ty_exp_a TK_MAS ty_exp_a {
-        simbolo* T = newTemp(tablaSimbolos);//new temp crea un simbolo y nos devuelve su id
+        simbolo* T = newTemp(tablaSimbolos);
         $$.place = getIdSimbolo(T);
         if($1.type == ENTERO && $3.type == ENTERO){
             modificaTipoVar(T, ENTERO);
@@ -451,7 +443,7 @@ ty_exp_a:
         fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MAS ty_exp_a\n");
     }
     | ty_exp_a TK_MENOS ty_exp_a {
-        simbolo* T = newTemp(tablaSimbolos);//new temp crea un simbolo y nos devuelve su id
+        simbolo* T = newTemp(tablaSimbolos);
         $$.place = getIdSimbolo(T);
         if($1.type == ENTERO && $3.type == ENTERO){
             modificaTipoVar(T, ENTERO);
@@ -476,7 +468,7 @@ ty_exp_a:
     	fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MENOS ty_exp_a\n");
     }
     | ty_exp_a TK_MULT ty_exp_a {
-        simbolo* T = newTemp(tablaSimbolos);//new temp crea un simbolo y nos devuelve su id
+        simbolo* T = newTemp(tablaSimbolos);
         $$.place = getIdSimbolo(T);
         if($1.type == ENTERO && $3.type == ENTERO){
             modificaTipoVar(T, ENTERO);
@@ -501,7 +493,7 @@ ty_exp_a:
     	fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MULT ty_exp_a\n");
     }
     | ty_exp_a TK_DIV ty_exp_a {
-        simbolo* T = newTemp(tablaSimbolos);//new temp crea un simbolo y nos devuelve su id
+        simbolo* T = newTemp(tablaSimbolos);
         $$.place = getIdSimbolo(T);
         modificaTipoVar(T, REAL);
         $$.type = REAL;
@@ -510,7 +502,7 @@ ty_exp_a:
     	fprintf(fSaR,"REDUCE ty_exp_a:  ty_exp_a TK_DIV ty_exp_a \n");
     }
     | ty_exp_a TK_MOD ty_exp_a {
-        simbolo* T = newTemp(tablaSimbolos);//new temp crea un simbolo y nos devuelve su id
+        simbolo* T = newTemp(tablaSimbolos);
         $$.place = getIdSimbolo(T);
         modificaTipoVar(T, REAL);
         $$.type = REAL;
@@ -519,7 +511,7 @@ ty_exp_a:
     	fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MOD ty_exp_a\n");
     }
     | ty_exp_a TK_DIV_ENT ty_exp_a {
-        simbolo* T = newTemp(tablaSimbolos);//new temp crea un simbolo y nos devuelve su id
+        simbolo* T = newTemp(tablaSimbolos);
         $$.place = getIdSimbolo(T);
         modificaTipoVar(T, ENTERO);
         $$.type = ENTERO;
@@ -550,7 +542,7 @@ ty_exp_a:
         fprintf(fSaR,"REDUCE ty_exp_a: TK_REAL\n");
     }
     | TK_MENOS ty_exp_a %prec TK_MENOS_U {
-        simbolo* T = newTemp(tablaSimbolos);//new temp crea un simbolo y nos devuelve su id
+        simbolo* T = newTemp(tablaSimbolos);
         $$.place = getIdSimbolo(T);
         if($2.type == ENTERO){
             modificaTipoVar(T, ENTERO);
@@ -568,7 +560,6 @@ ty_exp_a:
     
 ty_exp_b:
       ty_expresion TK_PR_Y ty_M ty_expresion {
-        //ESTO ESTABA MAL. ERA ty_exp_b TK_PR_Y ty_exp_b Y ENTONCES DABA FALLO HACIENDO: a = b Y c
         if($1.type == BOOLEANO && $4.type == BOOLEANO){
             backpatch(tablaCuadruplas, $1.True, $3.quad);
             $$.False = merge($1.False, $4.False);
@@ -578,9 +569,8 @@ ty_exp_b:
         }else{
             yyerror("Operacion logica 'Y' imposible para tipo %s y tipo %s", getNombreDeConstante($1.type), getNombreDeConstante($4.type));
         }
-      }/*AQUI IGUAL SE PUEDEN DEFINIR OP_LOGICO: CUYOS VALORES SEAN Y,O*/
+      }
     | ty_expresion TK_PR_O ty_M ty_expresion {
-        //ESTO ESTABA MAL. ERA ty_exp_b TK_PR_O ty_exp_b Y ENTONCES DABA FALLO HACIENDO: a = b O c
         if($1.type == BOOLEANO && $4.type == BOOLEANO){
             backpatch(tablaCuadruplas, $1.False, $3.quad);
             $$.True = merge($1.True, $4.True);
@@ -591,7 +581,7 @@ ty_exp_b:
             yyerror("Operacion logica 'O' imposible para tipo %s y tipo %s", getNombreDeConstante($1.type), getNombreDeConstante($4.type));
         }
     }
-    | TK_PR_NO ty_exp_b /*%prec TK_MUY_PRIORITARIO ESTO NO NOS ESTA QUITANDO R/R*/{
+    | TK_PR_NO ty_exp_b{
         $$.True = $2.False;
         $$.False = $2.True;
         $$.type = BOOLEANO;
@@ -639,9 +629,9 @@ ty_exp_b:
             gen(tablaCuadruplas, GOTO, -1, -1, -1);
         }else{
             if($1.type == $3.type){
-                yyerror("comparación %s no posible para el tipo %s", getNombreDeConstante($2), getNombreDeConstante($1.type));
+                yyerror("comparación no posible para el tipo %s", getNombreDeConstante($1.type));
             }else{
-                yyerror("comparacion %s tipos diferentes: tipo %s y tipo %s", getNombreDeConstante($2), getNombreDeConstante($1.type), getNombreDeConstante($3.type));
+                yyerror("comparacion %s con tipos diferentes: tipo %s y tipo %s", getNombreDeConstante($2), getNombreDeConstante($1.type), getNombreDeConstante($3.type));
             }
         }
 
@@ -655,7 +645,6 @@ ty_exp_b:
     }
     ;
 
-//ESTO ME ESTA DANDO R/R. POR EL MOMENTO LA PRODUCCION DE  | ty_expresion TK_IGUAL ty_expresion NO ESTA!!!!!!!!!
 ty_op_relacional:
     TK_OP_RELACIONAL {$$ = $1;}
     | TK_IGUAL {$$ = $1;}
@@ -688,13 +677,12 @@ ty_expresion:
         $$.False = $1.False;
         $$.type = $1.type;
         $$.offset = OFFSET_NULO;
-        fprintf(fSaR,"REDUCE ty_expresion: ty_exp_b\n");} /*ESTO NO TIENE QUE FUNCIONAR ASI!!!!!*/
+        fprintf(fSaR,"REDUCE ty_expresion: ty_exp_b\n");
+    }
     | ty_funcion_ll {fprintf(fSaR,"REDUCE ty_expresion: ty_funcion_ll\n");}
     ;
 
 ty_operando:
-    /*AQUI EN EL CONFLICTO SUPONGO QUE HABRA QUE HACER UN SHIFT POR PURA ASOCIATIVIDAD, PARA REDUCIR LA PILA.
-    ADEMAS ES EL MODO DE ACCEDER A LAS VARIABLES: SI TIENES variable1.variable2[variable3] PRIMERO HABRA QUE IR DE FUERA HACIA ADENTRO Y REDUCIR variable1.variable2 A UNA SOLA VARIABLE (variable12) PARA LUEGO ACCEDER A ESA VARIABLE variable12[variable3]*/
     TK_IDENTIFICADOR {
         simbolo* var = getSimboloPorNombre(tablaSimbolos, $1);
         if(var == NULL){
@@ -724,7 +712,7 @@ ty_operando:
     | ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY {
     	simbolo* T = newTemp(tablaSimbolos);
     	modificaTipoVar(T, ENTERO);
-    	// Realmente sería $3.place - 1, pero nos tomamos esa licencia
+    	// TODO: Realmente sería $3.place - 1, pero nos tomamos esa licencia....Hola Carlos, no entiendo este comentario 
     	gen(tablaCuadruplas, MULT_ALTERADA, $3.place, consulta_bpw_TS(tablaSimbolos, getIdTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $1.place))), T -> id);
     	$$.offset = T -> id;
     	fprintf(fSaR,"REDUCE ty_operando: ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY\n");
@@ -734,24 +722,23 @@ ty_operando:
 
 ty_instrucciones:
       ty_instruccion TK_PUNTOYCOMA ty_M ty_instrucciones {
-      	if(!esListaVacia($1.next)) {
-      		backpatch(tablaCuadruplas, $1.next, $3.quad);
-      	}
+      	backpatch(tablaCuadruplas, $1.next, $3.quad);
       	$$.next = $4.next;
       	fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion TK_PUNTOYCOMA ty_instrucciones\n");}
     | ty_instruccion TK_PUNTOYCOMA {
-        if(!esListaVacia($1.next)) {
-      		backpatch(tablaCuadruplas, $1.next, getNextquad(tablaCuadruplas)); //  Aqui tenemos un pequeño problema
-      		// Tenemos que saber donde acaba el código del while
-      	}
+      	backpatch(tablaCuadruplas, $1.next, getNextquad(tablaCuadruplas)); 
+        //  TODO: Aqui tenemos un pequeño problema
+  		// Tenemos que saber donde acaba el código del while
     	$$.next = $1.next;
     	fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion TK_PUNTOYCOMA\n");}
     ;
 
 ty_instruccion:
-      TK_PR_CONTINUAR {fprintf(fSaR,"REDUCE ty_instruccion: TK_PR_CONTINUAR\n");}
+      TK_PR_CONTINUAR {
+        $$.next = makeEmptyList();
+        fprintf(fSaR,"REDUCE ty_instruccion: TK_PR_CONTINUAR\n");}
     | ty_asignacion {
-    	/* El "problema oculto", lo solucionamos con un .next vacío */
+    	/* .next vacio para asignaciones y 'continuar' */
     	$$.next = makeEmptyList();
     	fprintf(fSaR,"REDUCE ty_instruccion: ty_asignacion\n");}
     | ty_alternativa {
@@ -770,7 +757,7 @@ ty_asignacion:
 	            if ($1.type == BOOLEANO) {
 	                backpatch(tablaCuadruplas, $3.True, getNextquad(tablaCuadruplas));
 	                gen(tablaCuadruplas, ASIGNAR_VALOR_VERDADERO, -1, -1, $1.place);
-	                gen(tablaCuadruplas, GOTO, -1, -1, getNextquad(tablaCuadruplas) + 2);//EN LOS APUNTES PONE +1 Y NO +2 PERO CREO QUE ESTA MAL
+	                gen(tablaCuadruplas, GOTO, -1, -1, getNextquad(tablaCuadruplas) + 2);
 	                backpatch(tablaCuadruplas, $3.False,  getNextquad(tablaCuadruplas));
 	                gen(tablaCuadruplas, ASIGNAR_VALOR_FALSO, -1, -1, $1.place);
 	                $$.next = makeEmptyList();
@@ -778,22 +765,28 @@ ty_asignacion:
 	                gen(tablaCuadruplas, ASIGNACION, $3.place, -1, $1.place);
 	            }
 	        } else {
-	        	yyerror("error en la asignación, el valor asignado no es del tipo correcto: %s := %s", getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.type)), getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.type)));
+	        	yyerror("error en la asignación, el valor asignado no es del tipo correcto: %s := %s", 
+                                        getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.type)), 
+                                        getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.type)));
 	        }
 	    } else {
 	    	// Ahora hay que controlar lo del offset nulo
 	    	if ($1.offset == OFFSET_NULO) {
 	    		if ($1.type == getIdTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $3.place))) {
-	    			// Esto no está bien, corregirlo
+	    			// TODO: Esto no está bien, corregirlo
 	    			gen(tablaCuadruplas, ASIGNACION_DE_POS_TABLA, $3.place, $3.offset, $1.place);
 	    		} else {
-	    			yyerror("error en la asignación, el valor asignado no es del tipo correcto: %s := array de %s", getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.type)), getNombreTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $3.place)));
+	    			yyerror("error en la asignación, el valor asignado no es del tipo correcto: %s := array de %s", 
+                                        getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.type)), 
+                                        getNombreTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $3.place)));
 	    		}
 	    	} else {
 	    		if (getIdTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $1.place)) == $3.type) {
 	    			gen(tablaCuadruplas, ASIGNACION_A_POS_TABLA, $3.place, $1.offset, $1.place);
 	    		} else {
-	    			yyerror("error en la asignación, el valor asignado no es del tipo correcto: array de %s := %s", getNombreTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $1.place)), getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.type)));
+	    			yyerror("error en la asignación, el valor asignado no es del tipo correcto: array de %s := %s", 
+                                        getNombreTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $1.place)), 
+                                        getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.type)));
 	    		}
 	    	}
 	    }
@@ -837,7 +830,6 @@ ty_lista_opciones:
         }
         fprintf(fSaR,"REDUCE TK_SINOSI ty_expresion TK_ENTONCES ty_instrucciones ty_lista_opciones\n");}
     | /*vacio*/{
-    	// Esto parece solucionar los problemas
     	$$.next = makeEmptyList();
     	fprintf(fSaR,"REDUCE ty_lista_opciones: vacio\n");}
     ;
@@ -871,9 +863,7 @@ ty_it_cota_fija:
             // 1º) la asignación de valor a la variable iteradora
             // 2º) el cálculo de la expresión que define la condición de parada
             // 3º) las cuadruplas de las intrucciones sobre las que se itera
-            if(!esListaVacia($7.next)) {
-                backpatch(tablaCuadruplas, $7.next, getNextquad(tablaCuadruplas));
-            }
+            backpatch(tablaCuadruplas, $7.next, getNextquad(tablaCuadruplas));
             // Queremos iterar mientras el valor de la variable sea menor que el valor de la condición de parada
             gen(tablaCuadruplas, SUMA_1, getIdSimbolo(varIterable), -1, getIdSimbolo(varIterable));   // Aumentamos en 1 el valor de la variable iteradora
             // Cuidado ya que la asignación no tiene goto
@@ -890,15 +880,18 @@ ty_it_cota_fija:
 /* DECLARACIONES DE ACCIONES Y FUNCIONES */
 
 ty_accion_d:
-    TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION {fprintf(fSaR,"REDUCE ty_accion_d: TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION\n");}
+    TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION {
+        fprintf(fSaR,"REDUCE ty_accion_d: TK_PR_ACCION ty_a_cabecera ty_bloque TK_PR_FACCION\n");}
     ;
 
 ty_funcion_d:
-    TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION {fprintf(fSaR,"REDUCE ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION\n");}
+    TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION {
+        fprintf(fSaR,"REDUCE ty_funcion_d: TK_PR_FUNCION ty_f_cabecera ty_bloque TK_PR_DEV ty_expresion TK_PR_FFUNCION\n");}
     ;
 
 ty_a_cabecera:
-    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA {fprintf(fSaR,"REDUCE ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA\n");}
+    TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA {
+        fprintf(fSaR,"REDUCE ty_a_cabecera: TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_d_par_form TK_PARENTESIS_FINAL TK_PUNTOYCOMA\n");}
     ;
 
  ty_f_cabecera:
@@ -924,7 +917,7 @@ ty_d_p_form: // Cuidado, estos son los input y los output de las acciones (simil
 
 ty_accion_ll:
     TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL {
-    	/* NO DESARROLLADO
+    	/* TODO: NO DESARROLLADO
     	int i = 0;
     	while(!esListaVacia($3)) {
     		gen(PARAM, -1, -1, popListaIndices($3));
@@ -939,7 +932,7 @@ ty_accion_ll:
 
 ty_funcion_ll:
     TK_IDENTIFICADOR TK_PARENTESIS_INICIAL ty_l_ll TK_PARENTESIS_FINAL {
-    	/* NO DESARROLLADO
+    	/* TODO: NO DESARROLLADO
     	int i = 0;
     	while(!esListaVacia($3)) {
     		gen(PARAM, -1, -1, popListaIndices($3));
@@ -954,14 +947,14 @@ ty_funcion_ll:
 
 ty_l_ll:
       ty_expresion TK_SEPARADOR ty_l_ll {
-      	/* NO DESARROLLADO
+      	/* TODO: NO DESARROLLADO
       	$$ = $1;
       	pideTurno($$, $3.place);
       	*/
       	fprintf(fSaR,"REDUCE ty_l_ll: ty_expresion TK_SEPARADOR ty_l_ll\n");
     }
     | ty_expresion {
-    	/* NO DESARROLLADO
+    	/* TODO: NO DESARROLLADO
     	$$ = makeEmptyList();
     	pideTurno($$, $1.place);
     	*/
@@ -1038,7 +1031,6 @@ void yyerror(const char *errorText, ...) {
         printf(". Revise out.ShiftsAndReduces");
     }
     printf("\n    Antes de '%s'\n", yytext);
-    // esto de antes de no es muy util porque cuando se esta reduciendo una expresion larga y el fallo esta al principio de dice que, por ejemplo, el fallo esta antes de ";"
 }
 
 void warning(const char *warningText, ...){
