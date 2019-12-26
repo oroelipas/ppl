@@ -18,7 +18,5 @@ si a >= b y a >= c ->
     [] b <=a ->med := a; min := b; 
     fsi;
 fsi;
-{en un if entra en el primer que e cierto}
-{el programa 2 da violacion de segmento}
 {Post: a=A AND b = B AND c= C ...}
 falgoritmo

@@ -4,7 +4,7 @@
 
 #ifndef CM_OI_TABLA_CUADRUPLAS_H
 #define CM_OI_TABLA_CUADRUPLAS_H
-#define NUM_QUADS 64
+#define NUM_QUADS 136
 
 typedef struct quad {
     int campo1;

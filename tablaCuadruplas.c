@@ -194,7 +194,6 @@ void escribirTablaCuadruplas (lista_ligada *tablaSimbolos, t_tabla_quad *tablaCu
     int hayMultAlterada = 0;
     int n = getNextquad(tablaCuadruplas);
     while(i < n) {
-
         char* operacion = getNombreDeConstante(getCampo1(tablaCuadruplas,i));
         if (getCampo1(tablaCuadruplas,i) != 700) { // licencia que nos hemos tomado
             index2Name(operando1, tablaSimbolos, getCampo2(tablaCuadruplas,i));
@@ -206,9 +205,9 @@ void escribirTablaCuadruplas (lista_ligada *tablaSimbolos, t_tabla_quad *tablaCu
             sprintf(operando2, "%d", getCampo3(tablaCuadruplas,i));
         }
         if(op_es_goto(operacion)) {
-            sprintf(destino, "%i", getCampo4(tablaCuadruplas,i));
+            sprintf(destino, "%i", getCampo4(tablaCuadruplas, i));
         } else {
-            index2Name(destino, tablaSimbolos, getCampo4(tablaCuadruplas,i));
+            index2Name(destino, tablaSimbolos, getCampo4(tablaCuadruplas, i));
         }
         fprintf(file, "%i: (%s,  %s,  %s,  %s)\n", i, operacion, operando1, operando2, destino);
         // printf("%i: (%s,  %s,  %s,  %s)\n", i, operacion, operando1, operando2, destino);
@@ -235,8 +234,12 @@ void insertarInputEnTablaCuadruplas (t_tabla_quad* tablaCuadruplas, simbolo *var
 void insertarOutputEnTablaCuadruplas (t_tabla_quad* tablaCuadruplas, lista_ligada* tablaSimbolos, t_lista_ligada_int* output) {
     simbolo *misimbolo;
     int id;
-    while (id = popListaIndices(output)) {
-        misimbolo = getSimboloPorId(tablaSimbolos, id);
-        gen(tablaCuadruplas, OUTPUT, -1, -1, misimbolo -> id);
+    if (output -> first == NULL) {
+        gen(tablaCuadruplas, OUTPUT, -1, -1, -1);
+    } else {
+        while (id = popListaIndices(output)) {
+            misimbolo = getSimboloPorId(tablaSimbolos, id);
+            gen(tablaCuadruplas, OUTPUT, -1, -1, misimbolo -> id);
+	    }
     }
 }
