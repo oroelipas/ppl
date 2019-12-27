@@ -772,9 +772,14 @@ ty_asignacion:
 	                gen(tablaCuadruplas, ASIGNACION, $3.place, -1, $1.place);
 	            }
 	        } else {
-	        	yyerror("error en la asignación, el valor asignado no es del tipo correcto: %s := %s", 
+                if ($1.type == REAL && $3.type == ENTERO){
+                    gen(tablaCuadruplas, INT_TO_REAL, $3.place, -1, $1.place);
+                }else{
+                    yyerror("error en la asignación, el valor asignado no es del tipo correcto: %s := %s", 
                                         getNombreSimbolo(getSimboloPorId(tablaSimbolos, $1.type)), 
                                         getNombreSimbolo(getSimboloPorId(tablaSimbolos, $3.type)));
+                }
+	        	
 	        }
 	    } else {
 	    	if ($1.offset == OFFSET_NULO){
