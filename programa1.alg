@@ -14,4 +14,4 @@ algoritmo intercambio;
     c:= a + (b div b);
     {Post: b=A AND a = B}
     
-falgoritmo
+falgoritmo;

@@ -20,4 +20,4 @@ b := array1[n];
 suma := array1[m];
 array1[m] := suma;
 {Post: n =N AND suma = SUMATORIO(i=1..N)(M sobre i)}
-falgoritmo
+falgoritmo;

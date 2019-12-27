@@ -19,4 +19,4 @@ si a >= b y a >= c ->
     fsi;
 fsi;
 {Post: a=A AND b = B AND c= C ...}
-falgoritmo
+falgoritmo;

@@ -16,4 +16,4 @@ mientras i <n hacer
     i := i+uno;
 fmientras;
 {Post: n =N AND suma = SUMATORIO(i=1..N)(M sobre i)}
-falgoritmo
+falgoritmo;

@@ -8,4 +8,4 @@ para i:=n hasta m hacer
 fpara;
 
 {Post: n =N AND suma = SUMATORIO(i=1..N)(M sobre i)}
-falgoritmo
+falgoritmo;
