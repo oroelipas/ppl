@@ -215,7 +215,7 @@ void escribirTablaCuadruplas (lista_ligada *tablaSimbolos, t_tabla_quad *tablaCu
 
     }
     if (hayMultAlterada) {
-        fprintf(file, "\n\n\n\n\nNota: En la(s) cuadrupla(s) con la operación MULT_ALTERADA, el campo 2 indica que el offset sería el valor de la variable - 1\n");
+        fprintf(file, "\n\n\n\n\nNota: En la(s) cuadrupla(s) con la operación MULT_ALTERADA, el segundo campo indica que el offset sería el valor de la variable - 1\n");
     }
 }
 
