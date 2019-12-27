@@ -1,0 +1,52 @@
+Memoria del Compilador de Procesadores del lenguaje.
+Por Carlos Moyano y Oroel Ipas.
+
+Uso del compilador:
+   Ejecute "$ make" en la carpeta donde se encuentran los archivos de código del compilador.
+   Para compilar el algoritmo ejemplo.alg ejecute "$ ./a.out ejemplo.alg".
+   Si hay fallos en su programa el compilador se los notificará.
+   Si ha compilado correctamente podra ver el resultado de la compilación en los 3 .out:
+      out.ShiftsAndReduces
+      out.TablaCuadruplas
+      out.TablaSimbolos
+
+
+Manejo de errores:
+	Hay dos tipos mensajes de error: error y warning.
+	Un mensaje de error contiene el nombre del archivo erroneo seguido de la línea y la columna 
+	donde estaba leyendo el parser al encontrar el error. Esta posición del fichero puede no ser
+	exactamente la posición del error.
+	Tambien informa del ultimo token leido al encontrar un error.
+	Después de notificar un error el compilador tratará de seguir con la compilación lo
+	máximo posible.
+
+
+Cosas a tener en cuenta de la gramática:
+    - Es obligatorio añadir ; al final de TODAS las instrucciones, incluido después de falgoritmo
+
+
+Declaraciones de las variables:
+  El compilador le notificará si ha intentado acceder a una variable no declarada o
+  si ha declarado una variable que nunca ha usado.
+  Una doble declaración de una variable creará un error, a no ser que se trate de una
+  variable de entrada y salida. En este caso no ocurrirá ningún error a no ser que
+  en la declaración de entrada tenga un tipo diferente que en la declaración de salida.
+
+Uso de booleanos:
+  Hemos elegido la forma de trabajar con los booleanos de 1º de Ing. Informática.
+  Un variable booleana podrá ser interpretada como tal en el momento en el que se la 
+  compare con otra variable booleana o con los literales verdadero o falso.
+  Las variables booleanas permiten comparaciones con los operadores logicos (Y, O),
+  pero no con con operadores relacionales (=, <>, <, >, <=, =>)
+
+Uso de literales:
+  Debido a que nuestra tabla de cuádruplas solo almacena índices de símbolos e índices
+  de cuádruplas no podemos manejar los valores literales de booleanos, enteros, reales, 
+  caracteres ni cadenas.    
+
+Uso de arrays:
+  CAAAAARLOOOOOOS
+
+Porcentaje de trabajo de los miembros del grupo:
+   Carlos:  50%
+   Oroel:   50%
