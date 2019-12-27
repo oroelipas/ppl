@@ -51,7 +51,7 @@ Uso de arrays:
   del compilador, con unos resultados satisfactorios. En el momento de la entrega, el parser
   es capaz de declarar tipos de arrays de hasta 2 dimensiones, almacenar estos tipos en la
   tabla de simbolos, detectar variables declaradas de estos tipos almacenándolas en la tabla de
-  simbolos y acceder a ellas para realizar asignaciones y/o operaciones. El programa4.alg es
+  simbolos y acceder a ellas para realizar asignaciones. El programa4.alg es
   un buen ejemplo de prueba para poder observar el funcionamiento, ejecutando
 
                       "$ ./a.out programa4.alg"
