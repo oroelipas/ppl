@@ -119,7 +119,6 @@ char* programName;
 %token <entero> TK_BOOLEANO
 
 %precedence TK_NADA_PRIORITARIO
-/* no todos los TK_OP_RELACIONAL pueden usarse para booleanos, solo = y <>.  PERO NO <,>,=>,=< */
 %left TK_PR_O
 %left TK_PR_Y
 /* %nonassoc para no permitir 3<4<5 */
@@ -594,17 +593,12 @@ ty_exp_b:
         fprintf(fSaR,"REDUCE ty_exp_b: TK_PR_NO ty_exp_b\n");
     }
     | TK_BOOLEANO {
-        /* TODO: MAL: PUEDE QUE NO SEA UNA ASIGNACION (if a=verdadero ->)
-         * Si se quiere enseñar el mensaje de error entonces tencdremos que comprobar 
-         * en la rutina semantica de la asignacion a ver si el temino de la derecha del 
-         * igual es un literal. ¿entoces como hay que hacer para ver si es un literal? */
         $$.type = BOOLEANO;
         warning("este compilador aún no maneja asignacion de literales");
         fprintf(fSaR,"REDUCE ty_exp_b: TK_BOOLEANO\n");
     }
     | ty_expresion ty_op_relacional ty_expresion %prec TK_MUY_PRIORITARIO {
         if(($1.type == ENTERO || $1.type == REAL || $1.type == CARACTER) && 
-           ($3.type == ENTERO || $3.type == REAL || $3.type == CARACTER) &&
             $1.type == $3.type)
         {
             $$.True = makeList(getNextquad(tablaCuadruplas));
@@ -709,7 +703,9 @@ ty_operando:
         simbolo* var = getSimboloPorNombre(tablaSimbolos, $1);
         if(var == NULL){
             yyerror("variable '%s' usada pero no declarada", $1);
-            exit(-1);// TODO: QUE HACER AQUI?CREARLA Y METERLA EN LA TABLA DE SIMBOLOS??HAY QUE CONTINUAR CON EL PROCESO
+            exit(-1);
+            // Aqui habría que intentar seguir con la compilacion.
+            // Pero es basante complicado: Podriamos crear una variable nueva y cuando sepamos de que tipo debería ser se lo definimos
         }else{
             if(simboloEsUnaVariable(var)) {
                 marcarComoUsado(var);
@@ -736,9 +732,7 @@ ty_operando:
 
 ty_instrucciones:
       ty_instruccion TK_PUNTOYCOMA ty_M ty_instrucciones {
-        if (!esListaVacia($1.next)){
-      	    backpatch(tablaCuadruplas, $1.next, $3.quad);
-        }
+      	backpatch(tablaCuadruplas, $1.next, $3.quad);
       	$$.next = $4.next;
       	fprintf(fSaR,"REDUCE ty_instrucciones: ty_instruccion TK_PUNTOYCOMA ty_instrucciones\n");}
     | ty_instruccion TK_PUNTOYCOMA {
@@ -1025,8 +1019,6 @@ void warning(const char *warningText, ...){
 
 
 /*
-
-DOCUMENTACION EN: http://dinosaur.compilertools.net/bison/
-                  http://web.iitd.ac.in/~sumeet/flex__bison.pdf
-
+Documentacion:  http://dinosaur.compilertools.net/bison/
+                http://web.iitd.ac.in/~sumeet/flex__bison.pdf
  */
