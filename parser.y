@@ -263,6 +263,8 @@ ty_d_tipo:
     		// insertamos en la tabla de símbolos un tipo de array, que tiene una longitud determinada y almacena valores de un tipo determinado (lo tratamos como a un tipo)
     		int indiceQuadConLongitud = getNextquad(tablaCuadruplas);
     		simbolo* T = newTemp(tablaSimbolos); // newTemp() crea un simbolo y nos devuelve su id
+            modificaTipoVar(T, ENTERO);
+            fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
     		gen(tablaCuadruplas, RESTA_INT, $5.place, $3.place, T -> id);
     		infoTipo* info = crearInfoTipoDeTabla($8, indiceQuadConLongitud);
     		simbolo* tipoInsertado = insertarTipo(tablaSimbolos, info);
@@ -437,6 +439,7 @@ ty_exp_a:
             gen(tablaCuadruplas, SUMA_REAL,  $$.place,  $3.place,  $$.place);
         }
         $$.offset = OFFSET_NULO;
+        fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
         fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MAS ty_exp_a\n");
     }
     | ty_exp_a TK_MENOS ty_exp_a {
@@ -462,6 +465,7 @@ ty_exp_a:
             gen(tablaCuadruplas, RESTA_REAL,  $$.place,  $3.place,  $$.place);
         }
         $$.offset = OFFSET_NULO;
+        fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
     	fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MENOS ty_exp_a\n");
     }
     | ty_exp_a TK_MULT ty_exp_a {
@@ -487,12 +491,14 @@ ty_exp_a:
             gen(tablaCuadruplas, MULT_REAL,  $$.place,  $3.place,  $$.place);
         }
         $$.offset = OFFSET_NULO;
+        fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
     	fprintf(fSaR,"REDUCE ty_exp_a: ty_exp_a TK_MULT ty_exp_a\n");
     }
     | ty_exp_a TK_DIV ty_exp_a {
         simbolo* T = newTemp(tablaSimbolos);
         $$.place = getIdSimbolo(T);
         modificaTipoVar(T, REAL);
+        fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
         $$.type = REAL;
         gen(tablaCuadruplas, DIV,  $1.place,  $3.place,  $$.place);
         $$.offset = OFFSET_NULO;
@@ -502,6 +508,7 @@ ty_exp_a:
         simbolo* T = newTemp(tablaSimbolos);
         $$.place = getIdSimbolo(T);
         modificaTipoVar(T, REAL);
+        fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
         $$.type = REAL;
         gen(tablaCuadruplas, MOD,  $1.place,  $3.place,  $$.place);
         $$.offset = OFFSET_NULO;
@@ -511,6 +518,7 @@ ty_exp_a:
         simbolo* T = newTemp(tablaSimbolos);
         $$.place = getIdSimbolo(T);
         modificaTipoVar(T, ENTERO);
+        fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
         $$.type = ENTERO;
         gen(tablaCuadruplas, DIV_ENT,  $1.place,  $3.place,  $$.place);
         $$.offset = OFFSET_NULO;
@@ -556,6 +564,7 @@ ty_exp_a:
             gen(tablaCuadruplas, RESTA_REAL, $2.place, -1,  $$.place);        
         }
         $$.offset = OFFSET_NULO;
+        fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
         fprintf(fSaR,"REDUCE ty_exp_a: TK_MENOS ty_exp_a\n");
     }
     ;
@@ -722,6 +731,7 @@ ty_operando:
     | ty_operando TK_INICIO_ARRAY ty_expresion TK_FIN_ARRAY {
     	simbolo* T = newTemp(tablaSimbolos);
     	modificaTipoVar(T, ENTERO);
+        fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
     	// TODO: Realmente sería $3.place - 1, pero nos tomamos esa licencia....Hola Carlos, no entiendo este comentario 
     	gen(tablaCuadruplas, MULT_ALTERADA, $3.place, consulta_bpw_TS(tablaSimbolos, getIdTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $1.place))), T -> id);
     	$$.offset = T -> id;
