@@ -4,7 +4,7 @@
 
 #ifndef CM_OI_TABLA_CUADRUPLAS_H
 #define CM_OI_TABLA_CUADRUPLAS_H
-#define NUM_QUADS 136
+#define NUM_QUADS 136 // Número máximo de cuadruplas que es posible generar
 
 typedef struct quad {
     int campo1;

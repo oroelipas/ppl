@@ -4,6 +4,7 @@
 
 #ifndef CM_OI_TABLA_SIMBOLOS_H
 #define CM_OI_TABLA_SIMBOLOS_H
+#include "defines.h"
 
 typedef struct lista_ligada {
     struct simbolo *first;    	// Referencia al primer simbolo almacenado
@@ -11,10 +12,13 @@ typedef struct lista_ligada {
 }  lista_ligada;
 
 typedef struct infoTipo {
-    /* Solamente se ha utilizado pensando en la creación de tipos de tablas */
-    int quadLen; // es el id de la variable temporal que almacena la longitud del array
+    /* Solamente se ha utilizado pensando en la creación de tipos de tablas como máximo de 2 dimensiones, además de los tipos básicos */
+    // UTILIZADO EN TIPOS BÁSICOS
+    int bpw; // tamaño del tipo, solamente lo utilizamos para los tipos básicos por el momento
+    // UTILIZADO EN TIPOS DE ARRAYS
     int tipoContenido; // id del tipo que contiene nuestro array
-    int btw; // tamaño del tipo (Ej: Si tenemos un array de 7 enteros y cada entero ocupa 1 byte entonces este numero es 7)
+    int nDim; // número de dimensiones de la tabla (el parser solamente tolera tipos de tablas de 2 dimensiones como máximo)
+    int arrayQuadLen[MAX_DIM_ARRAY]; // array de ids de las variables temporales que almacenan la longitud de cada una de las dimensiones del array
 } infoTipo;
 
 typedef struct { int tipo_variable;} t_infoVar;
@@ -57,13 +61,18 @@ extern int simboloEsUnaVariable (simbolo* misimbolo);
 extern simbolo* insertarVariable (lista_ligada *header, char *nombre, int tipo);
 extern int insertarSimbolo (lista_ligada *header, simbolo* misimbolo);
 extern void modificaTipoVar (simbolo* var, int tipo_var);
-extern infoTipo* crearInfoTipoDeTabla (int tipoContenido, int cuadruplaQueCalculaSuLongitud);
-extern infoTipo* crearInfoTipoBasico (int btw);
+extern infoTipo* crearInfoTipoDeTabla (int tipoContenido, int cuadruplaQueCalculaSuLongitud1, int cuadruplaQueCalculaSuLongitud2);
+extern infoTipo* crearInfoTipoBasico (int bpw);
 extern simbolo* insertarTipo (lista_ligada *header, infoTipo* info);
 extern void addInfoTipo (simbolo* s, infoTipo* info);
 extern int simboloEsUnTipo (simbolo* misimbolo);
+extern int simboloEsUnTipoBasico (simbolo* misimbolo);
 extern int simboloEsUnaVariable (simbolo* misimbolo);
 extern char* getNombreTipoContenidoVariableTabla (lista_ligada *header, simbolo* misimbolo);
 extern int getIdTipoContenidoVariableTabla (lista_ligada *header, simbolo* misimbolo);
+extern int getIdTipoContenidoTabla (lista_ligada *header, simbolo* misimbolo);
 extern int getTipoVar (simbolo* misimbolo);
+extern int consulta_dim_maxima_TS (lista_ligada* header, int idTipoArray);
+extern int consulta_limite_TS (lista_ligada* header, int idTipoArray, int dimActual);
+extern int esArrayDe1Dimension (lista_ligada* header, int idVarTipoArray);
 #endif

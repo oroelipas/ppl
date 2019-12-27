@@ -45,6 +45,7 @@
 #define DIV_ENT 220
 #define MOD 221
 #define SUMA_1 222
+#define RESTA_1 223
 
 #define MAYOR 300
 #define MENOR 301
@@ -59,17 +60,23 @@
 
 // definiciones relacionadas con el manejo de accesos a tablas
 #define MULT_ALTERADA 700
-#define ASIGNACION_A_POS_TABLA 701
-#define ASIGNACION_DE_POS_TABLA 702
+#define SUMA_ALTERADA 701
+#define ASIGNACION_A_POS_TABLA 702
+#define ASIGNACION_DE_POS_TABLA 703
 #define OFFSET_NULO -1
 
-// definiciones de btw de los tipos básicos del lenguaje
-#define BTW_GENERICO 100
-#define BTW_VACIO -1
+#define TIPO_CONTENIDO_VACIO -1
+#define QUAD_LEN_VACIO -1
+#define NDIM_VACIO -1
+
+// definiciones de bpw de los tipos básicos del lenguaje
+#define BPW_GENERICO 100
+#define BPW_VACIO -1
 
 // definiciones de tamaños
 #define TAM_MAX_NOMBRE_SIMBOLO 100 	// Número de caracteres máximo que podrá tener el nombre de un tipo, variable, funcion...
-#define TAM_NOMBRE_T 5				// Número de caracteres máximos que podrá tener el nombre de una variable temporal
+#define TAM_NOMBRE_T 5			// Número de caracteres máximos que podrá tener el nombre de una variable temporal
+#define MAX_DIM_ARRAY 2			// Máximo de dimensiones de arrays toleradas por el parser
 
 // DECLARACIÓN DE FUNCIONES GLOBALES
 extern char* getNombreDeConstante (int cod);

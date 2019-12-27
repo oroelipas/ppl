@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include "defines.h"
 #include <string.h>
+#include <time.h>
 #include "tablaSimbolos.h"
 
 // DECLARACIÓN DE FUNCIONES ESTÁTICAS
@@ -75,16 +76,9 @@ void printInfosimbolo (simbolo *misimbolo) {
             break;
         case SIM_TIPO:
             printf("    El objeto es un tipo\n");
-            /*if( misimbolo -> info.t2 != NULL){
-                printf("    El tipo del tipo es: %s\n\n", misimbolo -> info.t2.tipo_tipo);
-            }*/
             break;
         case SIM_FUNCION:
-            printf("    El objeto es una funcion\n");
-            /*if( misimbolo -> info.t3 != NULL){
-                printf("    Los parametros de entrada son: %s\n", misimbolo -> info.t3 -> ent);
-                printf("    Los parametros de salida son: %s\n\n", misimbolo -> info.t3 -> sal);
-            }*/                  
+            printf("    El objeto es una funcion\n");                 
             break;
     }
 }
@@ -100,14 +94,14 @@ void printInfosimbolo (simbolo *misimbolo) {
 */
 int insertarSimbolo (lista_ligada *header, simbolo* misimbolo){
     if (existeNombresimbolo(header, misimbolo->nombre)) {
-        fprintf(debugFile, "EL OBJETO '%s' ya estaba en la lista\n", misimbolo->nombre);
+        fprintf(debugFile, "EL OBJETO '%s' ya estaba en la lista\n", misimbolo -> nombre);
         return -1;
     }
     misimbolo -> next = header ->first;
     misimbolo -> id = header -> contador;
     header -> contador ++;
     header -> first = misimbolo;
-    fprintf(debugFile, "Inserción CORRECTA del objeto de nombre : %s\n", misimbolo->nombre);
+    fprintf(debugFile, "Inserción CORRECTA del objeto de nombre : %s\n", misimbolo -> nombre);
     return header -> contador - 1;
 }
 
@@ -174,15 +168,20 @@ extern int simboloEsUnaVariable (simbolo* misimbolo);
 extern simbolo* insertarVariable (lista_ligada *header, char *nombre, int tipo);
 extern int insertarSimbolo (lista_ligada *header, simbolo* misimbolo);
 extern void modificaTipoVar (simbolo* var, int tipo_var);
-extern infoTipo* crearInfoTipoDeTabla (int tipoContenido, int cuadruplaQueCalculaSuLongitud);
-extern infoTipo* crearInfoTipoBasico (int btw);
+extern infoTipo* crearInfoTipoDeTabla (int tipoContenido, int cuadruplaQueCalculaSuLongitud1, int cuadruplaQueCalculaSuLongitud2);
+extern infoTipo* crearInfoTipoBasico (int bpw);
 extern simbolo* insertarTipo (lista_ligada *header, infoTipo* info);
 extern void addInfoTipo (simbolo* s, infoTipo* info);
 extern int simboloEsUnTipo (simbolo* misimbolo);
+extern int simboloEsUnTipoBasico (simbolo* misimbolo);
 extern int simboloEsUnaVariable (simbolo* misimbolo);
 extern char* getNombreTipoContenidoVariableTabla (lista_ligada *header, simbolo* misimbolo);
 extern int getIdTipoContenidoVariableTabla (lista_ligada *header, simbolo* misimbolo);
+extern int getIdTipoContenidoTabla (lista_ligada *header, simbolo* misimbolo);
 extern int getTipoVar (simbolo* misimbolo);
+extern int consulta_dim_maxima_TS(lista_ligada* header, int idTipoArray);
+extern int consulta_limite_TS(lista_ligada* header, int idTipoArray, int dimActual);
+extern int esArrayDe1Dimension(lista_ligada* header, int idVarTipoArray);
 
 // DEFINICIÓN DE FUNCIONES GLOBALES
 
@@ -207,7 +206,6 @@ lista_ligada* crearListaLigada() {
  */
 lista_ligada* crearTablaDeSimbolos() {
     lista_ligada *lista = crearListaLigada();
-    //TODO: ESTO ES UNA CHAPUZAAAAAAAAA!!!!!!
     char* nombres_tipos_base[5];
     nombres_tipos_base[ENTERO] = "entero";
     nombres_tipos_base[REAL] = "real";
@@ -215,7 +213,7 @@ lista_ligada* crearTablaDeSimbolos() {
     nombres_tipos_base[CARACTER] = "caracter";
     nombres_tipos_base[CADENA] = "cadena";
     int id;
-    infoTipo* info = crearInfoTipoBasico(BTW_GENERICO);
+    infoTipo* info = crearInfoTipoBasico(BPW_GENERICO);
     for(int i=0; i < sizeof(nombres_tipos_base) / sizeof(nombres_tipos_base[0]); i++){
         simbolo *nuevoTipo = crearSimbolo(nombres_tipos_base[i], SIM_TIPO);
         id = insertarSimbolo(lista, nuevoTipo);
@@ -261,7 +259,7 @@ simbolo* newTemp(lista_ligada *header){
  *   char* nombre 		  -> nombre de la variable a insertar
  *	 int tipo 			  -> tipo de la variable a insertar (no confundir con tipo de simbolo, son cosas
  *							  totalmente distintas)
- * Return: referencia al simbolo cuyo nombre se ha pasado como parametro
+ * Return: referencia al simbolo cuyo nombre se ha pasado como parámetro
  */
 simbolo* insertarVariable(lista_ligada* header, char* nombre, int tipo){
     simbolo* nuevaVar = crearSimbolo(nombre, SIM_VARIABLE);
@@ -281,25 +279,35 @@ simbolo* insertarVariable(lista_ligada* header, char* nombre, int tipo){
  *
  * Return:  referencia a la estructura de tipo infoTipo que se acaba de crear
  */
-infoTipo* crearInfoTipoDeTabla (int tipoContenido, int cuadruplaQueCalculaSuLongitud) {
+infoTipo* crearInfoTipoDeTabla (int tipoContenido, int cuadruplaQueCalculaSuLongitud1, int cuadruplaQueCalculaSuLongitud2) {
     // De una tabla nos interesa almacenar el tipo de los elementos que contiene y su longitud (solo dejamos que tengan 1 dimensión)
     infoTipo* info = (infoTipo*)malloc(sizeof(infoTipo));
-    info -> quadLen = cuadruplaQueCalculaSuLongitud;
     info -> tipoContenido = tipoContenido;
-    info -> btw = BTW_VACIO;
+    info -> arrayQuadLen[0] = cuadruplaQueCalculaSuLongitud1;
+    info -> arrayQuadLen[1] = cuadruplaQueCalculaSuLongitud2;
+    if (cuadruplaQueCalculaSuLongitud2 != -1)
+        info -> nDim = 2;
+    else
+        info -> nDim = 1;
+    // Por el momento, en los tipos de arrays no utilizamos el bpw
+    info -> bpw = BPW_VACIO;
 }
 
 /**
  * Funcionalidad: Crea una estructura del tipo infoTipo para un tipo básico del lenguaje y devuelve una referencia a ella.
  * Parámetros:
- *   int btw -> tamaño en bytes que ocupa el tipo básico cuya información vamos a crear
+ *   int bpw -> tamaño en bytes que ocupa el tipo básico cuya información vamos a crear
  *
  * Return:  referencia a la estructura de tipo infoTipo que se acaba de crear
  */
-infoTipo* crearInfoTipoBasico (int btw) {
-    // De un tipo básico nos interesa almacenar su btw
+infoTipo* crearInfoTipoBasico (int bpw) {
+    // De un tipo básico nos interesa almacenar su bpw
     infoTipo* info = (infoTipo*)malloc(sizeof(infoTipo));
-    info -> btw = btw;
+    info -> tipoContenido = TIPO_CONTENIDO_VACIO;
+    info -> arrayQuadLen[0] = QUAD_LEN_VACIO;
+    info -> arrayQuadLen[1] = QUAD_LEN_VACIO;
+    info -> nDim = NDIM_VACIO;
+    info -> bpw = bpw;
 }
 
 /**
@@ -314,9 +322,15 @@ infoTipo* crearInfoTipoBasico (int btw) {
  * Return: referencia al simbolo insertado
  */
 simbolo* insertarTipo (lista_ligada *header, infoTipo* info) {
-    simbolo *nuevoTipo = crearSimbolo("TIPO_SIN_NOMBRE", SIM_TIPO);
+    long pseudoRandom = rand () % (10000000000-1+1) + 1;   // Numero entre 1 y 10000000000
+    char cadena[15];
+    sprintf(cadena, "%ld", pseudoRandom);
+    char nombre[TAM_MAX_NOMBRE_SIMBOLO];
+    sprintf(nombre, "%s", "TIPO_SIN_NOMBRE");
+    simbolo *nuevoTipo = crearSimbolo(strcat(nombre, cadena), SIM_TIPO);
     nuevoTipo -> info.t2.info = info;
     int id = insertarSimbolo(header, nuevoTipo);
+    // id es -1 por algún motivo
     return getSimboloPorId(header, id);  
 }
 
@@ -393,21 +407,21 @@ simbolo* getSimboloPorId (lista_ligada *header, int id) {
 }
 
 /**
- * Funcionalidad: devuelve el tipo del simbolo que se pasa como parametro
+ * Funcionalidad: devuelve el tipo del simbolo que se pasa como parámetro.
  */
 int getTipoSimbolo(simbolo* misimbolo) {
     return misimbolo -> tipo;
 }
 
 /**
- * Funcionalidad: devuelve el nombre del simbolo que se pasa como parametro
+ * Funcionalidad: devuelve el nombre del simbolo que se pasa como parámetro.
  */
 char *getNombreSimbolo(simbolo* misimbolo) {
     return misimbolo -> nombre;
 }
 
 /**
- * Funcionalidad: Modifica el tipo del la variable (simbolo de tipo SIM_VARIABLE) que se pasa como parametro
+ * Funcionalidad: Modifica el tipo del la variable (simbolo de tipo SIM_VARIABLE) que se pasa como parámetro.
  * Parámetros:
  *   simbolo* var -> referencia a la variable cuyo tipo queremos modificar
  *   int tipo_vat -> id del simbolo que contiene el tipo por el que queremos modificar el tipo de lavariable
@@ -423,7 +437,7 @@ void modificaTipoVar(simbolo* var, int tipo_var) {
 }
 
 /**
- * Funcionalidad: devuelve el tipo de la variable (simbolo de tipo SIM_VARIABLE) que se pasa como parametro
+ * Funcionalidad: devuelve el tipo de la variable (simbolo de tipo SIM_VARIABLE) que se pasa como parámetro.
  */
 int getTipoVar (simbolo* misimbolo) {
     if (simboloEsUnaVariable(misimbolo)) {
@@ -432,12 +446,8 @@ int getTipoVar (simbolo* misimbolo) {
 }
 
 /**
- * Funcionalidad: Modifica el tipo del la variable (simbolo de tipo SIM_VARIABLE) que se pasa como parametro
- * Parámetros:
- *   simbolo* var -> referencia a la variable cuyo tipo queremos modificar
- *   int tipo_vat -> id del simbolo que contiene el tipo por el que queremos modificar el tipo de lavariable
- *
- * Return: void
+ * Funcionalidad: devuelve el nombre del tipo que contiene un tipo de tabla determinado al que pertenece la variable que 
+ * se pasa como parámetro (misimbolo).
  */
 char* getNombreTipoContenidoVariableTabla (lista_ligada *header, simbolo* misimbolo) {
     if(simboloEsUnaVariable(misimbolo)) {
@@ -448,12 +458,8 @@ char* getNombreTipoContenidoVariableTabla (lista_ligada *header, simbolo* misimb
 }
 
 /**
- * Funcionalidad: Modifica el tipo del la variable (simbolo de tipo SIM_VARIABLE) que se pasa como parametro
- * Parámetros:
- *   simbolo* var -> referencia a la variable cuyo tipo queremos modificar
- *   int tipo_vat -> id del simbolo que contiene el tipo por el que queremos modificar el tipo de lavariable
- *
- * Return: void
+ * Funcionalidad: devuelve el id del tipo que contiene un tipo de tabla determinado al que pertenece la variable que 
+ * se pasa como parámetro (misimbolo).
  */
 int getIdTipoContenidoVariableTabla (lista_ligada *header, simbolo* misimbolo) {
     if(simboloEsUnaVariable(misimbolo)) {
@@ -464,26 +470,36 @@ int getIdTipoContenidoVariableTabla (lista_ligada *header, simbolo* misimbolo) {
 }
 
 /**
- * Funcionalidad: Consulta el bpw del simbolo de tipo SIM_TIPO cuya id se pasa como parámetro
+ * Funcionalidad: devuelve el id del tipo que contiene un tipo de tabla determinado que se pasa como parámetro (misimbolo).
+ */
+int getIdTipoContenidoTabla (lista_ligada *header, simbolo* misimbolo) {
+    if(simboloEsUnTipo(misimbolo)) {
+        simbolo* aux = getSimboloPorId(header, misimbolo -> info.t2.info -> tipoContenido);
+        return aux -> id;
+    }
+}
+
+/**
+ * Funcionalidad: Consulta el bpw del simbolo de tipo SIM_TIPO cuya id se pasa como parámetro.
  * Parámetros:
  *   lista_ligada* header -> referencia a la tabla de simbolos
  *   int id -> id del simbolo de tipo SIM_TIPO cuyo bpw queremos obtener
  *
  * Return:
- * 	 -1 	-> la id que se ha pasado como parametro no pertenece a un simbolo de tipo SIM_TIPO
+ * 	 -1 	-> la id que se ha pasado como parámetro no pertenece a un simbolo de tipo SIM_TIPO.
  * 	  X > 0 -> bpw del simbolo de tipo SIM_TIPO cuya id se ha pasado como parámetro
  */
 int consulta_bpw_TS (lista_ligada *header, int id) {
     simbolo* aux = getSimboloPorId(header, id);
     if (simboloEsUnTipo(aux)) {
-    	return aux -> info.t2.info -> btw;
+    	return aux -> info.t2.info -> bpw;
     } else {
     	return -1;
     }
 };
 
 /**
- * Funcionalidad: Indica que el simbolo que se pasa como parámetro ha sido utilizado en el codigo
+ * Funcionalidad: Indica que el simbolo que se pasa como parámetro ha sido utilizado en el codigo.
  * Return: void
  */
 void marcarComoUsado (simbolo *misimbolo) {
@@ -492,7 +508,7 @@ void marcarComoUsado (simbolo *misimbolo) {
 
 /**
  * Funcionalidad: Vacia la lista, haciendo que su first apunte a NULL.
- * Libera todo el espacio que ocupaban los elementos de la lista
+ * Libera todo el espacio que ocupaban los elementos de la lista.
  * Parámetros:
  *   lista_ligada* header -> referencia a la lista ligada
  *
@@ -516,7 +532,7 @@ void vaciarListaLigada (lista_ligada *header) {
 
 /**
  * Funcionalidad: Vacia la tabla de simbolos, haciendo que su first apunte a NULL.
- * Libera todo el espacio que ocupaban los elementos de la lista
+ * Libera todo el espacio que ocupaban los elementos de la lista.
  * Parámetros:
  *   lista_ligada* header -> referencia a la tabla de simbolos
  *
@@ -573,7 +589,7 @@ void printSimbolosNoUsados(lista_ligada *header) {
                     warningSinLinea("Variable %s %s declarada y nunca usada\n", getNombreSimbolo(getSimboloPorId(header, getTipoVar(misimbolo))), getNombreSimbolo(misimbolo));
                     break;
                 case SIM_TIPO:
-                    if(!esTipoBase(misimbolo->id))
+                    if(!esTipoBase(misimbolo->id) && (strstr(getNombreSimbolo(misimbolo),"TIPO_SIN_NOMBRE") == NULL))
                         warningSinLinea("Tipo %s declarado y nunca usado\n", getNombreSimbolo(misimbolo));
                     break;
                 case SIM_FUNCION:
@@ -586,7 +602,7 @@ void printSimbolosNoUsados(lista_ligada *header) {
 }
 
 /**
-* Funcionalidad: Comprueba si el simbolo que se pasa como parametro es de tipo SIM_TIPO
+* Funcionalidad: Comprueba si el simbolo que se pasa como parámetro es de tipo SIM_TIPO.
 * Parámetros: 
 *	simbolo* misimbolo -> simbolo a comprobar
 * Return:
@@ -598,6 +614,19 @@ int simboloEsUnTipo(simbolo* misimbolo) {
 }
 
 /**
+* Funcionalidad: Comprueba si el simbolo que se pasa como parámetro es un tipo basico. Para ello
+* nos aprovechamos del hecho de que solamente los tipos básicos tienen bpw en este momento.
+* Parámetros:
+*	simbolo* misimbolo -> simbolo a comprobar
+* Return:
+* 	1 -> el simbolo es un tipo
+*	0 -> el simbolo no es un tipo
+*/
+int simboloEsUnTipoBasico (simbolo* misimbolo) {
+	return misimbolo -> info.t2.info -> bpw != BPW_VACIO;
+}
+
+/**
 * Funcionalidad: Comprueba si el simbolo que se pasa como parámetro es una variable.
 * Parámetros: 
 *	simbolo* misimbolo -> simbolo a comprobar
@@ -606,7 +635,7 @@ int simboloEsUnTipo(simbolo* misimbolo) {
 *	0 -> el simbolo no es una variable
 */
 int simboloEsUnaVariable (simbolo* misimbolo) {
-    return misimbolo->tipo == SIM_VARIABLE;
+    return misimbolo -> tipo == SIM_VARIABLE;
 }
 
 /**
@@ -614,4 +643,37 @@ int simboloEsUnaVariable (simbolo* misimbolo) {
  */
 int getIdSimbolo(simbolo* misimbolo) {
     return misimbolo -> id;
+}
+
+/**
+ * Funcionalidad: Devuelve el número de dimensiones del array cuya id se pasa como parámetro.
+ */
+int consulta_dim_maxima_TS(lista_ligada* header, int idTipoArray) {
+    simbolo* aux = getSimboloPorId(header, idTipoArray);
+    if (simboloEsUnTipo(aux)) {
+    	return aux -> info.t2.info -> nDim;
+    } else {
+    	return -1;
+    }
+}
+
+/**
+ * Funcionalidad: Devuelve el id de la variable temporal en la que se calcula el tamaño de una dimensión del array determinada.
+ */
+int consulta_limite_TS(lista_ligada* header, int idTipoArray, int dimActual) {
+    simbolo* aux = getSimboloPorId(header, idTipoArray);
+    if (simboloEsUnTipo(aux)) {
+    	return aux -> info.t2.info -> arrayQuadLen[dimActual - 1];
+    } else {
+    	return -1;
+    }
+}
+
+/**
+ * Funcionalidad: Comprueba si el array cuya id se pasa como parámetro tiene únicamente 1 dimensión.
+ */
+int esArrayDe1Dimension(lista_ligada* header, int idVarTipoArray) {
+	int idTipo = getTipoVar(getSimboloPorId(header, idVarTipoArray));
+	simbolo* aux = getSimboloPorId(header, idTipo);;
+	return aux -> info.t2.info -> arrayQuadLen[1] == -1;
 }

@@ -125,6 +125,9 @@ char* getNombreDeConstante (int cod) {
         case MULT_ALTERADA:
             strcpy(nombre,"MULT_ALTERADA");
             break;
+        case SUMA_ALTERADA:
+            strcpy(nombre,"SUMA_ALTERADA");
+            break;
         case ASIGNACION_A_POS_TABLA:
             strcpy(nombre,"[]=");
             break;
@@ -133,6 +136,9 @@ char* getNombreDeConstante (int cod) {
             break;
         case SUMA_1:
             strcpy(nombre,"+1");
+            break;
+        case RESTA_1:
+            strcpy(nombre,"-1");
             break;
         default:
             strcpy(nombre,"OP_NO_DEFINIDA");

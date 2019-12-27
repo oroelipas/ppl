@@ -191,17 +191,17 @@ void escribirTablaCuadruplas (lista_ligada *tablaSimbolos, t_tabla_quad *tablaCu
     char operando2[TAM_MAX_NOMBRE_SIMBOLO];
     char destino[TAM_MAX_NOMBRE_SIMBOLO];
     int i = 0;
-    int hayMultAlterada = 0;
+    int hayOpAlterada = 0;
     int n = getNextquad(tablaCuadruplas);
     while(i < n) {
         char* operacion = getNombreDeConstante(getCampo1(tablaCuadruplas,i));
-        if (getCampo1(tablaCuadruplas,i) != 700) { // licencia que nos hemos tomado
+        if ((getCampo1(tablaCuadruplas,i) != 700) && (getCampo1(tablaCuadruplas,i) != 701)) {
             index2Name(operando1, tablaSimbolos, getCampo2(tablaCuadruplas,i));
             index2Name(operando2, tablaSimbolos, getCampo3(tablaCuadruplas,i));
         } else {
-            hayMultAlterada = 1;
+            hayOpAlterada = 1;
             index2Name(operando1, tablaSimbolos, getCampo2(tablaCuadruplas,i));
-            sprintf(operando1, "%s - %d", operando1, 1);
+            sprintf(operando1, "%s", operando1);
             sprintf(operando2, "%d", getCampo3(tablaCuadruplas,i));
         }
         if(op_es_goto(operacion)) {
@@ -214,8 +214,8 @@ void escribirTablaCuadruplas (lista_ligada *tablaSimbolos, t_tabla_quad *tablaCu
         i++;
 
     }
-    if (hayMultAlterada) {
-        fprintf(file, "\n\n\n\n\nNota: En la(s) cuadrupla(s) con la operación MULT_ALTERADA, el segundo campo indica que el offset sería el valor de la variable - 1\n");
+    if (hayOpAlterada) {
+        fprintf(file, "\n\n\n\n\nNota: En la(s) cuadrupla(s) con la operación MULT_ALTERADA, el campo 2 indica que el offset sería el valor de la variable cuyo nombre se indica.\nEn esta operación, ese offset es multiplicado por el bpw del tipo que contiene el array.");
     }
 }
 

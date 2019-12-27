@@ -2,14 +2,12 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
-//el orden importa y lista.h tiene que ir antes de y.tab.h
-//ME PARECE QUE ES IMPORTANTE BASICAMENTE PORQUE ESTAN MAL HEMOS LOS .h!!!!!!!!!!!!!!!!!!!!!!
 #include "tablaSimbolos.h"
 #include "listaIndicesQuad.h"
 #include "y.tab.h"
 #include "defines.h"
 
-extern FILE *fSaR;//fichero para escribir los SHIFTs que hacemos
+extern FILE *fSaR; //fichero para escribir los SHIFTs que hacemos
 extern char *programName;
 extern void yyerror(const char *errorText, ...);
 
