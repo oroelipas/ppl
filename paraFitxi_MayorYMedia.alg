@@ -1,5 +1,5 @@
 algoritmo MayorYMedia;
-ent a, b, c, d, tres: entero; 
+ent a, b, c, tres: entero; 
 sal max: entero; media: real;
 {Prec: a = A AND b = B AND c = C}
 

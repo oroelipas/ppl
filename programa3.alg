@@ -1,4 +1,4 @@
-algoritmo sumacomb;
+algoritmo unMientras;
 ent n, m, acero, valor1, valor2, uno: entero;
 sal suma: entero;
 {Prec: n= N AND m = M AND M >= N >0}

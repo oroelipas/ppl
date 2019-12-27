@@ -271,6 +271,8 @@ ty_d_tipo:
             if($3.type == ENTERO && $5.type == ENTERO){
                 // insertamos en la tabla de símbolos un tipo de array, que tiene una longitud determinada y almacena valores de un tipo determinado (lo tratamos como a un tipo)
                 simbolo* T = newTemp(tablaSimbolos); // newTemp() crea un simbolo y nos devuelve su id
+                modificaTipoVar(T, ENTERO);
+                fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
                 gen(tablaCuadruplas, RESTA_INT, $5.place, $3.place, T -> id);
                 int idVarConTamDim1 = T -> id;
                 infoTipo* info = crearInfoTipoDeTabla($8, idVarConTamDim1, -1);
@@ -284,6 +286,8 @@ ty_d_tipo:
             if($3.type == ENTERO && $5.type == ENTERO){
                 // insertamos en la tabla de símbolos un tipo de array, que tiene una longitud determinada y almacena valores de un tipo determinado (lo tratamos como a un tipo)
                 simbolo* T = newTemp(tablaSimbolos); // newTemp() crea un simbolo y nos devuelve su id
+                modificaTipoVar(T, ENTERO);
+                fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
                 gen(tablaCuadruplas, RESTA_INT, $5.place, $3.place, T -> id);
                 int idVarConTamDim1 = T -> id;
                 infoTipo* info = crearInfoTipoDeTabla(getIdTipoContenidoTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $8)),
@@ -764,6 +768,7 @@ ty_operando:
             // Nueva variable temporal con la que iremos calculando el valor del offset
     	    simbolo* T = newTemp(tablaSimbolos);
     	    modificaTipoVar(T, ENTERO);
+    	    fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
 
             // En .offset se almacena el id de la variable que almacena el cálculo del offset
             $$.offset = T -> id;
@@ -774,6 +779,8 @@ ty_operando:
             // Debemos saber las dimensiones que tiene el array
             if(esArrayDe1Dimension(tablaSimbolos, $$.place)){
             	simbolo* T = newTemp(tablaSimbolos);
+            	modificaTipoVar(T, ENTERO);
+            	fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
             	gen(tablaCuadruplas, RESTA_1,  $3.place, -1,  T -> id);
                 gen(tablaCuadruplas, MULT_ALTERADA, T -> id, consulta_bpw_TS(tablaSimbolos,
                                                                             getIdTipoContenidoVariableTabla(tablaSimbolos, getSimboloPorId(tablaSimbolos, $$.place))),
@@ -1122,7 +1129,11 @@ void warning(const char *warningText, ...){
  */
 int calcularDesplazamientoParcial(t_tabla_quad* tablaCuadruplas, lista_ligada* header, int idTipoArray, int idVarExp, int dimActual) {
     simbolo* T = newTemp(header);
+    modificaTipoVar(T, ENTERO);
+    fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(T))), getNombreSimbolo(T));
     simbolo* Taux = newTemp(header);
+    modificaTipoVar(Taux, ENTERO);
+    fprintf(fTS,"Insertada variable %s '%s'\n", getNombreSimbolo(getSimboloPorId(tablaSimbolos, getTipoVar(Taux))), getNombreSimbolo(Taux));
     int aux = 1;
     int dimMaxima = consulta_dim_maxima_TS(tablaSimbolos, idTipoArray);
     if(dimActual + 1 <= dimMaxima){
@@ -1131,7 +1142,7 @@ int calcularDesplazamientoParcial(t_tabla_quad* tablaCuadruplas, lista_ligada* h
         return T -> id;
     } else {
         gen(tablaCuadruplas, RESTA_1, idVarExp, -1, Taux -> id);
-        gen(tablaCuadruplas, MULT_ALTERADA, Taux -> id, 0, T -> id);
+        gen(tablaCuadruplas, MULT_ALTERADA, Taux -> id, 1, T -> id);
         return T -> id;
     }
     return T -> id;

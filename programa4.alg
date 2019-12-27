@@ -1,23 +1,21 @@
-algoritmo sumacomb;
+algoritmo pruebaArrays;
 ent n, m: entero;z : real;
 sal suma: real;
 {Prec: n= N AND m = M AND M >= N >0}
 tipo
-    tipoarray1 = tabla[n..m] de entero;
+    tipoarray3 = tabla[m..m] de entero;
+    tipoarray1 = tabla[m..n] de tabla[n..m] de entero;
 ftipo;
 var 
     a, b : entero;
-    comb : real;
     array1 : tipoarray1;
+    array3 : tipoarray3;
 fvar;
-
+suma:=z;
 a:=n;
-array1[a]:=a;
-comb:=z;
-comb:=comb*(m*(a+m));
-suma:= suma + comb;
-b := array1[n];
-suma := array1[m];
-array1[m] := suma;
+array1[a][b]:=a;
+array3[a]:=a;
+b:=array3[m - b];
+b:=array1[m - b][a + b];
 {Post: n =N AND suma = SUMATORIO(i=1..N)(M sobre i)}
 falgoritmo;
