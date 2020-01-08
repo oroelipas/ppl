@@ -51,10 +51,10 @@ Uso de arrays:
   del compilador, con unos resultados satisfactorios. En el momento de la entrega, el parser
   es capaz de declarar tipos de arrays de hasta 2 dimensiones, almacenar estos tipos en la
   tabla de simbolos, detectar variables declaradas de estos tipos almacenándolas en la tabla de
-  simbolos y acceder a ellas para realizar asignaciones. El programa4.alg es
+  simbolos y acceder a ellas para realizar asignaciones. El ejemplo4_ArraysBidimensionales.alg es
   un buen ejemplo de prueba para poder observar el funcionamiento, ejecutando
 
-                      "$ ./a.out programa4.alg"
+                      "$ ./a.out ejemplo4_ArraysBidimensionales.alg"
 
   en el fichero out.TablaCuadruplas se muestran algunas indicaciones útiles, además del contenido
   de la tabla de cuadruplas.
@@ -66,13 +66,9 @@ Nos gustaría afirmar que ha sido un
    Oroel:   50%
 pero sabemos que esas separaciones tan sumamente exactas no te convencen.
 La REALIDAD es la siguiente:
-El componente del equipo Oroel Ipas ha realizado una gran labor, generando probablemente algo más del 65% del código del trabajo
-y realizando grandes aportaciones a la hora de solucionar todos los problemas que el equipo ha ido experimentando.
-El componente del equipo Carlos Moyano también ha realizado una gran labor, este es más dado a las anotaciones y esquemas mentales
-de aquello que se quería llegar a conseguir y en ello ha invertido gran parte de su tiempo. Sin embargo, también ha generado el restante
-porcentaje del código del proyecto.
+El componente del equipo Oroel Ipas ha realizado una gran labor, generando probablemente algo más del 65% del código del trabajo y realizando grandes aportaciones a la hora de solucionar todos los problemas que el equipo ha ido experimentando.
+El componente del equipo Carlos Moyano también ha realizado una gran labor, este es más dado a las anotaciones y esquemas mentales de aquello que se quería llegar a conseguir, ayudando a desbloquear varios problemas referentes a la teoría de la asignatura. Sin embargo, también ha generado el restante porcentaje del código del proyecto.
 Ambos componentes consideran que la comunicación entre ellos ha sido muy buena.
-El componente Carlos Moyano considera que su compañero Oroel Ipas ha realizado un excelente trabajo y, dado que este ha creado más código que él,
-ve justo realizar esta reasignación de porcentajes:
+El componente Carlos Moyano considera que su compañero Oroel Ipas ha realizado un excelente trabajo y, dado que este ha creado más código que él, ve justo realizar esta reasignación de porcentajes:
   Carlos: 45%
   Oroel: 55%

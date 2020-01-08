@@ -586,7 +586,7 @@ void printSimbolosNoUsados(lista_ligada *header) {
         if (misimbolo->usado == 0) {
             switch(misimbolo->tipo) {
                 case SIM_VARIABLE:
-                    warningSinLinea("Variable %s %s declarada y nunca usada\n", getNombreSimbolo(getSimboloPorId(header, getTipoVar(misimbolo))), getNombreSimbolo(misimbolo));
+                    warningSinLinea("Variable %s '%s' declarada y nunca usada\n", getNombreSimbolo(getSimboloPorId(header, getTipoVar(misimbolo))), getNombreSimbolo(misimbolo));
                     break;
                 case SIM_TIPO:
                     if(!esTipoBase(misimbolo->id) && (strstr(getNombreSimbolo(misimbolo),"TIPO_SIN_NOMBRE") == NULL))
