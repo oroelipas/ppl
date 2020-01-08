@@ -965,13 +965,14 @@ ty_it_cota_exp:
     ;
 
 ty_it_cota_fija:
-    TK_PR_PARA ty_asignacion TK_PR_HASTA  ty_expresion TK_PR_HACER ty_M ty_instrucciones TK_PR_FPARA {
+    TK_PR_PARA ty_asignacion TK_PR_HASTA  ty_expresion TK_PR_HACER ty_N ty_M ty_instrucciones TK_PR_FPARA {
         // La variable iteradora debe ser de tipo entero, y la expresión de la condición de parada también
         simbolo* varIterable = getSimboloPorId(tablaSimbolos, $2.idVar);
         if (getTipoVar(varIterable) == ENTERO && $4.type == ENTERO){
-            backpatch(tablaCuadruplas, $7.next, getNextquad(tablaCuadruplas));
+            backpatch(tablaCuadruplas, $6.next, getNextquad(tablaCuadruplas)+1);
+            backpatch(tablaCuadruplas, $8.next, getNextquad(tablaCuadruplas));
             gen(tablaCuadruplas, SUMA_1, getIdSimbolo(varIterable), -1, getIdSimbolo(varIterable));     // Aumentamos en 1 el valor de la variable iteradora
-            gen(tablaCuadruplas, GOTO_IF_OP_REL_MENOR, getIdSimbolo(varIterable), $4.place, $6.quad);   // Realizamos la comparación con la condición de parada
+            gen(tablaCuadruplas, GOTO_IF_OP_REL_MENOR, getIdSimbolo(varIterable), $4.place, $7.quad);   // Realizamos la comparación con la condición de parada
             $$.next = makeList(getNextquad(tablaCuadruplas));
             gen(tablaCuadruplas, GOTO, -1, -1, -1);
         }else{
